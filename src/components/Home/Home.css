@@ -1,0 +1,210 @@
+body{
+    color: aliceblue;
+}
+
+.img img{
+  mix-blend-mode: multiply;
+  height: 100vh;
+  position: absolute;
+  top: 20px;
+}
+.text{
+    position: relative;
+    left: 60vw;
+    top: 20vh;
+    width: 300px;
+
+}
+.text span {
+    color: cadetblue;
+}
+.para {
+   width: 200px;
+}
+.socialcontainer{
+    width: 200px;
+    height: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+.socialicon{
+    scale: 2;
+}
+.socialicon:hover{
+    color: red;
+}
+
+h1{
+    display: inline-block;
+}
+/* section2 */
+section{
+    position: absolute;
+    top: 110vh;
+}
+h1 span {
+    color: cadetblue;
+}
+.heading{
+    position: relative;
+    left: 200px;
+
+}
+
+/* Skillcard */
+.mapped-icon-list {
+      width: 80vw;
+      margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  gap: 20px; /* Space between the cards */
+  background-color: #3b3b41; /* A dark background for the entire list area */
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); /* A prominent shadow for depth */
+  overflow-x: scroll;
+  box-sizing: border-box;
+  margin-top: 20px;
+  position: absolute;
+  left: 10vw;
+  
+}
+.mapped-icon-card {
+    height: 200px; 
+  width: 200px;
+  display: flex; /* Uses Flexbox to arrange content vertically */
+  flex-direction: column; /* Stacks icon, label, and description vertically */
+  align-items: center; /* Centers items horizontally within the card */
+  justify-content: flex-start; /* Aligns content to the top of the card */
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #29292f; /* A dark background color for the card itself */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* A subtle inner shadow for the card */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease; /* Smooth transitions for hover effects */
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.05); /* A very subtle light border for definition */
+}
+.mapped-icon-card:hover {
+  transform: translateY(-5px); /* Lifts the card slightly */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); /* Makes the shadow more prominent */
+  background-color: #4a4a6a; /* Slightly lightens the card background on hover */
+}
+.mapped-icon-card .icon-label {
+  margin-top: 10px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #f0f0f0; /* Light text color for the label */
+}
+
+.mapped-icon-card .icon-description {
+  font-size: 0.85em;
+  color: #c0c0c0; /* Slightly lighter text for the description */
+  margin-top: 5px;
+  line-height: 1.4;
+}
+.dmtext{
+    position: absolute;
+    top: 60vh;
+    left: 10vw;
+    width: 20vw;
+}
+.dm{
+    font-size: 30px;
+}
+.dm2{
+    font-size: 30px;
+   color: cadetblue;
+}
+
+
+.instaicon:hover{
+    color: red;
+    transition: 0.3s ease;
+}
+.githubicon:hover{
+    color: grey;
+    transition: 0.3s ease;
+}
+.whatsappicon:hover{
+   color: green;
+    transition:0.3s ease; 
+}
+.linkedinicon:hover{
+   color: rgb(32, 0, 128);
+    transition: 0.3s ease; 
+}
+.portfolio{
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    position: relative;
+    margin-top: 200px;
+    
+}
+.imgcontainer:hover{
+    scale: 1.1;
+    transition: 0.5s ease-in-out;
+    border: 2px solid  rgb(117, 6, 220);
+}
+
+.gitimg{
+    height: 300px;
+    border-radius: 20px;
+}
+.imgcontainer{
+    height:400px ;
+    width: 700px;
+    background-color: #4a4a6a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+
+}
+
+.second{
+    font-size: 50px;
+    color: aquamarine;
+}
+.browseprojects h1:hover{
+    scale: 1.1;
+    transition: 0.4s ease-in-out;
+}
+
+/* Style for the project container (optional, but good for context) */
+.project {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center the player horizontally */
+  margin-bottom: 20px; /* Some spacing below */
+  margin: 5vw;
+}
+
+.player {
+  /* This is the key for the curved border */
+  border-radius: 15px; /* Adjust this value for more or less curve */
+  overflow: hidden; /* CRUCIAL: Hides the sharp corners of the video inside */
+  /* Optional: Add a subtle border or shadow to enhance the curved look */
+  border: 2px solid #ccc; /* Example border */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Example shadow */
+  margin-bottom: 15px; /* Space between player and link */
+}
+
+.player video { 
+  height: auto; /* Maintain aspect ratio */
+  /* No border-radius needed here if overflow: hidden is on parent */
+}
+.project a {
+  /* Basic styling for your link */
+  text-decoration: none;
+  color: #007bff;
+  font-weight: bold;
+}
+.projects{
+    display: flex;
+    flex-wrap: wrap;
+}

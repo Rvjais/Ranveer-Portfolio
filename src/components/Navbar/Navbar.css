@@ -1,0 +1,101 @@
+ 
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+          body {
+            font-family: 'Inter', sans-serif;
+            width: 100vw;
+            
+          }
+
+          .navbar {
+            position: fixed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            margin: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+            backdrop-filter: blur(10px); /* Glassmorphism blur effect */
+            -webkit-backdrop-filter: blur(10px); /* Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle border */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            width: 95%;
+            box-sizing: border-box;
+            position: relative; /* For responsive menu positioning */
+          }
+
+          .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #2c3e50;
+          }
+
+          .logoicon {
+            font-size: 1.8rem;
+            color: #3498db;
+          }
+
+          .logo h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+          }
+
+          .pages {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            
+          }
+
+          .pages a {
+            text-decoration: none;
+            color: #f8f8f8;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+          }
+
+          .pages a:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+            color: #1a2a3a;
+          }
+
+          .pages select {
+            padding: 0.5rem 1rem;
+            
+            border: none;
+            background-color: rgba(255, 255, 255, 0.3);
+            color: #f8f8f8;
+            font-weight: 500;
+            cursor: pointer;
+            /* appearance: none; Remove default arrow
+            -webkit-appearance: none; */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%232c3e50%22%20d%3D%22M287%2C114.7L159.2%2C242.5c-3.2%2C3.2-8.3%2C3.2-11.6%2C0L5.4%2C114.7c-3.2-3.2-3.2-8.3%2C0-11.6l21.2-21.2c3.2-3.2%2C8.3-3.2%2C11.6%2C0l119.5%2C119.5l119.5-119.5c3.2-3.2%2C8.3-3.2%2C11.6%2C0l21.2%2C21.2C290.2%2C106.4%2C290.2%2C111.5%2C287%2C114.7z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 0.7em top 50%, 0 0;
+            background-size: 0.65em auto, 100%;
+            transition: background-color 0.3s ease;
+          }
+
+          .pages select:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+          }
+
+          .menu-toggle {
+            display: none; /* Hidden on desktop */
+            font-size: 2rem;
+            background: none;
+            border: none;
+            color: #2c3e50;
+            cursor: pointer;
+            z-index: 1001; /* Ensure it's above other elements */
+          }
+          option{
+            background-color: #2c3e50;
+          }
+
+        
