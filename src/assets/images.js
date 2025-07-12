@@ -101,4 +101,85 @@ const icondata = [
 ];
 
 
-export default icondata;
+const projectData = [{
+  id: 'gemini' ,
+  src: '',
+  label: 'Gemini-Clone',
+  description: 'A Clone of google gemini made with React.js and Gemini API ',
+  link: ''
+},{
+  id: 'ecommerce' ,
+  src: '',
+  label: 'E-Commerce',
+  description: 'An E-Commerce Site made by React,Tailwind and react-router' ,
+  link: ''
+},{
+  id: 'pooja' ,
+  src: '',
+  label: 'Pooja-Tech',
+  description: 'A Website for Complete Infrastructure solutions for Hospital and Personal services  ',
+  link: ''
+},{
+  id: 'tour' ,
+  src: '',
+  label: 'Hussain-Tour and travels',
+  description: 'A Tour-and-Travels website for the tourists in prayagraj area ',
+  link: ''
+},{
+   id: 'ipod' ,
+  src: '',
+  label: 'I-Pod Player',
+  description: 'A Frontend Design of I-Pod Themed Music Player ',
+  link: ''
+},{
+   id: 'todo' ,
+  src: '',
+  label: 'To-Do-List',
+  description: ' ',
+  link: ''
+},{
+  id: 'gradient' ,
+  src: '',
+  label: 'Gradient-Generator',
+  description: ' A beutifull website used for making random gradient colours for css with its colour code to copy ',
+  link: ''
+},{
+  id: 'calc' ,
+  src: '',
+  label: 'Calculator',
+  description: ' An Intractive ui and functionality of a calculator',
+  link: ''
+},{
+  id: 'clock' ,
+  src: '',
+  label: 'Animated-Clock',
+  description: ' A simple but beutifull Clock interface ',
+  link: ''
+}];
+
+const games = [{
+  id: 'stnpprscr' ,
+  src: '',
+  label: 'Stone-Paper-Scissors',
+  description: 'An intractive game made from javascript logic and beutifull ui design with the help of CSS',
+  link: ''
+},{
+ id: 'snake' ,
+  src: '',
+  label: 'Snake-Game',
+  description: 'An intractive game made from javascript logic and beutifull ui design with the help of CSS',
+  link: ''
+},{
+  id: 'ttt' ,
+  src: '',
+  label: 'Tic-Tac-Toe',
+  description: 'An intractive game made from javascript logic and beutifull ui design with the help of CSS',
+  link: ''
+}];
+
+
+export default {projectData ,icondata};
+
+
+
+
