@@ -20,3 +20,114 @@
     width: 70vw;
      margin-top: 100px;
 }
+.box{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+.left{
+    display: flex;
+    flex-direction: column;
+}
+.right{
+    display: flex;
+    flex-direction: column;
+}
+/* reels */
+
+/* --- Global Container for Reels (Pinterest-style Masonry) --- */
+.reels-container {
+  column-count: 3; /* Number of columns for desktop */
+  column-gap: 16px; /* Space between columns */
+  padding: 20px; /* More padding for a cleaner look */
+  max-width: 1200px; /* Optional: Limit max width of the container */
+  margin: 20px auto; /* Add margin top/bottom and center */
+}
+
+/* --- Individual Reel Item Styling --- */
+.reel-item {
+  /* Prevents items from breaking across columns (crucial for masonry with columns) */
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid; /* For WebKit browsers */
+
+  background-color: #2a2a2a; /* Darker background for items */
+  border-radius: 12px; /* Slightly more rounded corners */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Initial subtle shadow */
+  margin-bottom: 16px; /* Space between items within a column */
+  padding: 12px;
+  overflow: hidden; /* Ensures content respects border-radius */
+  display: block; /* Ensures it takes up full width in its column */
+
+  /* --- Animation Properties --- */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  cursor: pointer; /* Indicate it's clickable */
+}
+
+/* --- Hover Animation for Reel Items --- */
+.reel-item:hover {
+  transform: translateY(-5px) scale(1.02); /* Lift and slightly enlarge */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* More prominent shadow on hover */
+}
+
+/* --- Aspect Ratio Wrapper for the Video (9:16) --- */
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16; /* Modern way to set aspect ratio for vertical videos */
+  background-color: #000; /* Ensures black background if video isn't loaded */
+  border-radius: 8px; /* Slightly rounded corners for the video area */
+  overflow: hidden; /* Important to clip content if it overflows */
+}
+
+.video-wrapper video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures video fills the wrapper, cropping if necessary */
+  display: block;
+}
+
+/* --- Text Styling for Reel Title/Description --- */
+.reel-item p {
+  font-size: 15px;
+  line-height: 1.5;
+  color: #f0f0f0; /* Lighter text color for dark theme */
+  margin-top: 10px; /* Space between video and text */
+  margin-bottom: 0;
+  padding: 0 4px; /* Slight horizontal padding for text within the item */
+}
+
+/* --- Responsive Adjustments --- */
+
+@media (max-width: 1200px) {
+  .reels-container {
+    column-count: 3;
+    column-gap: 12px;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 992px) {
+  .reels-container {
+    column-count: 2; /* Two columns on medium screens */
+    column-gap: 12px;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .reels-container {
+    column-count: 1; /* Single column on small screens */
+    padding: 10px;
+  }
+  .reel-item {
+    margin-bottom: 10px;
+    padding: 10px;
+  }
+  .reel-item p {
+    font-size: 14px;
+  }
+}
