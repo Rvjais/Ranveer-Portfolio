@@ -4,12 +4,13 @@ import { Link } from 'react-router-dom'
 import { FaInstagram, FaGithub} from "react-icons/fa";
 import { BsWhatsapp } from "react-icons/bs";
 import { FaLinkedin } from "react-icons/fa";
-import icondata from '../../assets/images';
-import github from '../../assets/github.png'
-import ecommerce from '../../assets/ecommercepc.webm'
-import pooja from '../../assets/poojatech.webm'
-import todo from '../../assets/todo.webm'
-import snake from '../../assets/snake.webm'
+import { icondata,projectData, games } from '../../assets/images';
+import github from '../../assets/github.png';
+import ecommerce from '../../assets/ecommercepc.webm';
+import pooja from '../../assets/poojapc.webm';
+import todo from '../../assets/todo.webm';
+import gradient from'../../assets/gradient.webm'
+import snake from '../../assets/snake.webm';
 import '../Home/Home.css'
 
 const Home = () => {
@@ -34,7 +35,6 @@ const Home = () => {
     <div className="links">
         <Link to='/about' >Learn More -{'>'} </Link>
     </div>
-
 <div className="socials">
       <h1>
        let's
@@ -104,31 +104,6 @@ const Home = () => {
         </div>
         <a href="">Visit Live site</a>
     </div>
-
-     <div className="project">
-        <div className="player">
-             <video loading="lazy" width="150" height="310" controls>
-        <source src={pooja}  />
-       
-        Your browser does not support the video tag.
-      </video>
-      
-        </div>
-        <a href="">Visit Live site</a>
-    </div>
-
-     <div className="project">
-        <div className="player">
-             <video loading="lazy" className='video' width="150" height="310" controls>
-        <source src={todo}  />
-       
-        Your browser does not support the video tag.
-      </video>
-      
-        </div>
-        <a href="">Visit Live site</a>
-    </div>
-    
     <div className="project">
         <div className="player">
              <video loading="lazy" className='video' width="640" height="360" controls>
@@ -141,6 +116,17 @@ const Home = () => {
         <a href="">Visit Live site</a>
     </div>
 
+     <div className="project">
+        <div className="player">
+             <video loading="lazy" width="150" height="310" controls>
+        <source src={pooja}  />
+       
+        Your browser does not support the video tag.
+      </video>
+      
+        </div>
+        <a href="">Visit Live site</a>
+    </div>
     </div>
 
 </section>

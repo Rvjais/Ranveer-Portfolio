@@ -9,7 +9,24 @@ import { FaJava } from "react-icons/fa";
 import { DiLinux } from "react-icons/di";
 import { IoLogoWindows } from "react-icons/io";
 import { FaFigma } from "react-icons/fa";
-
+import calcmobile from '../assets/calculatormobile.png'
+import calcpc from '../assets/calculatorpc.png'
+import ecompc from '../assets/ecommercepc.png'
+import ecommobile from '../assets/ecommercemobile.png'
+import geminipc from '../assets/geminipc.png'
+import geminimobile from '../assets/geminiphone.png'
+import gradientpc from '../assets/gradientpc.png'
+import gradientmobile from '../assets/gradientmobile.png'
+import ipod from '../assets/ipod.png'
+import poojapc from '../assets/poojapc.png'
+import poojamobile from '../assets/poojamobile.png'
+import snake from '../assets/snakepc.png'
+import stnpprscsrpc from '../assets/stnpprscsrpc.png'
+import stnpprscsrmobile from '../assets/stnpprscsrmobile.png'
+import tttpc from '../assets/tttpc.png'
+import tttmobile from '../assets/tttmobile.png'
+import todopc from '../assets/todopc.png'
+import todomobile from '../assets/todomobile.png'
 const icondata = [
   {
     id: 'react',
@@ -103,58 +120,46 @@ const icondata = [
 
 const projectData = [{
   id: 'gemini' ,
-  src: '',
+  src: geminipc,
   label: 'Gemini-Clone',
   description: 'A Clone of google gemini made with React.js and Gemini API ',
-  link: ''
+  link: 'https://rvjais.github.io/Gemini-clone'
 },{
   id: 'ecommerce' ,
-  src: '',
+  src: ecompc,
   label: 'E-Commerce',
   description: 'An E-Commerce Site made by React,Tailwind and react-router' ,
-  link: ''
+  link: 'https://rvjais.github.io/Ecommerce'
 },{
   id: 'pooja' ,
-  src: '',
+  src: poojapc,
   label: 'Pooja-Tech',
   description: 'A Website for Complete Infrastructure solutions for Hospital and Personal services  ',
-  link: ''
-},{
-  id: 'tour' ,
-  src: '',
-  label: 'Hussain-Tour and travels',
-  description: 'A Tour-and-Travels website for the tourists in prayagraj area ',
-  link: ''
+  link: 'https://rvjais.github.io/PoojaTech/'
 },{
    id: 'ipod' ,
-  src: '',
+  src: ipod,
   label: 'I-Pod Player',
   description: 'A Frontend Design of I-Pod Themed Music Player ',
-  link: ''
+  link: 'https://rvjais.github.io/I-pod-Player/'
 },{
    id: 'todo' ,
-  src: '',
+  src: todopc,
   label: 'To-Do-List',
-  description: ' ',
-  link: ''
+  description: ' A web app to take trackes of your tasks and habits',
+  link: 'https://rvjais.github.io/to-do-list/'
 },{
   id: 'gradient' ,
-  src: '',
+  src: gradientpc,
   label: 'Gradient-Generator',
   description: ' A beutifull website used for making random gradient colours for css with its colour code to copy ',
-  link: ''
+  link: 'https://rvjais.github.io/Gradient-generator/'
 },{
   id: 'calc' ,
-  src: '',
+  src: calcpc,
   label: 'Calculator',
   description: ' An Intractive ui and functionality of a calculator',
-  link: ''
-},{
-  id: 'clock' ,
-  src: '',
-  label: 'Animated-Clock',
-  description: ' A simple but beutifull Clock interface ',
-  link: ''
+  link: 'https://rvjais.github.io/Calculator/'
 }];
 
 const games = [{
@@ -162,23 +167,23 @@ const games = [{
   src: '',
   label: 'Stone-Paper-Scissors',
   description: 'An intractive game made from javascript logic and beutifull ui design with the help of CSS',
-  link: ''
+  link: 'https://rvjais.github.io/Stone-paper-scissors/'
 },{
  id: 'snake' ,
   src: '',
   label: 'Snake-Game',
   description: 'An intractive game made from javascript logic and beutifull ui design with the help of CSS',
-  link: ''
+  link: 'https://rvjais.github.io/SnakeGame/'
 },{
   id: 'ttt' ,
   src: '',
   label: 'Tic-Tac-Toe',
   description: 'An intractive game made from javascript logic and beutifull ui design with the help of CSS',
-  link: ''
+  link: 'https://rvjais.github.io/tic-tac-toe/'
 }];
 
 
-export default {projectData ,icondata};
+export { icondata, projectData, games };
 
 
 

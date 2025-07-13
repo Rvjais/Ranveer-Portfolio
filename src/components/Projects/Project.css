@@ -1,0 +1,136 @@
+/* General Body/Root Styles for Dark Theme */
+body {
+  font-family: 'Inter', sans-serif; /* Or your preferred font */
+  margin: 0;
+  padding: 20px;
+  background-color: #1a1a2e; /* Deep dark blue/purple background */
+  color: #e0e0e0; /* Light grey text for contrast */
+  line-height: 1.6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Container for all mapped projects */
+.mapped-project-list {
+  display: flex;
+  
+  flex-wrap: wrap; /* Allow cards to wrap to the next line */
+  justify-content: center; /* Center cards horizontally */
+  gap: 30px; /* Space between cards */
+  padding: 20px; 
+  width: 80vw; /* Take full width up to max-width */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Individual Project Card */
+.mapped-project-card {
+  background-color: #2e2e4a; /* Slightly lighter dark background for cards */
+  border-radius: 15px; /* Rounded corners for the cards */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4); /* Darker, more pronounced shadow */
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally within the card */
+  text-align: center;
+  flex-basis: 300px; /* Give a base width for flex items (e.g., 300px) */
+  flex-grow: 1; /* Allow cards to grow and fill space */
+ width: 900px; /* Adjust max-width for 3 columns on larger screens, considering gap */
+  box-sizing: border-box;
+
+  /* --- ANIMATION RELATED: Smooth transitions for multiple properties --- */
+  transition: transform 0.4s ease-out,
+              box-shadow 0.4s ease-out,
+              background-color 0.4s ease-out,
+              border-color 0.4s ease-out; /* Added border-color transition */
+  position: relative; /* Needed for pseudo-elements or more advanced effects */
+  overflow: hidden; /* Ensures any effects inside stay within border-radius */
+}
+
+/* Adjust for smaller screens (e.g., 2 columns) */
+@media (max-width: 900px) {
+  .mapped-project-card {
+    max-width: calc(50% - 20px); /* 2 columns */
+  }
+}
+
+/* Adjust for very small screens (e.g., 1 column) */
+@media (max-width: 600px) {
+  .mapped-project-card {
+    max-width: 100%; /* 1 column */
+  }
+}
+
+/* --- ANIMATION RELATED: Hover effects --- */
+.mapped-project-card:hover {
+  transform: translateY(-10px) scale(1.02); /* Lift and slightly enlarge */
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6), /* Stronger shadow */
+              0 0 20px rgba(139, 92, 246, 0.4); /* Glowing effect (subtle purple) */
+  background-color: #3b3b60; /* Slightly lighter and more vibrant on hover */
+  border: 1px solid #8b5cf6; /* Add a subtle border glow */
+}
+
+/* Fixed Sizes for Images */
+.project-image {
+  width: 100%; /* Make image take full width of its card */
+  max-width: 300px; /* Set a maximum width for the image */
+  height: 200px; /* Fixed height for consistency */
+  object-fit: cover; /* CRUCIAL: Crops image to fit without stretching */
+  border-radius: 10px; /* Slightly rounded corners for the image itself */
+  margin-bottom: 15px; /* Space below the image */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle light border */
+
+  /* --- ANIMATION RELATED: Image specific hover --- */
+  transition: transform 0.3s ease-out;
+}
+
+.mapped-project-card:hover .project-image {
+  transform: scale(1.05); /* Slightly zoom the image on card hover */
+}
+
+/* Text Styles */
+.project-label {
+  font-size: 1.6em; /* Larger, more prominent heading */
+  font-weight: 700;
+  color: #bb86fc; /* A contrasting light purple for headings */
+  margin-bottom: 10px;
+  /* --- ANIMATION RELATED: Text color change on hover --- */
+  transition: color 0.3s ease-out;
+}
+
+.mapped-project-card:hover .project-label {
+  color: #c9a4ff; /* Slightly brighter purple on hover */
+}
+
+.project-description {
+  font-size: 0.95em;
+  color: #b0b0b0; /* Lighter grey for descriptions */
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Live Site Link */
+.mapped-project-card a {
+  display: inline-block;
+  background-color: #6200ee; /* Primary action color (purple) */
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  /* --- ANIMATION RELATED: Link button hover --- */
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.mapped-project-card a:hover {
+  background-color: #3700b3; /* Darker purple on hover */
+  transform: translateY(-3px); /* More pronounced lift on hover */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6); /* Stronger shadow on hover */
+}
+img{
+    height: 200px;
+}
