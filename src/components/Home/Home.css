@@ -1,7 +1,9 @@
 body{
     color: aliceblue;
 }
-
+a{
+  color: white;
+}
 .img img{
   mix-blend-mode: multiply;
   height: 100vh;
@@ -185,20 +187,24 @@ h1 span {
   justify-content: center; /* Center cards horizontally */
   gap: 30px; /* Space between video project cards */
   padding: 20px;
+  
   max-width: 1200px; /* Max width for the entire list */
   width: 100%; /* Take full width up to max-width */
   box-sizing: border-box; /* Include padding in width calculation */
+  width: 100vh;
 
   /* --- NEW: Applying dark theme background and text color here --- */
   background-color: #1a1a2e; /* Deep dark blue/purple background */
   color: #e0e0e0; /* Light grey text for contrast */
-  min-height: 100vh; /* Ensure it takes full viewport height for the background to show */
+  /* Ensure it takes full viewport height for the background to show */
   /* You might need to adjust margin/padding on a parent element if this is not the root */
   margin: 0 auto; /* Center the container if it's not full width */
+  border-radius: 30px;
 }
 
 /* Individual Project Card (for video projects) */
 .project { /* This is each individual video project div */
+  height: 20vh;
   background-color: #2e2e4a; /* Slightly lighter dark background for cards */
   border-radius: 15px; /* Rounded corners for the cards */
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4); /* Darker, more pronounced shadow */
@@ -293,4 +299,9 @@ h1 span {
   background-color: #3700b3; /* Darker purple on hover */
   transform: translateY(-3px); /* More pronounced lift on hover */
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6); /* Stronger shadow on hover */
+}
+.bottom{
+  display: flex;
+  align-items: center;
+  
 }

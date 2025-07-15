@@ -1,119 +1,117 @@
+.container{
+width: 80vw;
+  margin: auto;
+ 
+}
 .top{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    width: 70vw;
-    margin-top: 300px;
-}
-.profilepic{
-    border-radius: 50%;
-    scale: 2;
-    
-}
-.paradiv{
-    width: 20vw;
+display: flex;
+flex-direction: row;
+position: relative;
+height: 70vh;
 }
 .bottom{
-     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    width: 70vw;
-     margin-top: 100px;
+  display: flex;
+  flex-direction: column;
 }
+
 .box{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+  display: flex;
+flex-direction: row;
+width: 70vw;
+margin-bottom: 100px;
+background-color: white;
+z-index: -1;
+}
+
+.profilepic{
+  border-radius: 50%;
+  width: 300px;
+  height: 300px;
 }
 .left{
-    display: flex;
-    flex-direction: column;
+/* --- Dark Background for the overall section (adjust as needed for your page) --- */
+/* You might apply this to a parent div or the body if not already dark */
+body {
+  background-color: #121212; /* Very dark background */
+  color: #f0f0f0; /* Light text color */
+  font-family: Arial, sans-serif; /* Simple font */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-.right{
-    display: flex;
-    flex-direction: column;
-}
-/* reels */
 
-/* --- Global Container for Reels (Pinterest-style Masonry) --- */
+/* --- Container for the Pinterest-style Reels Grid --- */
 .reels-container {
-  column-count: 3; /* Number of columns for desktop */
-  column-gap: 16px; /* Space between columns */
-  padding: 20px; /* More padding for a cleaner look */
-  max-width: 1200px; /* Optional: Limit max width of the container */
-  margin: 20px auto; /* Add margin top/bottom and center */
+  column-count: 3; /* Show 3 columns on larger screens */
+  column-gap: 20px; /* Space between columns */
+  padding: 20px; /* Padding around the entire grid */
+  max-width: 1200px; /* Max width for the grid */
+  margin: 40px auto; /* Center the grid with top/bottom margin */
+  box-sizing: border-box; /* Include padding in element's total width */
 }
 
 /* --- Individual Reel Item Styling --- */
 .reel-item {
-  /* Prevents items from breaking across columns (crucial for masonry with columns) */
+  /* Prevents items from breaking across columns (important for masonry) */
   break-inside: avoid;
   page-break-inside: avoid;
   -webkit-column-break-inside: avoid; /* For WebKit browsers */
 
-  background-color: #2a2a2a; /* Darker background for items */
-  border-radius: 12px; /* Slightly more rounded corners */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Initial subtle shadow */
-  margin-bottom: 16px; /* Space between items within a column */
-  padding: 12px;
-  overflow: hidden; /* Ensures content respects border-radius */
-  display: block; /* Ensures it takes up full width in its column */
+  background-color: #1e1e1e; /* Slightly lighter dark background for each item */
+  border-radius: 12px; /* Rounded corners for the item card */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Subtle initial shadow */
+  margin-bottom: 20px; /* Space between items within a column */
+  padding: 15px; /* Padding inside each reel item */
+  overflow: hidden; /* Ensures content stays within rounded corners */
+  display: block; /* Ensures it takes up full column width */
 
-  /* --- Animation Properties --- */
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  cursor: pointer; /* Indicate it's clickable */
+  /* --- Animation Properties for Hover --- */
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; /* Smooth transition */
+  cursor: pointer; /* Indicates it's interactive */
 }
 
 /* --- Hover Animation for Reel Items --- */
 .reel-item:hover {
-  transform: translateY(-5px) scale(1.02); /* Lift and slightly enlarge */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* More prominent shadow on hover */
+  transform: translateY(-8px) scale(1.02); /* Lift up and slightly enlarge */
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5); /* More pronounced shadow on hover */
 }
 
 /* --- Aspect Ratio Wrapper for the Video (9:16) --- */
 .video-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 9 / 16; /* Modern way to set aspect ratio for vertical videos */
-  background-color: #000; /* Ensures black background if video isn't loaded */
-  border-radius: 8px; /* Slightly rounded corners for the video area */
-  overflow: hidden; /* Important to clip content if it overflows */
+  aspect-ratio: 9 / 16; /* Sets the aspect ratio to 9:16 (vertical) */
+  background-color: #000; /* Black background if video is not loaded */
+  border-radius: 8px; /* Rounded corners for the video area */
+  overflow: hidden; /* Clips video content if it overflows */
 }
 
 .video-wrapper video {
-  position: absolute;
+  position: absolute; /* Position video inside the wrapper */
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Ensures video fills the wrapper, cropping if necessary */
-  display: block;
+  object-fit: cover; /* Ensures video fills the wrapper, cropping if needed */
+  display: block; /* Removes any default spacing below the video */
 }
 
 /* --- Text Styling for Reel Title/Description --- */
 .reel-item p {
-  font-size: 15px;
-  line-height: 1.5;
-  color: #f0f0f0; /* Lighter text color for dark theme */
-  margin-top: 10px; /* Space between video and text */
+  font-size: 1rem; /* Standard font size */
+  line-height: 1.5; /* Good line spacing */
+  color: #372626; /* Light text color for dark theme */
+  margin-top: 12px; /* Space between video and text */
   margin-bottom: 0;
-  padding: 0 4px; /* Slight horizontal padding for text within the item */
+  text-align: left; /* Align text to the left */
 }
 
 /* --- Responsive Adjustments --- */
 
-@media (max-width: 1200px) {
-  .reels-container {
-    column-count: 3;
-    column-gap: 12px;
-    padding: 15px;
-  }
-}
-
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
   .reels-container {
     column-count: 2; /* Two columns on medium screens */
-    column-gap: 12px;
+    column-gap: 15px;
     padding: 15px;
   }
 }
@@ -122,12 +120,40 @@
   .reels-container {
     column-count: 1; /* Single column on small screens */
     padding: 10px;
+    margin: 20px auto;
   }
   .reel-item {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     padding: 10px;
   }
   .reel-item p {
-    font-size: 14px;
+    font-size: 0.95rem;
   }
+}
+display: flex;
+flex-direction: column;
+justify-content: center;
+}
+.right{
+  max-width: 35vw;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.bottom-pic{
+  height: 300px;
+  width: 400px;
+  border-radius: 30px;
+}
+.reels-container{
+  display: flex;
+  flex-wrap: wrap;
+}
+video{
+  height: 800px;
+  width: 450px;
+  border-radius: 20px;
+margin: 20px;
+
 }

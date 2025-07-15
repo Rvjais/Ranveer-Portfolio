@@ -49,7 +49,6 @@ const Navbar = () => {
             {/* Each option's value attribute is the path to navigate to */}
             <option value="/">Home</option>
             <option value="/about">About</option>
-            <option value="/pages">Pages</option>
             <option value="/contacts">Contacts</option>
           </select>
         </div>

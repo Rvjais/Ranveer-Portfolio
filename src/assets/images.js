@@ -9,24 +9,14 @@ import { FaJava } from "react-icons/fa";
 import { DiLinux } from "react-icons/di";
 import { IoLogoWindows } from "react-icons/io";
 import { FaFigma } from "react-icons/fa";
-import calcmobile from '../assets/calculatormobile.png'
+
 import calcpc from '../assets/calculatorpc.png'
 import ecompc from '../assets/ecommercepc.png'
-import ecommobile from '../assets/ecommercemobile.png'
 import geminipc from '../assets/geminipc.png'
-import geminimobile from '../assets/geminiphone.png'
 import gradientpc from '../assets/gradientpc.png'
-import gradientmobile from '../assets/gradientmobile.png'
 import ipod from '../assets/ipod.png'
 import poojapc from '../assets/poojapc.png'
-import poojamobile from '../assets/poojamobile.png'
-import snake from '../assets/snakepc.png'
-import stnpprscsrpc from '../assets/stnpprscsrpc.png'
-import stnpprscsrmobile from '../assets/stnpprscsrmobile.png'
-import tttpc from '../assets/tttpc.png'
-import tttmobile from '../assets/tttmobile.png'
 import todopc from '../assets/todopc.png'
-import todomobile from '../assets/todomobile.png'
 const icondata = [
   {
     id: 'react',

@@ -1,22 +1,10 @@
 /* General Body/Root Styles for Dark Theme */
-body {
-  font-family: 'Inter', sans-serif; /* Or your preferred font */
-  margin: 0;
-  padding: 20px;
-  background-color: #1a1a2e; /* Deep dark blue/purple background */
-  color: #e0e0e0; /* Light grey text for contrast */
-  line-height: 1.6;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  height: 100vh;
-  width: 100vw;
-}
+
 
 /* Container for all mapped projects */
 .mapped-project-list {
   display: flex;
-  
+  height: auto;
   flex-wrap: wrap; /* Allow cards to wrap to the next line */
   justify-content: center; /* Center cards horizontally */
   gap: 30px; /* Space between cards */

@@ -2,6 +2,9 @@ body{
     cursor: none;
     width: 100vw;
     overflow-x: hidden;
+    display: flex;
+  
+    justify-content: center;
 }
 .cursor-dot{
 width: 5px;

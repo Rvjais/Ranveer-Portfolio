@@ -13,8 +13,8 @@ import strengthvid from '../../assets/strength.webm'
 const About = () => {
   return (
     <>
-    
-    <div className="top">
+    <div className="container">
+       <div className="top">
       <div className="left">
        <h1>Nice to Meet You Im,</h1>
        <span>RANVEER JAISWAL</span>
@@ -33,8 +33,8 @@ const About = () => {
       <div className="boxes">
         <div className="box">
                 <div className="left">
-          <img className='specs' src={specs} alt="" />
-          <img className='specs' src={syst} alt="" />
+          <img className='specs bottom-pic' src={specs} alt="" />
+          <img className='specs bottom-pic' src={syst} alt="" />
         </div>
         <div className="right">
        <h2>System Specs</h2>
@@ -57,14 +57,14 @@ const About = () => {
                   <p>not from degree but by skills</p>
                </div>
                <div className="right">
-                <img className='kip' src={kip} alt="" />
-                <img className='kip' src={kip2} alt="" />
+                <img className='kip bottom-pic' src={kip} alt="" />
+                <img className='kip bottom-pic' src={kip2} alt="" />
                </div>
         </div>
         <div className="box">
           <div className="left">
-<img src={strength} alt="" />
-<img src={strength2} alt="" />
+<img className='bottom-pic' src={strength} alt="" />
+<img className='bottom-pic' src={strength2} alt="" />
           </div>
           <div className="right">
             <h3>Hobbies and Activities</h3>
@@ -73,6 +73,7 @@ const About = () => {
              <p>and my personal favoriet playing Flute</p>
           </div>
 
+        </div>
         </div>
         <div className="gallery">
 
@@ -109,11 +110,10 @@ const About = () => {
     <p>Short Reel 5</p>
   </div>
   </div>
-        </div>
-
-      </div>
-        
+      </div>        
     </div>
+    </div>
+   
 
 
     </>

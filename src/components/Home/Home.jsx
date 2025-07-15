@@ -41,10 +41,11 @@ const Home = () => {
         <span className='h1'> Connect</span>
     </h1>
     <div className="socialcontainer">
-<FaInstagram className='socialicon instaicon' />
-< FaGithub className='socialicon githubicon' />
-<BsWhatsapp className='socialicon whatsappicon' />
-<FaLinkedin className='socialicon linkedinicon' />
+      <a href="https://www.instagram.com/ran_veerjaiswal/?hl=en"><FaInstagram className='socialicon instaicon' /></a>
+<a href="https://github.com/Rvjais">< FaGithub className='socialicon githubicon' /></a>
+<a href="https://wa.me/918004505051?text=Hello%20there%2C%20I%20have%20a%20question."><BsWhatsapp className='socialicon whatsappicon' /></a>
+<a href="https://www.linkedin.com/in/ranveer-jaiswal-966289238/"><FaLinkedin className='socialicon linkedinicon' /></a>
+
     </div>
 
 </div>
@@ -90,7 +91,12 @@ const Home = () => {
         <a href="https://github.com/Rvjais?tab=repositories"><img className='gitimg' src={github} alt="" /></a>
         <p>click on the image to see my github</p>
     </div>
-    
+    <div className="bottom">
+      <div className="hire">
+      <span className='dm' >Want to hire me?</span>
+      <br />
+      <a href=""> <span className='dm2' >Contact Here</span></a>
+    </div>
     <div className="projects">
 
     <div className="project">
@@ -128,6 +134,14 @@ const Home = () => {
         <a href="">Visit Live site</a>
     </div>
     </div>
+    <div className="hire">
+      <span className='dm' >Want to make Projects?</span>
+      <br />
+      <a href=""> <span className='dm2' >Contact Here</span></a>
+    </div>
+
+    </div>
+    
 
 </section>
      
