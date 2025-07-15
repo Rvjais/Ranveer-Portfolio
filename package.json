@@ -9,9 +9,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-     "predeploy": "npm run build",  "predeploy": "npm run build", // This script runs 'build' before 'deploy'
-    "deploy": "gh-pages -d build" // This script pushes the 'build' folder to gh-pages branch
+     "predeploy": "npm run build",  
     "deploy": "gh-pages -d build" 
+   
   },
   "dependencies": {
     "react": "^19.1.0",
