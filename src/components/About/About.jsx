@@ -72,7 +72,6 @@ const About = () => {
             <p>Dancing,Gym,Coding,Singing,Guitar,Acrobatics </p>
              <p>and my personal favoriet playing Flute</p>
           </div>
-
         </div>
         </div>
         <div className="gallery">
