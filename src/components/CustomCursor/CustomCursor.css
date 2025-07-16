@@ -1,0 +1,35 @@
+/* src/components/CustomCursor.css */
+
+/* Hide the default cursor for the entire body */
+body {
+    cursor: none;
+    /* Ensure body takes full height and prevents scrollbars if custom cursor moves out */
+    height: 100vh;
+    
+}
+
+.cursor-dot,
+.cursor-outline {
+    position: fixed; /* Fixed position relative to the viewport */
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Allow clicks to pass through */
+    transform: translate(-50%, -50%); /* Center the cursor visually */
+    z-index: 9999; /* Ensure it's on top */
+    will-change: transform; /* Hint for browser optimization */
+}
+
+.cursor-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #fff; /* White dot */
+    border-radius: 50%;
+}
+
+.cursor-outline {
+    width: 40px;
+    height: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.5); /* Semi-transparent white outline */
+    border-radius: 50%;
+    /* Remove transition here if you're using Web Animations API in JS */
+}
