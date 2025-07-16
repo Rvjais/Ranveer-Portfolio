@@ -8,7 +8,6 @@ import { icondata,projectData, games } from '../../assets/images';
 import github from '../../assets/github.png';
 import ecommerce from '../../assets/ecommercepc.webm';
 import pooja from '../../assets/poojapc.webm';
-import todo from '../../assets/todo.webm';
 import gradient from'../../assets/gradient.webm'
 import snake from '../../assets/snake.webm';
 import '../Home/Home.css'
@@ -133,6 +132,18 @@ const Home = () => {
         </div>
         <a href="">Visit Live site</a>
     </div>
+    <div className="project">
+        <div className="player">
+             <video loading="lazy" width="150" height="310" controls>
+        <source src={gradient}  />
+       
+        Your browser does not support the video tag.
+      </video>
+      
+        </div>
+        <a href="">Visit Live site</a>
+    </div>
+    
     </div>
     <div className="hire">
       <span className='dm' >Want to make Projects?</span>

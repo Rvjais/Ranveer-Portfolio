@@ -35,9 +35,9 @@ const Navbar = () => {
         </div>
         <div className="pages">
           {/* Keep your existing Link components for direct clicks */}
-          <Link to="/"> Home </Link>
-          <Link to="/about"> About </Link>
-          <Link to = "/project">Projects</Link>
+          <Link to="/Ranveer-Portfolio"> Home </Link>
+          <Link to="/Ranveer-Portfolio/about"> About </Link>
+          <Link to = "/Ranveer-Portfolio/project">Projects</Link>
           {/* Corrected Select for Navigation */}
           <select
             value={selectedNavOption} // Controlled component: binds select value to state
@@ -47,9 +47,9 @@ const Navbar = () => {
             {/* Placeholder option */}
             <option value="">Select a Page</option>
             {/* Each option's value attribute is the path to navigate to */}
-            <option value="/">Home</option>
-            <option value="/about">About</option>
-            <option value="/contacts">Contacts</option>
+            <option value="/Ranveer-Portfolio">Home</option>
+            <option value="/Ranveer-Portfolio/project">About</option>
+            <option value="/Ranveer-Portfolio/contact">Contacts</option>
           </select>
         </div>
       </div>
