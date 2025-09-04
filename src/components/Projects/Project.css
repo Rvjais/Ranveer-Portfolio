@@ -2,9 +2,17 @@
 
 
 /* Container for all mapped projects */
+.container{
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 .mapped-project-list {
   display: flex;
   height: auto;
+  align-items: center;
   flex-wrap: wrap; /* Allow cards to wrap to the next line */
   justify-content: center; /* Center cards horizontally */
   gap: 30px; /* Space between cards */

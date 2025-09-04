@@ -4,7 +4,6 @@ import usr from "../../assets/user_icon.png";
 import specs from "../../assets/specs.png";
 import syst from "../../assets/syst.png";
 import kip from "../../assets/kip.png";
-import kip2 from "../../assets/kip2.png";
 import strength from "../../assets/strength.png";
 import strength2 from "../../assets/strength2.png";
 import dance from "../../assets/dance.webm";
@@ -63,7 +62,6 @@ const About = () => {
               </div>
               <div className="right">
                 <img className="kip bottom-pic" src={kip} alt="" />
-                <img className="kip bottom-pic" src={kip2} alt="" />
               </div>
             </div>
             <div className="box">
@@ -86,19 +84,16 @@ const About = () => {
                 <div className="video-wrapper">
                   <video src={dance} controls muted loop playsInline></video>
                 </div>
-                <p>Reel Title 1</p>
               </div>
               <div className="reel-item">
                 <div className="video-wrapper">
                   <video src={dance2} controls muted loop playsInline></video>
                 </div>
-                <p>Reel Title 2 - A bit longer description.</p>
               </div>
               <div className="reel-item">
                 <div className="video-wrapper">
                   <video src={strength} controls muted loop playsInline></video>
                 </div>
-                <p>Reel Title 3</p>
               </div>
               <div className="reel-item">
                 <div className="video-wrapper">
@@ -110,7 +105,6 @@ const About = () => {
                     playsInline
                   ></video>
                 </div>
-                <p>Another Reel with a much longer title and description.</p>
               </div>
               <div className="reel-item">
                 <div className="video-wrapper">
@@ -122,7 +116,6 @@ const About = () => {
                     playsInline
                   ></video>
                 </div>
-                <p>Short Reel 5</p>
               </div>
             </div>
           </div>

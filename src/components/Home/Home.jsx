@@ -52,7 +52,6 @@ const Home = () => {
 
 <section>
      <div className="heading">
-        
         <h1>
             <span className='h1' >//</span>
        My
@@ -82,7 +81,8 @@ const Home = () => {
     <br />
     <span className="second"> // Latest Projects I have done</span>
     <br />
-<Link to='/project'>  <span className='browseprojects'><h1>Browse all Projects -{'>'}</h1></span> </Link> 
+<Link to='/Ranveer-Portfolio/project
+'>  <span className='browseprojects'><h1>Browse all Projects -{'>'}</h1></span> </Link> 
     
    </div>
 
@@ -155,8 +155,6 @@ const Home = () => {
     
 
 </section>
-     
-
     </>
   )
 }

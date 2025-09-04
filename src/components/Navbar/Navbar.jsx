@@ -48,8 +48,8 @@ const Navbar = () => {
             <option value="">Select a Page</option>
             {/* Each option's value attribute is the path to navigate to */}
             <option value="/Ranveer-Portfolio">Home</option>
-            <option value="/Ranveer-Portfolio/project">About</option>
-            <option value="/Ranveer-Portfolio/contact">Contacts</option>
+            <option value="/Ranveer-Portfolio/about">About</option>
+            <option value="/Ranveer-Portfolio/project">Projects</option>
           </select>
         </div>
       </div>
