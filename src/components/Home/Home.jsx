@@ -32,7 +32,7 @@ const Home = () => {
 <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Doloremque ex, ut eius dicta at iure sapiente temporibus quae. Labore hic dolor quo, quod quidem porro quaerat dolores repellat? Officiis, et?</p>
     </div>
     <div className="links">
-        <Link to='/about' >Learn More -{'>'} </Link>
+        <Link to='/Ranveer-Portfolio/about' >Learn More -{'>'} </Link>
     </div>
 <div className="socials">
       <h1>
@@ -50,7 +50,7 @@ const Home = () => {
 </div>
 </div>
 
-<section>
+<section className='skills'>
      <div className="heading">
         <h1>
             <span className='h1' >//</span>

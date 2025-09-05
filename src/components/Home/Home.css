@@ -307,3 +307,92 @@ h1 span {
 }
 
 
+/* Responsive adjustments for very small screens */
+@media (max-width: 768px) {
+  .img img{
+    height: 100vh;
+    object-fit: cover;
+    top: 10px;
+    right: 10vw;
+    overflow-x: hidden;
+  }
+  .text{
+    position: relative;
+    left: 20vw;
+    top: 30vh;
+    width: 300px;
+    
+  }
+  .dmtext{
+    position: absolute;
+    top: 80vh;
+    left: 10vw;
+    width: 50vw;  
+
+}
+
+  .mapped-icon-list {
+    width: 90vw;
+    left: 5vw;
+    padding: 20px;
+    gap: 15px; /* Reduce gap for smaller screens */
+  }
+  .mapped-icon-card {
+    width: 150px; /* Reduce card size for smaller screens */
+    height: 150px;
+    padding: 15px;
+  }
+  .dm{
+    font-size: 20px;
+  }
+  .dm2{
+    font-size: 20px;
+   color: cadetblue;  
+   text-decoration: underline;
+ text-underline-offset: 5px;
+  text-decoration-thickness: 2px;
+    }
+    .portfolio{
+      flex-direction: column;
+      align-items: center;
+      height: auto;
+      margin-top: 300px;
+    }
+    .imgcontainer{
+      height:300px ;
+      width: 90vw;
+      margin-bottom: 20px;
+      
+    }
+    .gitimg{
+      height: 200px;
+      width: auto;
+      border-radius: 20px;
+    }
+    .second{
+      font-size: 30px;
+      color: aquamarine;  
+      text-align: center;
+    }
+    .browseprojects h1{
+      text-align: center;
+    }
+    .browseprojects h1:hover{
+      scale: 1.1;
+      transition: 0.4s ease-in-out;
+  }
+  .projects{
+    width: 90vw;
+    left: 5vw;
+    padding: 10px;
+    gap: 15px; /* Reduce gap for smaller screens */
+    margin-top: 50px;
+  }
+  .project {
+    flex-basis: 100%; /*Base width for flex items, allowing responsiveness*/
+    max-width: 100%; /* 1 column */
+  }
+  .player {
+    max-width: 100%; /* Limit player width to fit card */
+  }
+}

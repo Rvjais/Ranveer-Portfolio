@@ -99,3 +99,50 @@
           }
 
         
+
+          /* Responsive Styles */
+          @media (max-width: 768px) {
+            body{
+              width: 100%;
+            }
+            .navbar {
+              flex-direction: column;
+              align-items: flex-start;
+              padding: 1rem;
+              width: 90%;
+              position: fixed;
+              top: 10px;
+              z-index: 1000;
+            }
+
+
+            .pages {
+              flex-direction: column;
+              width: 100%;
+              display: none; /* Hidden by default on mobile */
+              margin-top: 1rem;
+            }
+            .pages a {
+              width: 100%;
+              padding: 0.75rem 1rem;
+              border-radius: 10px;
+            }
+            .pages select {
+              width: 100%;
+              padding: 0.75rem 1rem;
+              border-radius: 10px;
+            }   
+            .pages.active {
+              display: flex; /* Show menu when active */
+            }
+            .menu-toggle {
+              display: block; /* Show menu button on mobile */
+              position: absolute;
+              top: 1rem;
+              right: 1rem;
+              z-index: 1001; /* Ensure it's above other elements */
+              background: none;
+              border: none;
+              color: #2c3e50;
+              cursor: pointer;}
+            }
