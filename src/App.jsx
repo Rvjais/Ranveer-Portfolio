@@ -12,9 +12,9 @@ const App = () => {
     <Navbar/>
      <Routes>
         {/* A <Route> for each path */}
-        <Route path ="/Ranveer-Portfolio" element={<Home />} />
-        <Route path ="/Ranveer-Portfolio/about" element={<About />} />
-        <Route path = "/Ranveer-Portfolio/project" element={<Project/>} /> 
+        <Route path ="/" element={<Home />} />
+        <Route path ="/about" element={<About />} />
+        <Route path = "/project" element={<Project/>} /> 
       </Routes>
         <CustomCursor />
     </>

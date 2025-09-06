@@ -41,18 +41,18 @@ const Navbar = () => {
         </button>
         {/* Navigation links and dropdown */}
         <div className={`pages${menuOpen ? " active" : ""}`}>
-          <Link to="/Ranveer-Portfolio"> Home </Link>
-          <Link to="/Ranveer-Portfolio/about"> About </Link>
-          <Link to="/Ranveer-Portfolio/project">Projects</Link>
+          <Link to="/"> Home </Link>
+          <Link to="/about"> About </Link>
+          <Link to="/project">Projects</Link>
           <select
             value={selectedNavOption}
             onChange={handleNavigationChange}
             id="page-nav-dropdown"
           >
             <option value="">Select a Page</option>
-            <option value="/Ranveer-Portfolio">Home</option>
-            <option value="/Ranveer-Portfolio/about">About</option>
-            <option value="/Ranveer-Portfolio/project">Projects</option>
+            <option value="/">Home</option>
+            <option value="/about">About</option>
+            <option value="/project">Projects</option>
           </select>
         </div>
       </div>

@@ -33,7 +33,7 @@ const Home = () => {
 <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Doloremque ex, ut eius dicta at iure sapiente temporibus quae. Labore hic dolor quo, quod quidem porro quaerat dolores repellat? Officiis, et?</p>
     </div>
     <div className="links">
-        <Link to='/Ranveer-Portfolio/about' >Learn More -{'>'} </Link>
+        <Link to='/about' >Learn More -{'>'} </Link>
     </div>
 <div className="socials">
       <h1>
@@ -93,9 +93,8 @@ const Home = () => {
     <br />
     <span className="second"> // Latest Projects I have done</span>
     <br />
-<Link to='/Ranveer-Portfolio/project
-'>  <span className='browseprojects'><h1>Browse all Projects -{'>'}</h1></span> </Link> 
-    
+<Link to='/project'>  <span className='browseprojects'><h1>Browse all Projects -{'>'}</h1></span> </Link>
+
    </div>
 
     <div className="imgcontainer">
