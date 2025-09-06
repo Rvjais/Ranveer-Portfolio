@@ -11,6 +11,7 @@ import pooja from '../../assets/poojapc.webm';
 import gradient from'../../assets/gradient.webm'
 import snake from '../../assets/snake.webm';
 import '../Home/Home.css'
+import Footer from '../Footer/Footer.jsx';
 
 const Home = () => {
 
@@ -69,11 +70,22 @@ const Home = () => {
         </div>
       ))}
     </div>
-<div className="dmtext">
+
+
+    
+
+</section>
+<div className="contacts">
+ <div className="dmtext">
  <span className='dm' >Want to Collabe and build something Exciting?</span>
              <span className='dm2'>Contact me</span>
 </div>
-</section>
+    <div className="hire">
+      <span className='dm' >Want to hire me?</span>
+      <br />
+      <a href=""> <span className='dm2' >Contact Here</span></a>
+    </div>
+    </div>
 
 <section className='portfolio'>
    <div className="textportfolio">
@@ -91,11 +103,7 @@ const Home = () => {
         <p>click on the image to see my github</p>
     </div>
     <div className="bottom">
-      <div className="hire">
-      <span className='dm' >Want to hire me?</span>
-      <br />
-      <a href=""> <span className='dm2' >Contact Here</span></a>
-    </div>
+  
     <div className="projects">
 
     <div className="project">
@@ -145,16 +153,12 @@ const Home = () => {
     </div>
     
     </div>
-    <div className="hire">
-      <span className='dm' >Want to make Projects?</span>
-      <br />
-      <a href=""> <span className='dm2' >Contact Here</span></a>
-    </div>
-
+  
     </div>
     
-
+<Footer />
 </section>
+
     </>
   )
 }

@@ -45,7 +45,7 @@ const icondata = [
   {
     id: 'tailwindcss',
     component: RiTailwindCssLine,
-    label: 'Tailwind CSS',
+    label: 'Tailwind',
     description: 'A utility-first CSS framework for rapidly building custom designs.',
     color: '#38B2AC',
     size: '3em'

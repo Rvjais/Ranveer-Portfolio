@@ -104,12 +104,7 @@ h1 span {
   margin-top: 5px;
   line-height: 1.4;
 }
-.dmtext{
-    position: absolute;
-    top: 60vh;
-    left: 10vw;
-    width: 20vw;
-}
+
 .dm{
     font-size: 30px;
 }
@@ -305,10 +300,81 @@ h1 span {
   align-items: center;
   
 }
+/* ...existing code... */
+
+.contacts {
+
+  position: absolute;
+  top: 90vh;
+  margin: 60px auto 0 auto;
+  padding: 2rem 2.5rem;
+  background: rgba(22, 27, 34, 0.7); /* Glassy dark background */
+  border-radius: 18px;
+  box-shadow: 0 6px 32px rgba(88, 166, 255, 0.08), 0 1.5px 8px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 600px;
+  gap: 2rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(88, 166, 255, 0.15);
+  position: relative;
+  z-index: 2;
+}
+
+.dmtext, .hire {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.dm {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #c9d1d9;
+  letter-spacing: 0.5px;
+}
+
+.dm2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #58a6ff;
+  margin-top: 0.2rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color 0.2s;
+}
+
+.dm2:hover {
+  color: #8b5cf6;
+}
+
+.hire a {
+  text-decoration: none;
+}
+
+@media (max-width: 700px) {
+  
+}
 
 
 /* Responsive adjustments for very small screens */
 @media (max-width: 768px) {
+  .contacts {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.2rem;
+    padding: 1.2rem 1rem;
+    max-width: 95vw;
+  }
+  .dm, .dm2 {
+    font-size: 1rem;
+  }
+  
   .img img{
     height: 100vh;
     object-fit: cover;
@@ -323,23 +389,16 @@ h1 span {
     width: 300px;
     
   }
-  .dmtext{
-    position: absolute;
-    top: 80vh;
-    left: 10vw;
-    width: 50vw;  
-
-}
 
   .mapped-icon-list {
-    width: 90vw;
+    width: 100vw;
     left: 5vw;
     padding: 20px;
     gap: 15px; /* Reduce gap for smaller screens */
   }
   .mapped-icon-card {
-    width: 150px; /* Reduce card size for smaller screens */
-    height: 150px;
+    width: 190px; /* Reduce card size for smaller screens */
+    height: 210px;
     padding: 15px;
   }
   .dm{
@@ -394,5 +453,10 @@ h1 span {
   }
   .player {
     max-width: 100%; /* Limit player width to fit card */
+  }
+  .heading{
+    position: relative;
+    left: 0px;
+    text-align: center;
   }
 }

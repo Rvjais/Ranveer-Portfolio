@@ -36,8 +36,8 @@ const About = () => {
           <div className="boxes">
             <div className="box">
               <div className="left">
-                <img className="specs bottom-pic" src={specs} alt="" />
-                <img className="specs bottom-pic" src={syst} alt="" />
+                <img className="aboutIMg" src={specs} alt="" />
+                <img className="aboutIMg" src={syst} alt="" />
               </div>
               <div className="right">
                 <h2>System Specs</h2>
@@ -61,13 +61,13 @@ const About = () => {
                 <p>not from degree but by skills</p>
               </div>
               <div className="right">
-                <img className="kip bottom-pic" src={kip} alt="" />
+                <img className="aboutIMg" src={kip} alt="" />
               </div>
             </div>
             <div className="box">
               <div className="left">
-                <img className="bottom-pic" src={strength} alt="" />
-                <img className="bottom-pic" src={strength2} alt="" />
+                <img className="aboutIMg" src={strength} alt="" />
+                <img className="aboutIMg" src={strength2} alt="" />
               </div>
               <div className="right">
                 <h3>Hobbies and Activities</h3>

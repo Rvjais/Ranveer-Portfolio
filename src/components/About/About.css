@@ -4,7 +4,8 @@ body {
   color: #c9d1d9; /* Light text color */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.6;
-  overflow-x: hidden; /* Prevents horizontal scrollbar from animations */
+  width: 100vw;
+  
 }
 
 .container {
@@ -155,21 +156,24 @@ body {
 .gallery {
   padding: 2rem 0;
   text-align: center;
+  width:100vw;
 }
 
 .gallery h3 {
   font-size: 2rem;
   color: #58a6ff;
   margin-bottom: 2rem;
+  
 }
 
 .reels-container {
   display: flex;
   gap: 1rem;
-  overflow-x: auto; /* Enables horizontal scrolling */
+  overflow-x: scroll; /* Enables horizontal scrolling */
   padding-bottom: 1rem;
-  scroll-snap-type: x mandatory;
+  
   -webkit-overflow-scrolling: touch; /* Smoother scrolling on iOS */
+  
 }
 
 .reel-item {
@@ -200,6 +204,13 @@ body {
   height: 100%;
   object-fit: cover;
   border-radius: 12px;
+}
+
+.aboutIMg{
+  width: 200px;
+  height: auto;
+  border-radius: 12px;
+  transition: transform 0.5s ease;
 }
 
 /* Keyframe Animations */
