@@ -17,6 +17,8 @@ import gradientpc from '../assets/gradientpc.png'
 import ipod from '../assets/ipod.png'
 import poojapc from '../assets/poojapc.png'
 import todopc from '../assets/todopc.png'
+import snake from '../assets/snake.webm'
+import ttt from '../assets/tttpc.png'
 const icondata = [
   {
     id: 'react',
@@ -113,13 +115,13 @@ const projectData = [{
   src: geminipc,
   label: 'Gemini-Clone',
   description: 'A Clone of google gemini made with React.js and Gemini API ',
-  link: 'https://rvjais.github.io/Gemini-clone'
+  link: 'https://gemini-clone-xi-lyart.vercel.app/'
 },{
   id: 'ecommerce' ,
   src: ecompc,
   label: 'E-Commerce',
   description: 'An E-Commerce Site made by React,Tailwind and react-router' ,
-  link: 'https://rvjais.github.io/Ecommerce'
+  link: 'https://rvjais.github.io/Ecommerce/'
 },{
   id: 'pooja' ,
   src: poojapc,
@@ -131,7 +133,7 @@ const projectData = [{
   src: ipod,
   label: 'I-Pod Player',
   description: 'A Frontend Design of I-Pod Themed Music Player ',
-  link: 'https://rvjais.github.io/I-pod-Player/'
+  link: ''
 },{
    id: 'todo' ,
   src: todopc,
@@ -157,19 +159,19 @@ const games = [{
   src: '',
   label: 'Stone-Paper-Scissors',
   description: 'An intractive game made from javascript logic and beutifull ui design with the help of CSS',
-  link: 'https://rvjais.github.io/Stone-paper-scissors/'
+  link: 'https://stone-paper-scissors-seven-delta.vercel.app/'
 },{
  id: 'snake' ,
-  src: '',
+  src: snake,
   label: 'Snake-Game',
   description: 'An intractive game made from javascript logic and beutifull ui design with the help of CSS',
-  link: 'https://rvjais.github.io/SnakeGame/'
+  link: 'https://snake-game-two-drab.vercel.app/'
 },{
   id: 'ttt' ,
-  src: '',
+  src: ttt,
   label: 'Tic-Tac-Toe',
   description: 'An intractive game made from javascript logic and beutifull ui design with the help of CSS',
-  link: 'https://rvjais.github.io/tic-tac-toe/'
+  link: 'https://tic-tac-toe-chi-five-58.vercel.app/'
 }];
 
 

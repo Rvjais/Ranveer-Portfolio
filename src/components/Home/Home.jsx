@@ -114,7 +114,7 @@ const Home = () => {
       </video>
 
         </div>
-        <a href="">Visit Live site</a>
+        <a href="https://rvjais.github.io/Ecommerce/">Visit Live site</a>
     </div>
     <div className="project">
         <div className="player">
@@ -125,7 +125,7 @@ const Home = () => {
       </video>
       
         </div>
-        <a href="">Visit Live site</a>
+        <a href="https://snake-game-two-drab.vercel.app/">Visit Live site</a>
     </div>
 
      <div className="project">
@@ -137,7 +137,7 @@ const Home = () => {
       </video>
       
         </div>
-        <a href="">Visit Live site</a>
+        <a href="https://rvjais.github.io/PoojaTech/">Visit Live site</a>
     </div>
     <div className="project">
         <div className="player">
@@ -148,7 +148,7 @@ const Home = () => {
       </video>
       
         </div>
-        <a href="">Visit Live site</a>
+        <a href="https://rvjais.github.io/Gradient-generator/">Visit Live site</a>
     </div>
     
     </div>
