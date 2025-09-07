@@ -78,12 +78,12 @@ const Home = () => {
 <div className="contacts">
  <div className="dmtext">
  <span className='dm' >Want to Collabe and build something Exciting?</span>
-             <span className='dm2'>Contact me</span>
+             <span className='dm2'><a href="tel:+919648165493">Contact me</a> </span>
 </div>
     <div className="hire">
       <span className='dm' >Want to hire me?</span>
       <br />
-      <a href=""> <span className='dm2' >Contact Here</span></a>
+      <span className='dm2' > <a href="tel:+919648165493">Contact Here</a></span>
     </div>
     </div>
 
