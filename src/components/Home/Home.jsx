@@ -43,7 +43,7 @@ const Home = () => {
     <div className="socialcontainer">
       <a href="https://www.instagram.com/ran_veerjaiswal/?hl=en"><FaInstagram className='socialicon instaicon' /></a>
 <a href="https://github.com/Rvjais">< FaGithub className='socialicon githubicon' /></a>
-<a href="https://wa.me/918004505051?text=Hello%20there%2C%20I%20have%20a%20question."><BsWhatsapp className='socialicon whatsappicon' /></a>
+<a href="https://wa.me/919648165493?text=Hello%20there%2C%20I%20have%20a%20question."><BsWhatsapp className='socialicon whatsappicon' /></a>
 <a href="https://www.linkedin.com/in/ranveer-jaiswal-966289238/"><FaLinkedin className='socialicon linkedinicon' /></a>
 
     </div>
