@@ -8,21 +8,10 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [selectedNavOption, setSelectedNavOption] = useState(location.pathname);
+ 
   const [menuOpen, setMenuOpen] = useState(false); // Track mobile menu state
 
-  useEffect(() => {
-    setSelectedNavOption(location.pathname);
-    setMenuOpen(false); // Close menu on navigation
-  }, [location.pathname]);
-
-  const handleNavigationChange = (event) => {
-    const path = event.target.value;
-    setSelectedNavOption(path);
-    if (path) {
-      navigate(path);
-    }
-  };
+  
 
   const handleMenuToggle = () => {
     setMenuOpen((prev) => !prev);
@@ -44,16 +33,7 @@ const Navbar = () => {
           <Link to="/"> Home </Link>
           <Link to="/about"> About </Link>
           <Link to="/project">Projects</Link>
-          <select
-            value={selectedNavOption}
-            onChange={handleNavigationChange}
-            id="page-nav-dropdown"
-          >
-            <option value="">Select a Page</option>
-            <option value="/">Home</option>
-            <option value="/about">About</option>
-            <option value="/project">Projects</option>
-          </select>
+         
         </div>
       </div>
     </>

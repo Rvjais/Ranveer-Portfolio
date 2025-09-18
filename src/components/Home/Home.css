@@ -56,8 +56,8 @@ h1 span {
 
 /* Skillcard */
 .mapped-icon-list {
-      width: 80vw;
-      margin: 0 auto;
+  width: 80vw;
+  margin: 10px 10px 10px 10px;
   display: flex;
   flex-direction: row;
   gap: 20px; /* Space between the cards */
@@ -139,9 +139,10 @@ h1 span {
     flex-wrap: wrap;
     justify-content: space-around;
     position: relative;
-    margin-top: 200px;
+    /* margin-top: 200px; */
     
 }
+
 .imgcontainer:hover{
     scale: 1.1;
     transition: 0.5s ease-in-out;
@@ -307,7 +308,7 @@ h1 span {
 
   position: absolute;
   top: 90vh;
-  margin: 60px auto 0 auto;
+  margin: 0px auto 0 auto;
   padding: 2rem 2.5rem;
   background: rgba(22, 27, 34, 0.7); /* Glassy dark background */
   border-radius: 18px;
@@ -420,7 +421,8 @@ h1 span {
       flex-direction: column;
       align-items: center;
       height: auto;
-      margin-top: 300px;
+      /* margin-top: 300px; */
+      margin: 0px;
     }
     .imgcontainer{
       height:300px ;
@@ -464,4 +466,8 @@ h1 span {
     left: 0px;
     text-align: center;
   }
+}
+
+::-webkit-scrollbar {
+  width: 0px;
 }

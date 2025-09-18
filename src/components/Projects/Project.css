@@ -139,3 +139,29 @@ body{
 img{
     height: 200px;
 }
+
+/* Video media styling (portrait-safe, no cropping) */
+.project-media {
+  width: 100%;
+  max-width: 300px;
+  height: 200px; /* keep consistent card height */
+  object-fit: contain; /* avoid cropping portrait videos */
+  background: #000; /* letterbox bars */
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: block;
+  transition: transform 0.3s ease-out;
+}
+
+.mapped-project-card:hover .project-media {
+  transform: scale(1.05);
+}
+
+/* Ensure fullscreen preserves entire video without cropping */
+.project-media:fullscreen,
+.project-media:-webkit-full-screen,
+.project-media:-moz-full-screen,
+.project-media:-ms-fullscreen {
+  object-fit: contain;
+  background: #000;
+}

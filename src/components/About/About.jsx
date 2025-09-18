@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import "../About/About.css";
 import usr from "../../assets/user_icon.png";
 import specs from "../../assets/specs.png";
@@ -10,6 +10,68 @@ import dance from "../../assets/dance.webm";
 import dance2 from "../../assets/dance2.webm";
 import strengthvid from "../../assets/strength.webm";
 const About = () => {
+  const galleryRef = useRef(null);
+
+  useEffect(() => {
+    const container = galleryRef.current;
+    if (!container) return;
+
+    const videos = Array.from(container.querySelectorAll("video"));
+
+    const pauseOthers = (current) => {
+      videos.forEach((v) => {
+        if (v !== current) v.pause();
+      });
+    };
+
+    const enterFullscreen = async (video) => {
+      try {
+        if (video.requestFullscreen) {
+          await video.requestFullscreen();
+        } else if (video.webkitEnterFullscreen) {
+          video.webkitEnterFullscreen(); // iOS Safari (common)
+        } else if (video.webkitEnterFullScreen) {
+          video.webkitEnterFullScreen(); // Older iOS Safari naming
+        } else if (video.webkitRequestFullscreen) {
+          video.webkitRequestFullscreen();
+        } else if (video.webkitRequestFullScreen) {
+          video.webkitRequestFullScreen();
+        } else if (video.mozRequestFullScreen) {
+          video.mozRequestFullScreen();
+        } else if (video.msRequestFullscreen) {
+          video.msRequestFullscreen();
+        }
+      } catch (err) {
+        // Ignore if browser blocks programmatic fullscreen due to gesture policy
+      }
+    };
+
+    const onPlay = (e) => {
+      const current = e.currentTarget;
+      pauseOthers(current);
+      // Attempt fullscreen when playback starts
+      enterFullscreen(current);
+    };
+
+    const onClick = (e) => {
+      const current = e.currentTarget;
+      // Also try fullscreen on direct clicks (more reliably considered a user gesture)
+      enterFullscreen(current);
+    };
+
+    videos.forEach((v) => {
+      v.addEventListener("play", onPlay);
+      v.addEventListener("click", onClick);
+    });
+
+    return () => {
+      videos.forEach((v) => {
+        v.removeEventListener("play", onPlay);
+        v.removeEventListener("click", onClick);
+      });
+    };
+  }, []);
+
   return (
     <>
       <div className="container">
@@ -27,7 +89,7 @@ const About = () => {
             </div>
           </div>
           <div className="right">
-            <img className="profilepic" src={usr} alt="" />
+            <img className="profilepic" src={usr} alt="Profile photo" loading="lazy" decoding="async" />
           </div>
         </div>
         {/* bottom part  */}
@@ -36,8 +98,8 @@ const About = () => {
           <div className="boxes">
             <div className="box">
               <div className="left">
-                <img className="aboutIMg" src={specs} alt="" />
-                <img className="aboutIMg" src={syst} alt="" />
+                <img className="aboutIMg" src={specs} alt="Specs" loading="lazy" decoding="async" />
+                <img className="aboutIMg" src={syst} alt="System" loading="lazy" decoding="async" />
               </div>
               <div className="right">
                 <h2>System Specs</h2>
@@ -61,13 +123,13 @@ const About = () => {
                 <p>not from degree but by skills</p>
               </div>
               <div className="right">
-                <img className="aboutIMg" src={kip} alt="" />
+                <img className="aboutIMg" src={kip} alt="Education" loading="lazy" decoding="async" />
               </div>
             </div>
             <div className="box">
               <div className="left">
-                <img className="aboutIMg" src={strength} alt="" />
-                <img className="aboutIMg" src={strength2} alt="" />
+                <img className="aboutIMg" src={strength} alt="Hobby 1" loading="lazy" decoding="async" />
+                <img className="aboutIMg" src={strength2} alt="Hobby 2" loading="lazy" decoding="async" />
               </div>
               <div className="right">
                 <h3>Hobbies and Activities</h3>
@@ -77,22 +139,22 @@ const About = () => {
               </div>
             </div>
           </div>
-          <div className="gallery">
+          <div className="gallery" ref={galleryRef}>
             <h3>Video Gallery</h3>
             <div className="reels-container">
               <div className="reel-item">
                 <div className="video-wrapper">
-                  <video src={dance} controls muted loop playsInline></video>
+                  <video src={dance} controls muted loop playsInline preload="none"></video>
                 </div>
               </div>
               <div className="reel-item">
                 <div className="video-wrapper">
-                  <video src={dance2} controls muted loop playsInline></video>
+                  <video src={dance2} controls muted loop playsInline preload="none"></video>
                 </div>
               </div>
               <div className="reel-item">
                 <div className="video-wrapper">
-                  <video src={strength} controls muted loop playsInline></video>
+                  <video src={strength} controls muted loop playsInline preload="none"></video>
                 </div>
               </div>
               <div className="reel-item">
@@ -103,6 +165,7 @@ const About = () => {
                     muted
                     loop
                     playsInline
+                    preload="none"
                   ></video>
                 </div>
               </div>
@@ -114,6 +177,7 @@ const About = () => {
                     muted
                     loop
                     playsInline
+                    preload="none"
                   ></video>
                 </div>
               </div>

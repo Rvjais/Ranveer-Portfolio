@@ -20,7 +20,7 @@ const Home = () => {
   return (
     <>
     <div className="img">
-        <img src={profilepic} alt="" />
+        <img src={profilepic} alt="Profile photo" loading="lazy" decoding="async" />
     </div>
 <div className="text">
   <h1>
@@ -98,7 +98,7 @@ const Home = () => {
    </div>
 
     <div className="imgcontainer">
-        <a href="https://github.com/Rvjais?tab=repositories"><img className='gitimg' src={github} alt="" /></a>
+        <a href="https://github.com/Rvjais?tab=repositories"><img className='gitimg' src={github} alt="GitHub profile preview" loading="lazy" decoding="async" /></a>
         <p>click on the image to see my github</p>
     </div>
     <div className="bottom">
@@ -107,7 +107,7 @@ const Home = () => {
 
     <div className="project">
         <div className="player">
-             <video loading="lazy" width="640" height="360" controls>
+             <video loading="lazy" width="640" height="360" controls preload="none" playsInline>
         <source src={ecommerce}  />
        
         Your browser does not support the video tag.
@@ -118,7 +118,7 @@ const Home = () => {
     </div>
     <div className="project">
         <div className="player">
-             <video loading="lazy" className='video' width="640" height="360" controls>
+             <video loading="lazy" className='video' width="640" height="360" controls preload="none" playsInline>
         <source src={snake}  />
        
         Your browser does not support the video tag.
@@ -130,7 +130,7 @@ const Home = () => {
 
      <div className="project">
         <div className="player">
-             <video loading="lazy" width="150" height="310" controls>
+             <video loading="lazy" width="150" height="310" controls preload="none" playsInline>
         <source src={pooja}  />
        
         Your browser does not support the video tag.
@@ -141,7 +141,7 @@ const Home = () => {
     </div>
     <div className="project">
         <div className="player">
-             <video loading="lazy" width="150" height="310" controls>
+             <video loading="lazy" width="150" height="310" controls preload="none" playsInline>
         <source src={gradient}  />
        
         Your browser does not support the video tag.
