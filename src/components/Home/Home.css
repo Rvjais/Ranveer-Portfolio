@@ -1,6 +1,6 @@
 body{
     color: aliceblue;
-    
+    width: 100vw;
 }
 a{
   color: white;
@@ -367,7 +367,7 @@ h1 span {
 @media (max-width: 768px) {
   body{
     width: 100%;
-  overflow-x: hidden;
+    overflow-x: hidden;
   }
   .contacts {
     flex-direction: column;

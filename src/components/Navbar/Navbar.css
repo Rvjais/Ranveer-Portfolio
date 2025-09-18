@@ -8,19 +8,20 @@
           }
 
           .navbar {
-            width: 80vw;
+          
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1rem 2rem;
-            margin: 20px;
+            margin: 20px auto;
             border-radius: 15px;
             background: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
             backdrop-filter: blur(10px); /* Glassmorphism blur effect */
             -webkit-backdrop-filter: blur(10px); /* Safari support */
             border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle border */
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Soft shadow */
-            width: 95%;
+            width: 95vw;
+            max-width: 1200px; /* Consistent max width across pages */
             box-sizing: border-box;
             position: relative; /* For responsive menu positioning */
           }
@@ -112,6 +113,8 @@
               width: 90%;
               position: fixed;
               top: 10px;
+              left: 50%;
+              transform: translateX(-50%);
               z-index: 1000;
             }
 
