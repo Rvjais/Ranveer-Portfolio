@@ -17,7 +17,7 @@ const Project = () => {
                 className="project-media"
                 controls
                 playsInline
-                preload="none"
+                
                 width="300"
                 height="200"
               >
@@ -55,7 +55,7 @@ const Project = () => {
                 className="project-media"
                 controls
                 playsInline
-                preload="none"
+                
                 width="300"
                 height="200"
               >

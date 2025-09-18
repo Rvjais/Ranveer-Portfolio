@@ -107,7 +107,7 @@ const Home = () => {
 
     <div className="project">
         <div className="player">
-             <video loading="lazy" width="640" height="360" controls preload="none" playsInline>
+             <video loading="lazy" width="640" height="360" controls  playsInline>
         <source src={ecommerce}  />
        
         Your browser does not support the video tag.
@@ -118,7 +118,7 @@ const Home = () => {
     </div>
     <div className="project">
         <div className="player">
-             <video loading="lazy" className='video' width="640" height="360" controls preload="none" playsInline>
+             <video loading="lazy" className='video' width="640" height="360" controls  playsInline>
         <source src={snake}  />
        
         Your browser does not support the video tag.
@@ -130,7 +130,7 @@ const Home = () => {
 
      <div className="project">
         <div className="player">
-             <video loading="lazy" width="150" height="310" controls preload="none" playsInline>
+             <video loading="lazy" width="150" height="310" controls  playsInline>
         <source src={pooja}  />
        
         Your browser does not support the video tag.
@@ -141,7 +141,7 @@ const Home = () => {
     </div>
     <div className="project">
         <div className="player">
-             <video loading="lazy" width="150" height="310" controls preload="none" playsInline>
+             <video loading="lazy" width="150" height="310" controls  playsInline>
         <source src={gradient}  />
        
         Your browser does not support the video tag.

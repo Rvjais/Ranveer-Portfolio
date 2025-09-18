@@ -144,17 +144,17 @@ const About = () => {
             <div className="reels-container">
               <div className="reel-item">
                 <div className="video-wrapper">
-                  <video src={dance} controls muted loop playsInline preload="none"></video>
+                  <video src={dance} controls muted loop playsInline ></video>
                 </div>
               </div>
               <div className="reel-item">
                 <div className="video-wrapper">
-                  <video src={dance2} controls muted loop playsInline preload="none"></video>
+                  <video src={dance2} controls muted loop playsInline ></video>
                 </div>
               </div>
               <div className="reel-item">
                 <div className="video-wrapper">
-                  <video src={strength} controls muted loop playsInline preload="none"></video>
+                  <video src={strength} controls muted loop playsInline ></video>
                 </div>
               </div>
               <div className="reel-item">
@@ -165,7 +165,7 @@ const About = () => {
                     muted
                     loop
                     playsInline
-                    preload="none"
+                    
                   ></video>
                 </div>
               </div>
@@ -177,7 +177,7 @@ const About = () => {
                     muted
                     loop
                     playsInline
-                    preload="none"
+                    
                   ></video>
                 </div>
               </div>
