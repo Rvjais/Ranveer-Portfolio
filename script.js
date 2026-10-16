@@ -560,6 +560,12 @@ const searchIndex = [
     { title: "Branding Pioneers Experience", category: "Work", desc: "Full Stack App/Web Developer & Intern (Gurgaon, India)", action: () => { openApp('about'); switchAboutTab('exp', null); }, icon: "fas fa-briefcase text-blue-500" },
     { title: "Resume (PDF)", category: "Document", desc: "Official resume of Ranveer Jaiswal (ranveer_jaiswal.pdf)", action: () => window.open('ranveer_jaiswal.pdf', '_blank'), icon: "fas fa-file-pdf text-red-500", badge: "PDF" },
     { title: "Krishnarpit Institute of Technology", category: "Education", desc: "Bachelor of Pharmacy (B. Pharm), 2021-2025, CGPA 7.0/10", action: () => { openApp('about'); switchAboutTab('edu', null); }, icon: "fas fa-graduation-cap text-indigo-400" },
+    { title: "Veer Music — Nothing OS App", category: "Project", desc: "Expo music client + yt-dlp proxy, vinyl + lyrics + offline", action: () => openReadmeModal('nothing-veer'), icon: "fas fa-music text-red-400", badge: "README" },
+    { title: "RANVEER H.U.D. Assistant", category: "Project", desc: "Tauri Rust Jarvis, voice + face + computer control", action: () => openReadmeModal('ranveer-echo'), icon: "fas fa-robot text-cyan-400", badge: "README" },
+    { title: "WebRip Scraper", category: "Project", desc: "BFS website to ZIP, Playwright + SSE progress", action: () => openReadmeModal('web-ripper'), icon: "fas fa-globe text-teal-400", badge: "README" },
+    { title: "SR Chess Academy 3D", category: "Project", desc: "Vite Three.js rebuild, 25 pages + shop + quiz", action: () => openReadmeModal('srchess'), icon: "fas fa-chess-knight text-amber-400", badge: "README" },
+    { title: "TextLens OCR Sheet", category: "Project", desc: "Image/PDF to text, PaddleOCR handwriting + invoice table", action: () => openReadmeModal('textlens'), icon: "fas fa-file-alt text-indigo-400", badge: "README" },
+    { title: "AICRMZ WhatsApp CRM", category: "Project", desc: "Baileys QR CRM, AI reply + campaigns + voice", action: () => openReadmeModal('aicrmz'), icon: "fab fa-whatsapp text-green-400", badge: "README" },
     { title: "GitHub Profile (Rvjais)", category: "Link", desc: "Explore open-source repositories and contributions on GitHub", action: () => window.open('https://github.com/Rvjais', '_blank'), icon: "fab fa-github text-white" },
     { title: "LinkedIn Profile", category: "Link", desc: "Connect professionally on LinkedIn", action: () => window.open('https://linkedin.com', '_blank'), icon: "fab fa-linkedin text-blue-500" }
 ];
@@ -663,7 +669,13 @@ const fileSystem = {
         "hr_buddy.txt": "> HR-Buddy (AI Onboarding System)\n  Live Demo: https://hr-buddy-beta.vercel.app/\n  Stack:     React, Node.js\n  Desc:      AI-driven employee onboarding quiz system with integrated anti-cheat mechanism for candidate pre-assessments.",
         "srchess.txt": "> SRChess (Interactive Chess Platform)\n  Live Demo: https://srchess.vercel.app/\n  Stack:     React, Tailwind CSS, Game Logic\n  Desc:      Responsive interactive online chess web application featuring custom board logic and real-time move validation.",
         "rain_crm.txt": "> Rain CRM (Jan 2023 - Oct 2023)\n  Stack: React, Node.js, Express, MongoDB\n  Desc:  Full-featured CRM with AI WhatsApp bots for numerical extraction to spreadsheets, in-app Twilio calling, and web-form-to-WhatsApp automation. Native AI email client prioritizing messages to WhatsApp.",
-        "stock_mgmt.txt": "> Stock Management System (Qt / C++)\n  Desc:  Robust GUI-based hobby project built using Qt library, focused on object-oriented programming, file handling, and efficient data structuring."
+        "stock_mgmt.txt": "> Stock Management System (Qt / C++)\n  Desc:  Robust GUI-based hobby project built using Qt library, focused on object-oriented programming, file handling, and efficient data structuring.",
+        "nothing_veer.txt": "> Veer Music — Nothing OS Music App\n  Repo: https://github.com/Rvjais/Nothing-Veer\n  Stack: Expo 54, React Native 0.81, Node 22, yt-dlp, Zustand\n  Desc: Nothing OS-style YouTube Music client + proxy. Vinyl player, synced LRC lyrics tap-to-seek, downloads + smart cache, offline mode, AMOLED + Glyph EQ. Features save data, enable sing-along, offline metro use.",
+        "ranveer_echo.txt": "> RANVEER H.U.D. — Desktop AI Assistant\n  Repo: https://github.com/Rvjais/Ranveer_Echo\n  Stack: Tauri v2, Rust Tokio, Vanilla JS, OpenCV, Ollama\n  Desc: Jarvis-style assistant. ReAct chat, voice wake-word Ranveer + PTT, face LBPH + hand pinch, SQLite memory, computer control, Kasa smart-home, DEPLOY agent queue.",
+        "web_ripper.txt": "> WebRip — Full Website Scraper\n  Repo: https://github.com/Rvjais/Web-Scrapper\n  Stack: Python 3.11, Flask, Playwright Chromium, Gunicorn Gevent\n  Desc: BFS crawl to offline ZIP. 3 modes full/single/discover, SPA DOM snapshot, anti-bot CDP + cookies, utm strip + relink, live SSE, Render deploy.",
+        "srchess_rebuild.txt": "> SR Chess Academy — 3D Rebuild\n  Repo: https://github.com/Rvjais/Srchess\n  Live: https://srchess.vercel.app/\n  Stack: Vanilla JS, Vite 8, Three.js 0.185\n  Desc: 25 pages + 17 blogs + GLB hero scroll phases, GM coach slider, shop cart Rs localStorage, 10-Q stress test, OTP mock. For WIM Shivika Rohilla academy.",
+        "textlens.txt": "> TextLens — Privacy OCR Sheet\n  Repo: https://github.com/Rvjais/OCR-SHEET\n  Live: https://ocr-sheet-topaz.vercel.app\n  Stack: Vanilla JS, FastAPI, PaddleOCRv5, Docker\n  Desc: Batch image/PDF to text. Browser Tesseract printed + backend handwriting, hybrid PDF merge, confidence <85 flagged, DeepSeek invoice to JSON/CSV, no-logging privacy.",
+        "aicrmz.txt": "> AICRMZ — WhatsApp AI CRM\n  Repo: https://github.com/Rvjais/AI-CRM\n  Live: https://in.aicrmz.com API https://api.aicrmz.com\n  Stack: React 19, Express 4, MongoDB Atlas, Baileys 6.7, Socket.io\n  Desc: Multi-tenant WhatsApp via QR. AI auto-reply + sentiment, campaigns queue, follow-ups, CSV import, Gmail/Sheets, Twilio + Bolna voice, Cloudinary, Ionic mobile."
     },
     "contact.txt": "Email:    ranveerjais9984@gmail.com\nPhone:    +91 9648165493\nLocation: Gurgaon, India\nResume:   ranveer_jaiswal.pdf\nGitHub:   github.com/Rvjais\nLinkedIn: linkedin.com"
 };
@@ -839,6 +851,137 @@ mern-visualizer scan</pre>
                 • <strong>GitHub Repository:</strong> <a href="https://github.com/Rvjais/fullstack-code-visualiser" target="_blank" class="text-blue-400 hover:underline">github.com/Rvjais/fullstack-code-visualiser</a><br>
                 • <strong>Author:</strong> Ranveer Jaiswal (<a href="https://github.com/Rvjais" target="_blank" class="text-blue-400 hover:underline">@Rvjais</a>)
             </p>
+        `
+    },
+    "nothing-veer": {
+        title: "Nothing-Veer — Veer Music",
+        subtitle: "Expo + yt-dlp music client",
+        npmUrl: "https://github.com/Rvjais/Nothing-Veer",
+        githubUrl: "https://github.com/Rvjais/Nothing-Veer",
+        content: `
+            <h1>Veer Music — Nothing OS Style Music App</h1>
+            <p><strong>Expo RN + Node yt-dlp proxy. Vinyl player, synced lyrics, offline cache.</strong></p>
+            <h2>✨ Features & How they help</h2>
+            <ul>
+                <li><strong>High-quality streaming (AAC/Opus):</strong> Range proxy for instant seek — saves data on Low, studio on High.</li>
+                <li><strong>Synced LRC tap-to-seek:</strong> LRCLIB lyrics — sing-along + jump to verse.</li>
+                <li><strong>Home + Mood pills:</strong> Quick Picks, CHILL/WORKOUT/POP — 3x faster discovery.</li>
+                <li><strong>Downloads + Smart Cache LRU:</strong> Permanent + 50/200/500MB auto — metro/flight ready.</li>
+                <li><strong>Vinyl + Glyph EQ + Queue:</strong> Background + notification — drive/gym safe.</li>
+                <li><strong>YouTube auth or Guest:</strong> WebView SID/HSID or skip — never stuck on 401/403.</li>
+            </ul>
+            <h2>🚀 Run</h2>
+            <pre>cd backend\nnpm install\nnpm start\ncd ../frontend\nnpm install\nnpx expo start</pre>
+            <p>• <strong>GitHub:</strong> <a href="https://github.com/Rvjais/Nothing-Veer" target="_blank" class="text-blue-400 hover:underline">Rvjais/Nothing-Veer</a></p>
+        `
+    },
+    "ranveer-echo": {
+        title: "Ranveer_Echo — H.U.D. Assistant",
+        subtitle: "Tauri v2 + Rust + Python vision",
+        npmUrl: "https://github.com/Rvjais/Ranveer_Echo",
+        githubUrl: "https://github.com/Rvjais/Ranveer_Echo",
+        content: `
+            <h1>RANVEER H.U.D. — Jarvis Desktop Assistant</h1>
+            <p><strong>Tauri 1100x720 HUD. ReAct chat, voice, face + hands, memory, computer control.</strong></p>
+            <h2>✨ Features & How they help</h2>
+            <ul>
+                <li><strong>Streaming ReAct chat:</strong> 3-step tool loop — weather + open maps in one prompt.</li>
+                <li><strong>Voice wake-word Ranveer + SPACE PTT:</strong> SAPI barge-in — hands-free cooking/coding.</li>
+                <li><strong>Face LBPH + hand pinch:</strong> Auto-login, touchless click for presentations.</li>
+                <li><strong>SQLite memory:</strong> Remembers birthday/projects — export to Desktop JSON.</li>
+                <li><strong>Computer control:</strong> Open/type/click/screenshot/volume/files/browser/reminders.</li>
+                <li><strong>Kasa + DEPLOY agent:</strong> Lights + background task queue while you work.</li>
+            </ul>
+            <h2>🚀 Run</h2>
+            <pre>pip install -r requirements.txt\nollama pull qwen3-vl:2b\nnpm install\nnpx tauri dev</pre>
+            <p>• <strong>GitHub:</strong> <a href="https://github.com/Rvjais/Ranveer_Echo" target="_blank" class="text-blue-400 hover:underline">Rvjais/Ranveer_Echo</a></p>
+        `
+    },
+    "web-ripper": {
+        title: "Web-Scrapper — WebRip",
+        subtitle: "Flask + Playwright BFS to ZIP",
+        npmUrl: "https://github.com/Rvjais/Web-Scrapper",
+        githubUrl: "https://github.com/Rvjais/Web-Scrapper",
+        content: `
+            <h1>WebRip — Full Website Scraper</h1>
+            <p><strong>BFS crawl any URL → offline ZIP. SPA + anti-bot + SSE live.</strong></p>
+            <h2>✨ Features & How they help</h2>
+            <ul>
+                <li><strong>Full / Single / Discover modes:</strong> Depth 0-20, 1-5000 pages — backup or quick save.</li>
+                <li><strong>Chromium rendering:</strong> Auto-scroll + DOM snapshot — clones React/Next blank-page fix.</li>
+                <li><strong>Anti-bot CDP + cookies:</strong> Use-my-Chrome :9222 + challenge wait — save login sites you own.</li>
+                <li><strong>Offline rewriting:</strong> a__b.html + srcset localize — double-click works offline.</li>
+                <li><strong>SSE live + ZIP:</strong> Counters + log + serve.py/OPEN_SITE.bat — share with client.</li>
+            </ul>
+            <h2>🚀 Run</h2>
+            <pre>pip install -r requirements.txt\npython -m playwright install chromium\npython app.py</pre>
+            <p>• <strong>GitHub:</strong> <a href="https://github.com/Rvjais/Web-Scrapper" target="_blank" class="text-blue-400 hover:underline">Rvjais/Web-Scrapper</a></p>
+        `
+    },
+    "srchess": {
+        title: "Srchess — Academy 3D Rebuild",
+        subtitle: "Vite + Three.js static site",
+        npmUrl: "https://github.com/Rvjais/Srchess",
+        githubUrl: "https://github.com/Rvjais/Srchess",
+        content: `
+            <h1>SR Chess Academy — 3D Rebuild</h1>
+            <p><strong>25 pages + 17 blogs + GLB hero for WIM Shivika Rohilla academy.</strong></p>
+            <h2>✨ Features & How they help</h2>
+            <ul>
+                <li><strong>3D hero scroll phases:</strong> King/Queen intro-hold-outro — longer stay + trials.</li>
+                <li><strong>148K sessions + founder WIM:</strong> Trust numbers — parent conversion.</li>
+                <li><strong>GM coach slider:</strong> Tejas Bakre + IMs — 1-click trial.</li>
+                <li><strong>Shop cart Rs localStorage:</strong> Boards/books — extra revenue.</li>
+                <li><strong>10-Q stress test:</strong> Parent/child PSS — mental-toughness differentiator.</li>
+                <li><strong>Blog + gallery + OTP mock:</strong> SEO traffic + low-friction login.</li>
+            </ul>
+            <h2>🚀 Run</h2>
+            <pre>cd chess-homepage\nnpm install\nnpm run dev</pre>
+            <p>• <strong>GitHub:</strong> <a href="https://github.com/Rvjais/Srchess" target="_blank" class="text-blue-400 hover:underline">Rvjais/Srchess</a> • <strong>Live:</strong> <a href="https://srchess.vercel.app/" target="_blank" class="text-blue-400 hover:underline">srchess.vercel.app</a></p>
+        `
+    },
+    "textlens": {
+        title: "TextLens — OCR-SHEET",
+        subtitle: "FastAPI + PaddleOCRv5 privacy OCR",
+        npmUrl: "https://github.com/Rvjais/OCR-SHEET",
+        githubUrl: "https://github.com/Rvjais/OCR-SHEET",
+        content: `
+            <h1>TextLens — Privacy Image/PDF to Text</h1>
+            <p><strong>Batch OCR in-browser + local backend. No external API. DeepSeek invoice table.</strong></p>
+            <h2>✨ Features & How they help</h2>
+            <ul>
+                <li><strong>Batch + cancel-keeps-done:</strong> 50-page ledger in one go.</li>
+                <li><strong>Printed in-browser Tesseract:</strong> Bills stay on PC — sensitive safe.</li>
+                <li><strong>Handwriting PaddleOCRv5:</strong> Reads pen totals/Hindi — normal OCR misses.</li>
+                <li><strong>Hybrid PDF merge:</strong> Printed + handwritten suffix — no re-type.</li>
+                <li><strong>Confidence &lt;85 flagged:</strong> Accountant checks red words only.</li>
+                <li><strong>Format to Table JSON/CSV:</strong> Paste to Tally/Excel — 15 min saved/invoice.</li>
+            </ul>
+            <h2>🚀 Run</h2>
+            <pre>pip install -r requirements.txt\npython server.py --download-models\npython server.py</pre>
+            <p>• <strong>GitHub:</strong> <a href="https://github.com/Rvjais/OCR-SHEET" target="_blank" class="text-blue-400 hover:underline">Rvjais/OCR-SHEET</a></p>
+        `
+    },
+    "aicrmz": {
+        title: "AICRMZ — WhatsApp AI CRM",
+        subtitle: "MERN + Baileys multi-tenant",
+        npmUrl: "https://github.com/Rvjais/AI-CRM",
+        githubUrl: "https://github.com/Rvjais/AI-CRM",
+        content: `
+            <h1>AICRMZ — AI WhatsApp Business CRM</h1>
+            <p><strong>QR Baileys + AI reply, campaigns, follow-ups, Gmail/Sheets, Twilio/Bolna voice.</strong></p>
+            <h2>✨ Features & How they help (ROI)</h2>
+            <ul>
+                <li><strong>QR + live Socket chat:</strong> No official API cost — reply in seconds.</li>
+                <li><strong>AI auto-reply + sentiment:</strong> 24/7 answers, angry flagged before churn.</li>
+                <li><strong>Bulk campaigns queue:</strong> 5000 contacts 1-click — 10x reach.</li>
+                <li><strong>Auto follow-ups:</strong> No-reply nudge — +20% closures.</li>
+                <li><strong>CSV + Forms + Groups:</strong> Excel to WhatsApp in 2 min, Insta bio to inbox.</li>
+                <li><strong>Twilio + Bolna voice:</strong> AI COD confirm — cuts RTO, saves telecaller.</li>
+            </ul>
+            <h2>🚀 Run</h2>
+            <pre>cd AI-CRM/server\nnpm install\nnpm run dev\ncd ../client\nnpm run dev</pre>
+            <p>• <strong>GitHub:</strong> <a href="https://github.com/Rvjais/AI-CRM" target="_blank" class="text-blue-400 hover:underline">Rvjais/AI-CRM</a> • Live in.aicrmz.com</p>
         `
     }
 };
