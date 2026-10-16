@@ -82,34 +82,38 @@ body {
 
 .glass-tahoe {
     background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(40px) saturate(210%);
-    -webkit-backdrop-filter: blur(40px) saturate(210%);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transform: translateZ(0);
 }
 
 .glass-tahoe-dark {
     background: rgba(18, 18, 24, 0.72);
-    backdrop-filter: blur(40px) saturate(210%);
-    -webkit-backdrop-filter: blur(40px) saturate(210%);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.16);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: translateZ(0);
 }
 
 .glass-dock {
     background: rgba(255, 255, 255, 0.28);
-    backdrop-filter: blur(35px) saturate(200%);
-    -webkit-backdrop-filter: blur(35px) saturate(200%);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.35);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transform: translateZ(0);
 }
 
 .glass-dock-dark {
     background: rgba(16, 16, 22, 0.55);
-    backdrop-filter: blur(40px) saturate(220%);
-    -webkit-backdrop-filter: blur(40px) saturate(220%);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateZ(0);
 }
 
 /* Visibility switches */
@@ -458,7 +462,7 @@ nav.mobile-only {
    CRITICAL: Window Presentation & Event Isolation
    ========================================================================== */
 
-/* When closed, windows MUST be completely hidden and not block pointer events */
+/* When closed, windows MUST be completely hidden, skipping layout and paint passes */
 .app-window {
     display: none !important;
     pointer-events: none !important;
@@ -467,14 +471,19 @@ nav.mobile-only {
     background: #ffffff;
     overflow: hidden;
     z-index: -10 !important;
+    content-visibility: hidden;
+    contain: layout style paint;
 }
 
-/* When opened, windows are shown and allow pointer events */
+/* When opened, windows are shown and benefit from layout containment */
 .app-window.is-open {
     display: flex !important;
     pointer-events: auto !important;
     visibility: visible !important;
     opacity: 1;
+    content-visibility: visible;
+    contain: layout;
+    transform: translateZ(0);
 }
 
 /* Mobile iOS Window Presentation & Navigation Clearance */
@@ -945,17 +954,19 @@ nav.mobile-only {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(35px) saturate(180%);
-    -webkit-backdrop-filter: blur(35px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
     z-index: 140;
     display: none;
     align-items: center;
     justify-content: center;
     padding: 24px 20px;
+    content-visibility: hidden;
 }
 #folder-modal-overlay.is-active,
 #skills-folder-modal-overlay.is-active {
     display: flex;
+    content-visibility: visible;
     animation: folderFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -967,13 +978,12 @@ nav.mobile-only {
 .ios-folder-card {
     width: 100%;
     max-width: 330px;
-    background: rgba(255, 255, 255, 0.22);
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    background: rgba(255, 255, 255, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 36px;
     padding: 24px 20px 20px 20px;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+    transform: translateZ(0);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1570,8 +1580,8 @@ nav.mobile-only {
     height: 100vh;
     z-index: 500;
     background: radial-gradient(120% 120% at 50% 15%, rgba(15, 20, 32, 0.72) 0%, rgba(6, 9, 15, 0.88) 100%);
-    backdrop-filter: blur(45px) saturate(210%);
-    -webkit-backdrop-filter: blur(45px) saturate(210%);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
     display: none;
     flex-direction: column !important;
     justify-content: space-between;
@@ -1581,6 +1591,8 @@ nav.mobile-only {
     -webkit-user-select: none;
     opacity: 0;
     pointer-events: none;
+    transform: translateZ(0);
+    content-visibility: hidden;
     transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1588,6 +1600,7 @@ nav.mobile-only {
     display: flex !important;
     opacity: 1 !important;
     pointer-events: auto !important;
+    content-visibility: visible;
 }
 
 @media (max-width: 767px) {
@@ -2099,8 +2112,8 @@ nav.mobile-only {
     top: 30px;
     left: 12px;
     background: rgba(22, 25, 34, 0.92);
-    backdrop-filter: blur(45px) saturate(220%);
-    -webkit-backdrop-filter: blur(45px) saturate(220%);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     padding: 5px;
@@ -2108,6 +2121,7 @@ nav.mobile-only {
     box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12);
     z-index: 1000;
     display: none;
+    transform: translateZ(0);
     animation: macDropdownFade 0.14s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .macos-dropdown.is-open {
@@ -2167,8 +2181,8 @@ nav.mobile-only {
     right: 14px;
     width: 330px;
     background: rgba(18, 22, 32, 0.9);
-    backdrop-filter: blur(50px) saturate(230%);
-    -webkit-backdrop-filter: blur(50px) saturate(230%);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 20px;
     padding: 14px;
@@ -2178,6 +2192,7 @@ nav.mobile-only {
     flex-direction: column;
     gap: 10px;
     user-select: none;
+    transform: translateZ(0);
     animation: macControlCenterFade 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 #macos-control-center.is-open {
@@ -2305,12 +2320,14 @@ nav.mobile-only {
     padding-left: 16px;
     padding-right: 16px;
     background: rgba(0, 0, 0, 0.42);
-    backdrop-filter: blur(45px) saturate(200%);
-    -webkit-backdrop-filter: blur(45px) saturate(200%);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     opacity: 0;
     pointer-events: none;
+    transform: translateZ(0);
+    content-visibility: hidden;
     transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     user-select: none;
     -webkit-user-select: none;
@@ -2320,6 +2337,7 @@ nav.mobile-only {
     display: flex !important;
     opacity: 1 !important;
     pointer-events: auto !important;
+    content-visibility: visible;
     animation: iosControlCenterSlideDown 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

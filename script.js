@@ -12,15 +12,27 @@ let isIosSwitcherOpen = false;
 let switcherOpenedTime = 0;
 
 // Dynamic Viewport Height Handler (Protects layout from mobile browser search/address bar shifts)
+let dynamicViewportTicking = false;
+let lastVh = 0;
+
 function updateDynamicViewport() {
-    const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight) * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
+    if (dynamicViewportTicking) return;
+    dynamicViewportTicking = true;
+    requestAnimationFrame(() => {
+        const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        const vh = height * 0.01;
+        if (Math.abs(vh - lastVh) > 0.05) {
+            lastVh = vh;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        dynamicViewportTicking = false;
+    });
 }
-window.addEventListener('resize', updateDynamicViewport);
-window.addEventListener('orientationchange', updateDynamicViewport);
+window.addEventListener('resize', updateDynamicViewport, { passive: true });
+window.addEventListener('orientationchange', updateDynamicViewport, { passive: true });
 if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', updateDynamicViewport);
-    window.visualViewport.addEventListener('scroll', updateDynamicViewport);
+    window.visualViewport.addEventListener('resize', updateDynamicViewport, { passive: true });
+    window.visualViewport.addEventListener('scroll', updateDynamicViewport, { passive: true });
 }
 updateDynamicViewport();
 
@@ -3852,6 +3864,7 @@ let dockCurrentScales = macDockApps.map(() => 1);
 let dockCurrentPositions = [];
 let dockAnimFrame = null;
 let dockLastMouseMoveTime = 0;
+let dockLastAppliedWidth = 0;
 let dockConfig = { baseIconSize: 64, maxScale: 1.8, effectWidth: 300 };
 
 function getDockResponsiveConfig() {
@@ -3930,13 +3943,16 @@ function initMacOSDock() {
 
     // Render DOM elements for each app
     dockInner.innerHTML = macDockApps.map((app, index) => {
+        const initialPos = dockCurrentPositions[index] || 0;
+        const initialX = initialPos - baseIconSize / 2;
         return `
             <div id="dock-item-${app.id}" class="absolute cursor-pointer flex flex-col items-center justify-end"
                  onclick="handleMacDockAppClick('${app.id}', ${index})"
-                 style="transform-origin: bottom center; will-change: transform, left, width, height;"
+                 style="width: ${baseIconSize}px; height: ${baseIconSize}px; left: 0; bottom: 0; transform: translate3d(${initialX}px, 0, 0) scale(1); transform-origin: bottom center; will-change: transform;"
                  title="${app.name}">
                 <img id="dock-img-${app.id}" src="${app.icon}" alt="${app.name}" class="object-contain"
-                     style="width: 100%; height: 100%; pointer-events: none;"
+                     loading="eager" decoding="async" width="${baseIconSize}" height="${baseIconSize}"
+                     style="width: 100%; height: 100%; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35)); transform: translateZ(0);"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="hidden w-full h-full rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 items-center justify-center text-white text-xl font-bold shadow-md">
                     ${app.name.charAt(0)}
@@ -3971,21 +3987,21 @@ function initMacOSDock() {
         if (!dockAnimFrame) {
             dockAnimFrame = requestAnimationFrame(animateDockToTarget);
         }
-    });
+    }, { passive: true });
 
     dockContainer.addEventListener('mouseleave', () => {
         dockMouseX = null;
         if (!dockAnimFrame) {
             dockAnimFrame = requestAnimationFrame(animateDockToTarget);
         }
-    });
+    }, { passive: true });
 
     window.addEventListener('resize', () => {
         dockConfig = getDockResponsiveConfig();
         if (!dockAnimFrame) {
             dockAnimFrame = requestAnimationFrame(animateDockToTarget);
         }
-    });
+    }, { passive: true });
 
     // Start initial frame
     dockAnimFrame = requestAnimationFrame(animateDockToTarget);
@@ -4007,7 +4023,8 @@ function animateDockToTarget() {
 
     let maxRight = 0;
 
-    macDockApps.forEach((app, index) => {
+    for (let index = 0; index < macDockApps.length; index++) {
+        const app = macDockApps[index];
         // Interpolate scale & position
         const scaleDiff = targetScales[index] - dockCurrentScales[index];
         dockCurrentScales[index] += scaleDiff * lerpFactor;
@@ -4017,32 +4034,25 @@ function animateDockToTarget() {
 
         const scale = dockCurrentScales[index];
         const position = dockCurrentPositions[index];
-        const scaledSize = baseIconSize * scale;
+        const xOffset = position - baseIconSize / 2;
 
         const el = document.getElementById(`dock-item-${app.id}`);
         if (el) {
-            el.style.left = `${position - scaledSize / 2}px`;
-            el.style.bottom = "0px";
-            el.style.width = `${scaledSize}px`;
-            el.style.height = `${scaledSize}px`;
+            el.style.transform = `translate3d(${xOffset}px, 0, 0) scale(${scale})`;
             el.style.zIndex = Math.round(scale * 10);
-
-            const img = document.getElementById(`dock-img-${app.id}`);
-            if (img) {
-                const shadowScale = scale > 1.2 ? Math.max(2, baseIconSize * 0.05) : Math.max(1, baseIconSize * 0.03);
-                const blurScale = scale > 1.2 ? Math.max(4, baseIconSize * 0.1) : Math.max(2, baseIconSize * 0.06);
-                const alpha = 0.2 + (scale - 1) * 0.15;
-                img.style.filter = `drop-shadow(0 ${shadowScale}px ${blurScale}px rgba(0,0,0,${alpha}))`;
-            }
         }
 
-        const iconRight = position + scaledSize / 2;
+        const iconRight = position + (baseIconSize * scale) / 2;
         if (iconRight > maxRight) maxRight = iconRight;
-    });
+    }
 
-    // Update dynamic dock container width
+    // Update dynamic dock container width only when needed (avoids layout thrashing)
     const contentWidth = maxRight > 0 ? maxRight : (macDockApps.length * (baseIconSize + baseSpacing) - baseSpacing);
-    dockContainer.style.width = `${contentWidth + padding * 2}px`;
+    const targetWidth = Math.round(contentWidth + padding * 2);
+    if (Math.abs(dockLastAppliedWidth - targetWidth) >= 1) {
+        dockLastAppliedWidth = targetWidth;
+        dockContainer.style.width = `${targetWidth}px`;
+    }
 
     // Check if still needing animation
     const scalesNeedUpdate = dockCurrentScales.some((scale, index) => Math.abs(scale - targetScales[index]) > 0.002);
