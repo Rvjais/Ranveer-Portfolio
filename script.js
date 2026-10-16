@@ -137,6 +137,24 @@ function openApp(appId) {
         }
     }
 
+    // Update mobile status bar theme (dark text for light-background apps like about, skills)
+    const mobileNav = document.querySelector('nav.mobile-only');
+    if (mobileNav) {
+        if (['about', 'skills'].includes(appId)) {
+            mobileNav.classList.add('light-theme');
+        } else {
+            mobileNav.classList.remove('light-theme');
+        }
+    }
+
+    // App-specific initialization
+    if (appId === 'notes' && typeof initNotesApp === 'function') {
+        initNotesApp();
+    }
+    if (appId === 'calculator' && typeof updateCalcDisplay === 'function') {
+        updateCalcDisplay();
+    }
+
     // Desktop positioning
     if (window.innerWidth >= 768 && !app.style.top) {
         const randomOffset = Math.floor(Math.random() * 30) - 15;
@@ -156,6 +174,7 @@ function openApp(appId) {
     // Refresh Mission Control or Switcher if open
     if (isMissionControlOpen) renderMissionControlTiles();
     if (isIosSwitcherOpen) renderIosSwitcherCards();
+    if (typeof updateMacOSDockOpenApps === 'function') updateMacOSDockOpenApps();
 }
 
 function closeApp(appId) {
@@ -187,20 +206,29 @@ function closeApp(appId) {
     const dot = document.getElementById(`dot-${appId}`);
     if (dot) dot.style.display = 'none';
 
-    // Update iOS home bar theme
+    // Update iOS home bar theme and mobile nav theme
+    const activeTopApp = runningApps[runningApps.length - 1];
     const homeBar = document.getElementById('ios-global-home-bar');
     if (homeBar) {
-        const activeTopApp = runningApps[runningApps.length - 1];
         if (activeTopApp && ['about', 'skills', 'contact'].includes(activeTopApp)) {
             homeBar.classList.add('dark');
         } else {
             homeBar.classList.remove('dark');
         }
     }
+    const mobileNav = document.querySelector('nav.mobile-only');
+    if (mobileNav) {
+        if (activeTopApp && ['about', 'skills'].includes(activeTopApp)) {
+            mobileNav.classList.add('light-theme');
+        } else {
+            mobileNav.classList.remove('light-theme');
+        }
+    }
 
     // Refresh views if open
     if (isMissionControlOpen) renderMissionControlTiles();
     if (isIosSwitcherOpen) renderIosSwitcherCards();
+    if (typeof updateMacOSDockOpenApps === 'function') updateMacOSDockOpenApps();
 }
 
 
@@ -541,33 +569,29 @@ function setupDesktopIconDragging() {
 }
 
 
-// --- Spotlight Search System ---
+// --- Spotlight Search System (macOS Tahoe & iOS) ---
 const searchIndex = [
-    { title: "About Ranveer Jaiswal", category: "Application", desc: "Full Stack & MERN Developer profile and background", action: () => openApp('about'), icon: "fas fa-user-astronaut text-blue-500" },
-    { title: "Projects Folder", category: "Folder", desc: "Interactive iOS folder containing HR-Buddy, SRChess, Visualizer, PioneerOS", action: () => openFolderModal(), icon: "fas fa-folder text-amber-400", badge: "FOLDER" },
-    { title: "Projects Showcase", category: "Application", desc: "Interactive devOS Terminal and Project Cards", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-terminal text-green-400" },
-    { title: "fullstack-code-visualiser (npm)", category: "Package", desc: "MERN Stack Visualizer & AST Architecture Tracer", action: () => openReadmeModal('fullstack-code-visualiser'), icon: "fab fa-npm text-red-500", badge: "README & NPM" },
-    { title: "HR-Buddy (Live App)", category: "Project", desc: "AI onboarding quiz with anti-cheat mechanism (React, Node.js)", action: () => window.open('https://hr-buddy-beta.vercel.app/', '_blank'), icon: "fas fa-user-check text-amber-400", badge: "LIVE DEMO" },
-    { title: "SRChess (Live App)", category: "Project", desc: "Full-stack interactive chess platform (React, WebSockets)", action: () => window.open('https://srchess.vercel.app/', '_blank'), icon: "fas fa-chess-knight text-purple-400", badge: "LIVE DEMO" },
-    { title: "PioneerOS", category: "Project", desc: "Multi-module internal platform with project management & queue system", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-desktop text-blue-400", badge: "PLATFORM" },
-    { title: "Rain CRM", category: "Project", desc: "CRM with AI WhatsApp bots, Twilio calling & automated email client", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-users-cog text-emerald-400", badge: "CRM" },
-    { title: "Skills Folder (All Skills)", category: "Folder", desc: "Interactive folder listing Docker, AWS, React, Node.js, TypeScript & MongoDB", action: () => openSkillsFolderModal(), icon: "fas fa-layer-group text-blue-400", badge: "FOLDER" },
-    { title: "System Settings (Skills)", category: "Application", desc: "Full-stack languages, frameworks, databases & tooling", action: () => openApp('skills'), icon: "fas fa-gear text-gray-400" },
-    { title: "Photos & Videos (Gallery)", category: "Application", desc: "Personal media gallery, photos & video uploads", action: () => openApp('gallery'), icon: "fas fa-images text-pink-400" },
-    { title: "Mail Composer (Contact)", category: "Application", desc: "Send an email or message directly to Ranveer", action: () => openApp('contact'), icon: "fas fa-envelope text-blue-400" },
-    { title: "Docker (Containerization)", category: "DevOps", desc: "Docker Compose, Dockerfile, multi-stage builds & container workflows", action: () => { openSkillsFolderModal(); showToast('Docker: Containerization & Compose', 'fab fa-docker'); }, icon: "fab fa-docker text-[#2496ed]", badge: "DOCKER" },
-    { title: "AWS (Amazon Web Services)", category: "Cloud", desc: "EC2, S3, Lambda, CloudFront, IAM & cloud deployment architecture", action: () => { openSkillsFolderModal(); showToast('AWS: Cloud Infrastructure & Services', 'fab fa-aws'); }, icon: "fab fa-aws text-[#ff9900]", badge: "AWS" },
-    { title: "Branding Pioneers Experience", category: "Work", desc: "Full Stack App/Web Developer & Intern (Gurgaon, India)", action: () => { openApp('about'); switchAboutTab('exp', null); }, icon: "fas fa-briefcase text-blue-500" },
-    { title: "Resume (PDF)", category: "Document", desc: "Official resume of Ranveer Jaiswal (ranveer_jaiswal.pdf)", action: () => window.open('ranveer_jaiswal.pdf', '_blank'), icon: "fas fa-file-pdf text-red-500", badge: "PDF" },
-    { title: "Krishnarpit Institute of Technology", category: "Education", desc: "Bachelor of Pharmacy (B. Pharm), 2021-2025, CGPA 7.0/10", action: () => { openApp('about'); switchAboutTab('edu', null); }, icon: "fas fa-graduation-cap text-indigo-400" },
-    { title: "Veer Music — Nothing OS App", category: "Project", desc: "Expo music client + yt-dlp proxy, vinyl + lyrics + offline", action: () => openReadmeModal('nothing-veer'), icon: "fas fa-music text-red-400", badge: "README" },
-    { title: "RANVEER H.U.D. Assistant", category: "Project", desc: "Tauri Rust Jarvis, voice + face + computer control", action: () => openReadmeModal('ranveer-echo'), icon: "fas fa-robot text-cyan-400", badge: "README" },
-    { title: "WebRip Scraper", category: "Project", desc: "BFS website to ZIP, Playwright + SSE progress", action: () => openReadmeModal('web-ripper'), icon: "fas fa-globe text-teal-400", badge: "README" },
-    { title: "SR Chess Academy 3D", category: "Project", desc: "Vite Three.js rebuild, 25 pages + shop + quiz", action: () => openReadmeModal('srchess'), icon: "fas fa-chess-knight text-amber-400", badge: "README" },
-    { title: "TextLens OCR Sheet", category: "Project", desc: "Image/PDF to text, PaddleOCR handwriting + invoice table", action: () => openReadmeModal('textlens'), icon: "fas fa-file-alt text-indigo-400", badge: "README" },
-    { title: "AICRMZ WhatsApp CRM", category: "Project", desc: "Baileys QR CRM, AI reply + campaigns + voice", action: () => openReadmeModal('aicrmz'), icon: "fab fa-whatsapp text-green-400", badge: "README" },
-    { title: "GitHub Profile (Rvjais)", category: "Link", desc: "Explore open-source repositories and contributions on GitHub", action: () => window.open('https://github.com/Rvjais', '_blank'), icon: "fab fa-github text-white" },
-    { title: "LinkedIn Profile", category: "Link", desc: "Connect professionally on LinkedIn", action: () => window.open('https://linkedin.com', '_blank'), icon: "fab fa-linkedin text-blue-500" }
+    { title: "About Ranveer Jaiswal", category: "Application", desc: "Full Stack & MERN Developer profile, bio, skills and experience", action: () => openApp('about'), icon: "fas fa-user-astronaut text-blue-400", badge: "APP", tech: ["Profile", "Bio", "Gurgaon"] },
+    { title: "Calculator", category: "Application", desc: "Interactive macOS Tahoe precision math & arithmetic calculator", action: () => openApp('calculator'), icon: "fas fa-calculator text-amber-400", badge: "APP", tech: ["Math", "Arithmetic", "Keypad"] },
+    { title: "Notes — Ranveer's DevPad", category: "Application", desc: "Engineering journals, full-stack architecture notes & local scratchpad", action: () => openApp('notes'), icon: "fas fa-note-sticky text-yellow-400", badge: "APP", tech: ["Notes", "Scratchpad", "Local Storage"] },
+    { title: "Projects Folder", category: "Folder", desc: "Interactive iOS folder containing all 12 projects and apps", action: () => openFolderModal(), icon: "fas fa-folder text-amber-400", badge: "FOLDER", tech: ["12 Projects", "Interactive", "Directory"] },
+    { title: "Projects Showcase", category: "Application", desc: "Interactive devOS Terminal and live project architecture cards", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-terminal text-green-400", badge: "APP", tech: ["Terminal", "zsh", "React Cards"] },
+    { title: "fullstack-code-visualiser (npm)", category: "Package", desc: "MERN Stack Visualizer & AST Architecture Tracer", action: () => openReadmeModal('fullstack-code-visualiser'), icon: "fab fa-npm text-red-500", badge: "NPM", tech: ["React", "Node.js", "Babel AST", "MongoDB"] },
+    { title: "Veer Music — Nothing OS App", category: "Project", desc: "Expo music client + yt-dlp proxy, 33 RPM vinyl disc, LRCLIB lyrics", action: () => openReadmeModal('nothing-veer'), icon: "fas fa-music text-red-400", badge: "MOBILE", tech: ["React Native", "Expo 54", "yt-dlp", "LRU Cache"] },
+    { title: "HR-Buddy (Live App)", category: "Project", desc: "AI onboarding quiz with anti-cheat mechanism (React, Node.js)", action: () => window.open('https://hr-buddy-beta.vercel.app/', '_blank'), icon: "fas fa-user-check text-amber-400", badge: "LIVE DEMO", tech: ["React", "Node.js", "AI Quiz"] },
+    { title: "SRChess (Live App)", category: "Project", desc: "Full-stack interactive chess platform (React, WebSockets)", action: () => window.open('https://srchess.vercel.app/', '_blank'), icon: "fas fa-chess-knight text-purple-400", badge: "LIVE DEMO", tech: ["React", "WebSockets", "Board Logic"] },
+    { title: "RANVEER H.U.D. Assistant", category: "Project", desc: "Tauri Rust Jarvis, voice + face + autonomous computer control", action: () => openReadmeModal('ranveer-echo'), icon: "fas fa-robot text-cyan-400", badge: "DESKTOP", tech: ["Tauri", "Rust", "Whisper AI"] },
+    { title: "WebRip Scraper", category: "Project", desc: "BFS website to ZIP, Playwright + SSE real-time download progress", action: () => openReadmeModal('web-ripper'), icon: "fas fa-globe text-teal-400", badge: "TOOL", tech: ["Playwright", "Node.js", "BFS Crawler"] },
+    { title: "PioneerOS", category: "Project", desc: "Multi-module internal platform with project management & queue system", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-desktop text-blue-400", badge: "PLATFORM", tech: ["Next.js", "Prisma", "PostgreSQL"] },
+    { title: "Rain CRM", category: "Project", desc: "CRM with AI WhatsApp bots, Twilio calling & automated email client", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-users-cog text-emerald-400", badge: "CRM", tech: ["React", "Twilio", "WhatsApp Bot"] },
+    { title: "TextLens OCR Sheet", category: "Project", desc: "Image/PDF to text, PaddleOCR handwriting + invoice table parser", action: () => openReadmeModal('textlens'), icon: "fas fa-file-alt text-indigo-400", badge: "AI TOOL", tech: ["PaddleOCR", "Python", "Table Extraction"] },
+    { title: "AICRMZ WhatsApp CRM", category: "Project", desc: "Baileys QR CRM, AI auto-replies, automated campaigns & voice notes", action: () => openReadmeModal('aicrmz'), icon: "fab fa-whatsapp text-green-400", badge: "WHATSAPP", tech: ["Baileys", "Node.js", "Campaigns"] },
+    { title: "Skills Folder (All Skills)", category: "Folder", desc: "Interactive folder listing Docker, AWS, React, Node.js, TypeScript & MongoDB", action: () => openSkillsFolderModal(), icon: "fas fa-layer-group text-blue-400", badge: "FOLDER", tech: ["Docker", "AWS", "React", "Node"] },
+    { title: "System Settings (Skills)", category: "Application", desc: "Full-stack languages, frameworks, databases & tooling preferences", action: () => openApp('skills'), icon: "fas fa-gear text-gray-400", badge: "APP", tech: ["DevOps", "Databases", "Frontend"] },
+    { title: "Photos & Videos (Gallery)", category: "Application", desc: "Personal media gallery, photos & video uploads", action: () => openApp('gallery'), icon: "fas fa-images text-pink-400", badge: "APP", tech: ["Photos", "Videos", "Uploads"] },
+    { title: "Mail Composer (Contact)", category: "Application", desc: "Send an email or message directly to Ranveer", action: () => openApp('contact'), icon: "fas fa-envelope text-blue-400", badge: "APP", tech: ["Email", "Messages", "Gurgaon"] },
+    { title: "Resume (PDF)", category: "Document", desc: "Official resume of Ranveer Jaiswal (ranveer_jaiswal.pdf)", action: () => window.open('ranveer_jaiswal.pdf', '_blank'), icon: "fas fa-file-pdf text-red-500", badge: "PDF", tech: ["Full Stack", "MERN", "Resume"] },
+    { title: "GitHub Profile (Rvjais)", category: "Link", desc: "Explore open-source repositories and contributions on GitHub", action: () => window.open('https://github.com/Rvjais', '_blank'), icon: "fab fa-github text-white", badge: "GITHUB", tech: ["Open Source", "Repos"] }
 ];
 
 let selectedSpotlightIndex = 0;
@@ -604,40 +628,104 @@ function closeSpotlight() {
     }
 }
 
+function clearSpotlightInput() {
+    const input = document.getElementById('spotlight-input');
+    if (input) {
+        input.value = '';
+        input.focus();
+        selectedSpotlightIndex = 0;
+        renderSpotlightResults('');
+    }
+}
+
 function renderSpotlightResults(query) {
     const resultsContainer = document.getElementById('spotlight-results');
+    const clearBtn = document.getElementById('spotlight-clear-btn');
     if (!resultsContainer) return;
+
+    if (clearBtn) {
+        clearBtn.classList.toggle('hidden', !query);
+    }
 
     const trimmed = query.toLowerCase().trim();
     const filtered = searchIndex.filter(item => {
         if (!trimmed) return true;
         return item.title.toLowerCase().includes(trimmed) || 
                item.desc.toLowerCase().includes(trimmed) || 
-               item.category.toLowerCase().includes(trimmed);
+               item.category.toLowerCase().includes(trimmed) ||
+               (item.tech && item.tech.some(t => t.toLowerCase().includes(trimmed)));
     }).slice(0, 8);
 
     if (filtered.length === 0) {
         resultsContainer.innerHTML = `<div class="p-6 text-center text-gray-400 text-xs">No matching results for "<span class="text-white">${query}</span>"</div>`;
+        renderSpotlightPreview(null);
         return;
     }
 
+    if (selectedSpotlightIndex >= filtered.length) {
+        selectedSpotlightIndex = 0;
+    }
+
     resultsContainer.innerHTML = filtered.map((item, index) => `
-        <div class="spotlight-result-item ${index === selectedSpotlightIndex ? 'selected' : ''}" data-index="${index}" onclick="executeSpotlightAction(${index})">
-            <div class="flex items-center space-x-3">
+        <div class="spotlight-result-item ${index === selectedSpotlightIndex ? 'selected' : ''}" data-index="${index}" onclick="executeSpotlightAction(${index})" onmouseenter="selectedSpotlightIndex = ${index}; updateSpotlightSelection();">
+            <div class="flex items-center space-x-3 truncate">
                 <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-sm shrink-0">
                     <i class="${item.icon}"></i>
                 </div>
-                <div class="text-left">
-                    <div class="text-xs font-semibold text-white">${item.title}</div>
-                    <div class="text-[11px] text-gray-400 line-clamp-1">${item.desc}</div>
+                <div class="text-left truncate">
+                    <div class="text-xs font-semibold text-white truncate">${item.title}</div>
+                    <div class="text-[11px] text-gray-400 truncate">${item.desc}</div>
                 </div>
             </div>
-            <div class="flex items-center space-x-2 shrink-0">
-                ${item.badge ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">${item.badge}</span>` : ''}
-                <span class="text-[10px] text-gray-500 font-medium uppercase">${item.category}</span>
+            <div class="flex items-center space-x-1.5 shrink-0 ml-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-white/10 text-gray-300 border border-white/15 uppercase">${item.badge || item.category}</span>
             </div>
         </div>
     `).join('');
+
+    renderSpotlightPreview(filtered[selectedSpotlightIndex]);
+}
+
+function renderSpotlightPreview(item) {
+    const previewEl = document.getElementById('spotlight-preview-pane');
+    if (!previewEl) return;
+
+    if (!item) {
+        previewEl.innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center text-center text-gray-500 py-8">
+                <i class="fas fa-search text-3xl mb-2 opacity-40"></i>
+                <p class="text-xs">Type above to search applications, code and projects</p>
+            </div>
+        `;
+        return;
+    }
+
+    previewEl.innerHTML = `
+        <div class="space-y-4">
+            <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-2xl shadow-lg">
+                <i class="${item.icon}"></i>
+            </div>
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-blue-400 px-2 py-0.5 rounded bg-blue-500/15 border border-blue-400/25">${item.badge || item.category}</span>
+                <h3 class="text-base font-bold text-white mt-2 leading-snug">${item.title}</h3>
+                <p class="text-xs text-gray-300 mt-2 leading-relaxed">${item.desc}</p>
+            </div>
+            ${item.tech && item.tech.length > 0 ? `
+                <div class="pt-2 border-t border-white/10">
+                    <span class="text-[10px] uppercase font-semibold text-gray-400 tracking-wider">Tech & Environment</span>
+                    <div class="flex flex-wrap gap-1 mt-1.5">
+                        ${item.tech.map(t => `<span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-200 border border-white/10">${t}</span>`).join('')}
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+        <div class="pt-4 border-t border-white/10">
+            <button onclick="executeSpotlightAction(${selectedSpotlightIndex})" class="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center justify-center space-x-1.5 shadow-md transition active:scale-95">
+                <span>Launch</span>
+                <i class="fas fa-arrow-right text-[10px]"></i>
+            </button>
+        </div>
+    `;
 }
 
 function executeSpotlightAction(index) {
@@ -647,12 +735,372 @@ function executeSpotlightAction(index) {
         if (!query) return true;
         return item.title.toLowerCase().includes(query) || 
                item.desc.toLowerCase().includes(query) || 
-               item.category.toLowerCase().includes(query);
+               item.category.toLowerCase().includes(query) ||
+               (item.tech && item.tech.some(t => t.toLowerCase().includes(query)));
     }).slice(0, 8);
 
     if (filtered[index]) {
         filtered[index].action();
         closeSpotlight();
+    }
+}
+
+// --- Mobile iOS 18 Control Center Toggle & Actions ---
+function toggleMobileControlCenter(e) {
+    if (e) e.stopPropagation();
+    const iosCc = document.getElementById('ios-control-center');
+    if (!iosCc) return;
+    const isOpen = iosCc.classList.contains('is-open');
+    if (isOpen) {
+        closeControlCenter();
+    } else {
+        closeAppleMenu();
+        closeSpotlight();
+        closeMissionControl();
+        closeIosAppSwitcher();
+        iosCc.classList.add('is-open');
+    }
+}
+
+function handleIosCcBackdropClick(e) {
+    if (!e.target.closest('.ios-cc-scroll-body')) {
+        closeControlCenter();
+    }
+}
+
+let iosAirplaneActive = false;
+function toggleIosAirplane() {
+    iosAirplaneActive = !iosAirplaneActive;
+    const btn = document.getElementById('ios-cc-airplane-btn');
+    if (btn) {
+        btn.classList.toggle('is-active-orange', iosAirplaneActive);
+    }
+    showToast(iosAirplaneActive ? 'Airplane Mode: On' : 'Airplane Mode: Off', 'fas fa-plane');
+}
+
+let iosAirDropState = 1; // 0: Off, 1: Contacts Only, 2: Everyone
+function toggleIosAirDrop() {
+    iosAirDropState = (iosAirDropState + 1) % 3;
+    const btn = document.getElementById('ios-cc-airdrop-btn');
+    const labels = ['AirDrop: Receiving Off', 'AirDrop: Contacts Only', 'AirDrop: Everyone for 10 min'];
+    if (btn) {
+        btn.classList.toggle('is-active-blue', iosAirDropState > 0);
+    }
+    showToast(labels[iosAirDropState], 'fas fa-satellite-dish');
+}
+
+let iosOrientationLocked = true;
+function toggleIosOrientationLock() {
+    iosOrientationLocked = !iosOrientationLocked;
+    const btn = document.getElementById('ios-cc-rotation-btn');
+    if (btn) {
+        btn.classList.toggle('is-active-red', iosOrientationLocked);
+    }
+    showToast(iosOrientationLocked ? 'Portrait Orientation Lock: On' : 'Portrait Orientation Lock: Off', 'fas fa-lock');
+}
+
+let iosSilentMode = false;
+function toggleIosSilentMode() {
+    iosSilentMode = !iosSilentMode;
+    const btn = document.getElementById('ios-cc-silent-btn');
+    if (btn) {
+        btn.classList.toggle('is-active-red', iosSilentMode);
+    }
+    showToast(iosSilentMode ? 'Silent Mode: On' : 'Silent Mode: Off', 'fas fa-bell-slash');
+}
+
+let iosPowerMode = false;
+function toggleIosPowerMode() {
+    iosPowerMode = !iosPowerMode;
+    const btn = document.getElementById('ios-cc-power-btn');
+    if (btn) {
+        btn.classList.toggle('is-active-orange', iosPowerMode);
+    }
+    showToast(iosPowerMode ? 'Low Power Mode: On' : 'Low Power Mode: Off', 'fas fa-battery-half');
+}
+
+let iosRecordingActive = false;
+function toggleIosRecording() {
+    iosRecordingActive = !iosRecordingActive;
+    const btn = document.getElementById('ios-cc-record-btn');
+    if (btn) {
+        btn.classList.toggle('is-active-red', iosRecordingActive);
+    }
+    showToast(iosRecordingActive ? 'Screen Recording Started' : 'Screen Recording Saved to Photos', 'far fa-circle-dot');
+}
+
+function prevTrack() {
+    showToast('Previous Track • Starboy', 'fas fa-backward-step');
+}
+
+function nextTrack() {
+    showToast('Next Track • Blinding Lights', 'fas fa-forward-step');
+}
+
+// --- Calculator Engine ---
+let calcCurrent = '0';
+let calcPrevious = null;
+let calcOperator = null;
+let calcShouldResetDisplay = false;
+
+function updateCalcDisplay() {
+    const disp = document.getElementById('calc-display');
+    const hist = document.getElementById('calc-history');
+    if (disp) {
+        disp.innerText = calcCurrent;
+    }
+    if (hist) {
+        hist.innerText = calcPrevious !== null && calcOperator !== null ? `${calcPrevious} ${calcOperator}` : '';
+    }
+}
+
+function handleCalcDigit(digit) {
+    if (calcShouldResetDisplay) {
+        calcCurrent = digit === '.' ? '0.' : digit;
+        calcShouldResetDisplay = false;
+    } else {
+        if (digit === '.') {
+            if (!calcCurrent.includes('.')) calcCurrent += '.';
+        } else {
+            calcCurrent = calcCurrent === '0' ? digit : calcCurrent + digit;
+        }
+    }
+    updateCalcDisplay();
+}
+
+function handleCalcOp(op) {
+    if (calcOperator !== null && !calcShouldResetDisplay) {
+        handleCalcEqual();
+    }
+    calcPrevious = calcCurrent;
+    calcOperator = op;
+    calcShouldResetDisplay = true;
+    updateCalcDisplay();
+}
+
+function handleCalcEqual() {
+    if (calcOperator === null || calcPrevious === null) return;
+    const prev = parseFloat(calcPrevious);
+    const curr = parseFloat(calcCurrent);
+    let result = 0;
+
+    switch (calcOperator) {
+        case '+': result = prev + curr; break;
+        case '-': result = prev - curr; break;
+        case '*': result = prev * curr; break;
+        case '/': result = curr === 0 ? 'Error' : prev / curr; break;
+    }
+
+    if (typeof result === 'number') {
+        calcCurrent = (Math.round(result * 100000000) / 100000000).toString();
+    } else {
+        calcCurrent = result;
+    }
+
+    calcPrevious = null;
+    calcOperator = null;
+    calcShouldResetDisplay = true;
+    updateCalcDisplay();
+}
+
+function handleCalcClear() {
+    calcCurrent = '0';
+    calcPrevious = null;
+    calcOperator = null;
+    calcShouldResetDisplay = false;
+    updateCalcDisplay();
+}
+
+function handleCalcNegate() {
+    if (calcCurrent === '0' || calcCurrent === 'Error') return;
+    calcCurrent = (parseFloat(calcCurrent) * -1).toString();
+    updateCalcDisplay();
+}
+
+function handleCalcPercent() {
+    if (calcCurrent === 'Error') return;
+    calcCurrent = (parseFloat(calcCurrent) / 100).toString();
+    updateCalcDisplay();
+}
+
+// --- Notes Engine ---
+const DEFAULT_NOTES = [
+    {
+        id: 'arch',
+        title: 'Full Stack & MERN Architecture',
+        date: 'Oct 16',
+        preview: 'Microservices, React 19, Node.js RESTful APIs & AWS Cloud...',
+        pinned: true,
+        content: `
+            <div class="space-y-4 text-sm text-gray-200">
+                <div class="flex items-center space-x-2 pb-2 border-b border-white/10">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300">ARCHITECTURE NOTE</span>
+                    <span class="text-xs text-gray-400">Ranveer Jaiswal • Full Stack Developer</span>
+                </div>
+                <h2 class="text-xl font-bold text-white">Full Stack & MERN Production Guidelines</h2>
+                <p class="text-gray-300 leading-relaxed">Key architectural patterns used across production projects at Branding Pioneers and open source releases:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                    <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                        <h4 class="font-bold text-sky-400 text-xs mb-1">React 19 & Next.js</h4>
+                        <p class="text-[11px] text-gray-300">Server Components (RSC), Suspense streaming, optimistic mutations, and custom hooks with zero-latency state synchronization.</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                        <h4 class="font-bold text-emerald-400 text-xs mb-1">Node.js, Express & Microservices</h4>
+                        <p class="text-[11px] text-gray-300">Rate-limiting, JWT authentication, connection pooling, and resilient worker queues for handling concurrent workloads.</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                        <h4 class="font-bold text-amber-400 text-xs mb-1">Docker & Cloud DevOps</h4>
+                        <p class="text-[11px] text-gray-300">Multi-stage Dockerfile builds, Docker Compose orchestration, AWS EC2, S3 bucket storage, and CloudFront caching.</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                        <h4 class="font-bold text-purple-400 text-xs mb-1">Databases: MongoDB & PostgreSQL</h4>
+                        <p class="text-[11px] text-gray-300">Aggregations, Prisma ORM schema indexing, atomic transactions, and automated database backups.</p>
+                    </div>
+                </div>
+            </div>
+        `
+    },
+    {
+        id: 'veer-music',
+        title: 'Veer Music (Nothing OS Expo App)',
+        date: 'Oct 15',
+        preview: 'Expo React Native client with yt-dlp range proxy backend...',
+        pinned: true,
+        content: `
+            <div class="space-y-4 text-sm text-gray-200">
+                <div class="flex items-center space-x-2 pb-2 border-b border-white/10">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-300">MOBILE APP</span>
+                    <span class="text-xs text-gray-400">React Native Expo 54</span>
+                </div>
+                <h2 class="text-xl font-bold text-white">Veer Music Engineering Journal</h2>
+                <p class="text-gray-300 leading-relaxed">Built for Nothing OS with authentic dot-matrix typography, a physics-based 33 RPM spinning vinyl disc, and real-time LRC karaoke lyrics synced with audio scrub position.</p>
+                <div class="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1.5 text-xs text-gray-300">
+                    <div><strong>Backend:</strong> Node.js HTTP byte-range proxy caching audio segments using yt-dlp.</div>
+                    <div><strong>Audio Engine:</strong> Expo AV with background lock-screen notification controls.</div>
+                    <div><strong>Offline Storage:</strong> 200MB Least Recently Used (LRU) audio cache.</div>
+                </div>
+            </div>
+        `
+    },
+    {
+        id: 'webrip',
+        title: 'WebRip Scraping Engine',
+        date: 'Oct 12',
+        preview: 'BFS deep crawl website to ZIP archive with SSE progress...',
+        pinned: false,
+        content: `
+            <div class="space-y-4 text-sm text-gray-200">
+                <div class="flex items-center space-x-2 pb-2 border-b border-white/10">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/20 text-teal-300">CLI & WEBSCRAPING</span>
+                    <span class="text-xs text-gray-400">Playwright & Node.js</span>
+                </div>
+                <h2 class="text-xl font-bold text-white">WebRip Scraper Design</h2>
+                <p class="text-gray-300 leading-relaxed">Engineered a complete offline website archiving system. Performs BFS graph traversals, rewrites asset links to relative paths, and outputs a downloadable ZIP archive with real-time SSE progress indicators.</p>
+            </div>
+        `
+    },
+    {
+        id: 'scratchpad',
+        title: '✏️ Interactive Scratchpad (Auto-Saved)',
+        date: 'Live',
+        preview: 'Type developer thoughts, notes or interview feedback...',
+        pinned: false,
+        isScratchpad: true
+    }
+];
+
+let currentSelectedNoteId = 'arch';
+
+function initNotesApp() {
+    renderNotesList();
+    selectNote('arch');
+}
+
+function renderNotesList(filter = '') {
+    const listEl = document.getElementById('notes-list-container');
+    if (!listEl) return;
+
+    const filtered = DEFAULT_NOTES.filter(n => {
+        if (!filter) return true;
+        return n.title.toLowerCase().includes(filter.toLowerCase()) || n.preview.toLowerCase().includes(filter.toLowerCase());
+    });
+
+    listEl.innerHTML = filtered.map(note => `
+        <div class="notes-item ${note.id === currentSelectedNoteId ? 'active' : ''}" onclick="selectNote('${note.id}')">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-white truncate">${note.pinned ? '<i class="fas fa-thumbtack text-[9px] text-amber-400 mr-1"></i>' : ''}${note.title}</span>
+                <span class="text-[10px] text-gray-400 shrink-0 ml-1">${note.date}</span>
+            </div>
+            <p class="text-[11px] text-gray-400 truncate mt-0.5">${note.preview}</p>
+        </div>
+    `).join('');
+}
+
+function selectNote(noteId) {
+    currentSelectedNoteId = noteId;
+    const pane = document.getElementById('note-view-pane');
+    if (!pane) return;
+
+    renderNotesList(document.getElementById('notes-search-input') ? document.getElementById('notes-search-input').value : '');
+
+    const note = DEFAULT_NOTES.find(n => n.id === noteId);
+    if (!note) return;
+
+    if (note.isScratchpad) {
+        const savedText = localStorage.getItem('ranveer_notes_scratchpad') || 'Type your notes, ideas, or feedback for Ranveer here... (Auto-saved)';
+        pane.innerHTML = `
+            <div class="h-full flex flex-col justify-between">
+                <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center"><i class="fas fa-edit text-amber-400 mr-2 text-sm"></i> Developer Scratchpad</h2>
+                        <span class="text-[11px] text-gray-400">Auto-saved to your browser's local storage</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="copyScratchpad()" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-xs text-white transition flex items-center space-x-1">
+                            <i class="fas fa-copy text-[10px]"></i>
+                            <span>Copy</span>
+                        </button>
+                        <button onclick="clearScratchpad()" class="px-2.5 py-1 rounded bg-red-500/20 hover:bg-red-500/30 text-xs text-red-300 transition">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+                <textarea id="scratchpad-textarea" class="flex-1 w-full bg-transparent p-3 text-sm text-gray-100 font-mono focus:outline-none resize-none mt-2 leading-relaxed" placeholder="Type notes here..." oninput="localStorage.setItem('ranveer_notes_scratchpad', this.value)">${savedText}</textarea>
+            </div>
+        `;
+    } else {
+        pane.innerHTML = note.content;
+    }
+}
+
+function filterNotes(val) {
+    renderNotesList(val);
+}
+
+function createNewNote() {
+    selectNote('scratchpad');
+    const ta = document.getElementById('scratchpad-textarea');
+    if (ta) {
+        ta.focus();
+        showToast('Switched to Developer Scratchpad', 'fas fa-pen');
+    }
+}
+
+function copyScratchpad() {
+    const ta = document.getElementById('scratchpad-textarea');
+    if (ta) {
+        navigator.clipboard.writeText(ta.value).then(() => {
+            showToast('Note copied to clipboard!', 'fas fa-check');
+        });
+    }
+}
+
+function clearScratchpad() {
+    const ta = document.getElementById('scratchpad-textarea');
+    if (ta) {
+        ta.value = '';
+        localStorage.removeItem('ranveer_notes_scratchpad');
+        showToast('Scratchpad cleared', 'fas fa-trash');
     }
 }
 
@@ -855,30 +1303,165 @@ mern-visualizer scan</pre>
     },
     "nothing-veer": {
         title: "Nothing-Veer — Veer Music",
-        subtitle: "Expo + yt-dlp music client",
-        npmUrl: "https://github.com/Rvjais/Nothing-Veer",
+        subtitle: "Expo + yt-dlp Range Proxy Music App",
+        npmUrl: "",
         githubUrl: "https://github.com/Rvjais/Nothing-Veer",
         content: `
             <h1>Veer Music — Nothing OS Style Music App</h1>
-            <p><strong>Expo RN + Node yt-dlp proxy. Vinyl player, synced lyrics, offline cache.</strong></p>
-            <h2>✨ Features & How they help</h2>
-            <ul>
-                <li><strong>High-quality streaming (AAC/Opus):</strong> Range proxy for instant seek — saves data on Low, studio on High.</li>
-                <li><strong>Synced LRC tap-to-seek:</strong> LRCLIB lyrics — sing-along + jump to verse.</li>
-                <li><strong>Home + Mood pills:</strong> Quick Picks, CHILL/WORKOUT/POP — 3x faster discovery.</li>
-                <li><strong>Downloads + Smart Cache LRU:</strong> Permanent + 50/200/500MB auto — metro/flight ready.</li>
-                <li><strong>Vinyl + Glyph EQ + Queue:</strong> Background + notification — drive/gym safe.</li>
-                <li><strong>YouTube auth or Guest:</strong> WebView SID/HSID or skip — never stuck on 401/403.</li>
-            </ul>
-            <h2>🚀 Run</h2>
-            <pre>cd backend\nnpm install\nnpm start\ncd ../frontend\nnpm install\nnpx expo start</pre>
-            <p>• <strong>GitHub:</strong> <a href="https://github.com/Rvjais/Nothing-Veer" target="_blank" class="text-blue-400 hover:underline">Rvjais/Nothing-Veer</a></p>
+            <p><strong>Audiophile YouTube Music Client & yt-dlp Range Proxy built with React Native Expo 54 and Node.js 22.</strong></p>
+
+            <div class="mb-3">
+                <span class="readme-hero-badge bg-red-500/20 text-red-400 border border-red-500/30"><i class="fas fa-music mr-1"></i> React Native Expo</span>
+                <span class="readme-hero-badge bg-zinc-800 text-gray-200 border border-zinc-700"><i class="fas fa-circle-notch mr-1"></i> Nothing OS Dot-Matrix</span>
+                <span class="readme-hero-badge bg-purple-500/20 text-purple-300 border border-purple-500/30"><i class="fas fa-sliders-h mr-1"></i> Opus 160k / AAC 128k</span>
+                <span class="readme-hero-badge bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"><i class="fas fa-download mr-1"></i> Smart Offline Cache</span>
+                <span class="readme-hero-badge bg-blue-500/20 text-blue-300 border border-blue-500/30"><i class="fab fa-youtube mr-1"></i> YouTube Session Sync</span>
+            </div>
+
+            <blockquote>
+                Engineered with a minimalist Nothing OS aesthetic (Obsidian AMOLED and Ghost White Liquid Glass). Combines a physical vinyl turntable player with real-time synchronized LRC lyrics, multi-lingual font rendering, lossless/high-bitrate Opus streaming, and smart offline caching for metro and airplane travel.
+            </blockquote>
+
+            <h2>📸 Visual Screenshot Showcase & Architecture</h2>
+            <p class="text-xs text-gray-400">Click any screenshot to zoom and inspect the UI layout in detail.</p>
+
+            <div class="readme-screenshot-grid">
+                <!-- Screen 1: Vinyl Player -->
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-veer-1')">
+                        <img src="assets/VEER-MUSIC/Screenshot_20261016-113318.png" alt="Veer Music Vinyl Player" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-record-vinyl text-red-500 mr-1.5"></i> Vinyl Turntable Player</span> <span class="text-[10px] px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-mono">NOW PLAYING</span></h4>
+                        <p>Interactive rotating vinyl disc with dynamic album art center label, real-time scrubber timeline, quick-add playlist, heart favorite, and 1-tap lyrics karaoke toggle.</p>
+                    </div>
+                </div>
+
+                <!-- Screen 2: Synced Lyrics -->
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-veer-2')">
+                        <img src="assets/VEER-MUSIC/Screenshot_20261016-113332.png" alt="Veer Music Synchronized Lyrics" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-microphone-alt text-purple-400 mr-1.5"></i> Real-Time Synced Lyrics</span> <span class="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">LRC KARAOKE</span></h4>
+                        <p>Word-for-word and line-by-line live synchronized lyrics with active glowing highlight. Supports multi-lingual Hindi/Urdu/English unicode glyphs with tap-to-seek timestamp jumping.</p>
+                    </div>
+                </div>
+
+                <!-- Screen 3: Home Dashboard -->
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-veer-3')">
+                        <img src="assets/VEER-MUSIC/Screenshot_20261016-113243.png" alt="Veer Music Home Dashboard" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-home text-blue-400 mr-1.5"></i> Home Dashboard</span> <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">DISCOVERY</span></h4>
+                        <p>Signature Nothing OS dot-matrix dashboard with live YouTube session connection, "12 Saved • Offline ready" counter, and Fresh & Trending Quick Picks carousel.</p>
+                    </div>
+                </div>
+
+                <!-- Screen 4: Search & Discovery -->
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-veer-4')">
+                        <img src="assets/VEER-MUSIC/Screenshot_20261016-113255.png" alt="Veer Music Search" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-search text-emerald-400 mr-1.5"></i> Search & 1-Tap Download</span> <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">FAST CACHE</span></h4>
+                        <p>Instant typeahead search with filter pills for SONGS, ALBUMS, ARTISTS. Features direct 1-tap download buttons right on the search results for instantaneous offline saving.</p>
+                    </div>
+                </div>
+
+                <!-- Screen 5: Settings & Bitrate Selection -->
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-veer-5')">
+                        <img src="assets/VEER-MUSIC/Screenshot_20261016-113305.png" alt="Veer Music Settings" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-sliders-h text-amber-400 mr-1.5"></i> Audiophile Bitrates & Themes</span> <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">SETTINGS</span></h4>
+                        <p>Granular stream bitrate selector: High Quality (Opus 160kbps / AAC 128kbps), Balanced (128kbps), and Data Saver (Opus 70kbps). Theme switcher for Dark AMOLED Obsidian Black vs Ghost White.</p>
+                    </div>
+                </div>
+
+                <!-- Screen 6: Metadata & Source -->
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-veer-6')">
+                        <img src="assets/VEER-MUSIC/Screenshot_20261016-113321.png" alt="Veer Music Track Details" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-info-circle text-sky-400 mr-1.5"></i> Track Metadata & Source</span> <span class="text-[10px] px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">ID3 & YOUTUBE</span></h4>
+                        <p>Full metadata inspector with high-res cover art, artist credits, duration, YouTube Video ID (e.g. Q2U8Qk80-Es), global stream catalog reference, and native OS share integration.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2>✨ Comprehensive Feature Breakdown</h2>
+            <div class="readme-feature-grid">
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-red-500/20 text-red-400"><i class="fas fa-compact-disc"></i></div>
+                        <h4>Vinyl Turntable UI Physics</h4>
+                    </div>
+                    <p>Smooth 33 RPM rotating vinyl disc animation synced with audio playback state. Center album label dynamically loads high-resolution artwork with subtle ambient shadow lighting.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-purple-500/20 text-purple-400"><i class="fas fa-align-left"></i></div>
+                        <h4>Synchronized LRC Karaoke Lyrics</h4>
+                    </div>
+                    <p>Integrated with LRCLIB & YouTube subtitle streams to render timed lyrics. Active vocal phrases highlight with an electric glow, and tapping any verse scrubs track position instantly.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-amber-500/20 text-amber-400"><i class="fas fa-wave-square"></i></div>
+                        <h4>Triple-Tier Audiophile Bitrates</h4>
+                    </div>
+                    <p>Choose between Studio High Quality (Opus 160kbps / AAC 128kbps) for Hi-Fi listening, Balanced (128kbps), or Data Saver (Opus 70kbps) to conserve cellular data while roaming.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-emerald-500/20 text-emerald-400"><i class="fas fa-cloud-download-alt"></i></div>
+                        <h4>Smart LRU Cache & Offline Storage</h4>
+                    </div>
+                    <p>Persistent 1-click track downloads alongside an automatic 50MB/200MB/500MB Least Recently Used (LRU) buffer for uninterrupted listening in underground subways or flights.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-blue-500/20 text-blue-400"><i class="fab fa-youtube"></i></div>
+                        <h4>YouTube Session Cookie Proxy</h4>
+                    </div>
+                    <p>Optional YouTube cookie persistence via secure WebView handshake, preventing 401/403 bot blocks and granting access to personalized algorithmic recommendations and playlists.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-zinc-500/20 text-gray-300"><i class="fas fa-moon"></i></div>
+                        <h4>AMOLED Obsidian & Ghost White</h4>
+                    </div>
+                    <p>True #000000 black theme maximizes battery life on OLED displays, paired with Nothing OS dot-matrix typography and minimalist geometric glyphs.</p>
+                </div>
+            </div>
+
+            <h2>🚀 Installation & Local Development</h2>
+            <p>To run both the React Native Expo client and Node.js backend proxy locally:</p>
+            <pre># 1. Start Node.js yt-dlp Range Proxy Backend
+cd backend
+npm install
+npm start
+
+# 2. Start Expo React Native Frontend
+cd ../frontend
+npm install
+npx expo start</pre>
+
+            <h2>🔗 Repository & Links</h2>
+            <p>
+                • <strong>GitHub Repository:</strong> <a href="https://github.com/Rvjais/Nothing-Veer" target="_blank" class="text-blue-400 hover:underline">github.com/Rvjais/Nothing-Veer</a><br>
+                • <strong>Developer:</strong> Ranveer Jaiswal (<a href="https://github.com/Rvjais" target="_blank" class="text-blue-400 hover:underline">@Rvjais</a>)
+            </p>
         `
     },
     "ranveer-echo": {
         title: "Ranveer_Echo — H.U.D. Assistant",
         subtitle: "Tauri v2 + Rust + Python vision",
-        npmUrl: "https://github.com/Rvjais/Ranveer_Echo",
+        npmUrl: "",
         githubUrl: "https://github.com/Rvjais/Ranveer_Echo",
         content: `
             <h1>RANVEER H.U.D. — Jarvis Desktop Assistant</h1>
@@ -899,23 +1482,117 @@ mern-visualizer scan</pre>
     },
     "web-ripper": {
         title: "Web-Scrapper — WebRip",
-        subtitle: "Flask + Playwright BFS to ZIP",
-        npmUrl: "https://github.com/Rvjais/Web-Scrapper",
+        subtitle: "Flask + Playwright BFS to ZIP Cloner",
+        npmUrl: "",
         githubUrl: "https://github.com/Rvjais/Web-Scrapper",
         content: `
-            <h1>WebRip — Full Website Scraper</h1>
-            <p><strong>BFS crawl any URL → offline ZIP. SPA + anti-bot + SSE live.</strong></p>
-            <h2>✨ Features & How they help</h2>
-            <ul>
-                <li><strong>Full / Single / Discover modes:</strong> Depth 0-20, 1-5000 pages — backup or quick save.</li>
-                <li><strong>Chromium rendering:</strong> Auto-scroll + DOM snapshot — clones React/Next blank-page fix.</li>
-                <li><strong>Anti-bot CDP + cookies:</strong> Use-my-Chrome :9222 + challenge wait — save login sites you own.</li>
-                <li><strong>Offline rewriting:</strong> a__b.html + srcset localize — double-click works offline.</li>
-                <li><strong>SSE live + ZIP:</strong> Counters + log + serve.py/OPEN_SITE.bat — share with client.</li>
-            </ul>
-            <h2>🚀 Run</h2>
-            <pre>pip install -r requirements.txt\npython -m playwright install chromium\npython app.py</pre>
-            <p>• <strong>GitHub:</strong> <a href="https://github.com/Rvjais/Web-Scrapper" target="_blank" class="text-blue-400 hover:underline">Rvjais/Web-Scrapper</a></p>
+            <h1>WebRip — Full-Spectrum Website Scraper & Offline Cloner</h1>
+            <p><strong>High-performance BFS Web Crawler and Offline Archive Generator built with Python 3.11, Flask, Playwright Chromium, and Server-Sent Events (SSE).</strong></p>
+
+            <div class="mb-3">
+                <span class="readme-hero-badge bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"><i class="fas fa-spider mr-1"></i> BFS Deep Crawler</span>
+                <span class="readme-hero-badge bg-blue-500/20 text-blue-300 border border-blue-500/30"><i class="fas fa-window-restore mr-1"></i> Playwright Chromium SPA</span>
+                <span class="readme-hero-badge bg-amber-500/20 text-amber-300 border border-amber-500/30"><i class="fas fa-shield-alt mr-1"></i> Anti-Bot CDP :9222</span>
+                <span class="readme-hero-badge bg-purple-500/20 text-purple-300 border border-purple-500/30"><i class="fas fa-file-archive mr-1"></i> Offline ZIP & Asset Rewriter</span>
+                <span class="readme-hero-badge bg-teal-500/20 text-teal-300 border border-teal-500/30"><i class="fas fa-stream mr-1"></i> Live SSE Progress Stream</span>
+            </div>
+
+            <blockquote>
+                Scrape any website, page by page. Clones entire modern web applications—including JavaScript SPAs (React, Vue, Next.js)—by executing headless browser automation, remapping relative hyperlinks, and packaging assets into an offline-browseable ZIP bundle with zero server dependencies.
+            </blockquote>
+
+            <h2>📸 Visual Screenshot Showcase & Architecture</h2>
+            <p class="text-xs text-gray-400">Click either screenshot to inspect the dark and light console interfaces.</p>
+
+            <div class="readme-screenshot-grid">
+                <!-- Screen 1: Dark Mode -->
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-webrip-1')">
+                        <img src="assets/Web-Scrapper/darkmode.png" alt="WebRip Dark Mode Console" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-moon text-emerald-400 mr-1.5"></i> Dark Mode Scraper Console</span> <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">OBSIDIAN NEON</span></h4>
+                        <p>Main extraction dashboard showing Crawl Mode (Full Site, Single Page, Discover Links), BFS Depth limits (0-20), Max Pages (1-5000), Content Extractors (HTML, Media, CSS/JS, Fonts), and real-time SSE progress telemetry.</p>
+                    </div>
+                </div>
+
+                <!-- Screen 2: Light Mode -->
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-webrip-2')">
+                        <img src="assets/Web-Scrapper/lightmode.png" alt="WebRip Light Mode Console" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-sun text-amber-400 mr-1.5"></i> Light Mode Interface</span> <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">HIGH CONTRAST</span></h4>
+                        <p>Clean high-contrast theme showing single-click ZIP archive packaging, Playwright rendering toggle, anti-bot Cloudflare manual challenge wait solver, and real-time download logs.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2>✨ Deep Architectural Capabilities</h2>
+            <div class="readme-feature-grid">
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-emerald-500/20 text-emerald-400"><i class="fas fa-sitemap"></i></div>
+                        <h4>BFS Deep Crawl Algorithm</h4>
+                    </div>
+                    <p>Breadth-First Search (BFS) spider traverses internal links level by level. Enforces configurable depth limits (0 to 20 tiers) and page limits (up to 5,000 pages) to prevent infinite loops or crawler traps.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-blue-500/20 text-blue-400"><i class="fas fa-code"></i></div>
+                        <h4>Headless Playwright Chromium (SPA Fix)</h4>
+                    </div>
+                    <p>Solves the blank-screen issue in dynamic JavaScript SPAs (React, Angular, Vue, Next.js). Automatically scrolls down the page to trigger lazy-loaded assets and captures the fully rendered post-hydration DOM snapshot.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-amber-500/20 text-amber-400"><i class="fas fa-user-shield"></i></div>
+                        <h4>Anti-Bot & Cloudflare Bypass (CDP :9222)</h4>
+                    </div>
+                    <p>Connects via Chrome DevTools Protocol to your running local browser. Injects authenticated session cookies and pauses the crawler to let you solve Turnstile/Cloudflare captchas before resuming automation.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-purple-500/20 text-purple-400"><i class="fas fa-link"></i></div>
+                        <h4>100% Offline URL & Asset Rewriting</h4>
+                    </div>
+                    <p>Rewrites internal hyperlinks to relative paths with clean <code>a__b.html</code> slugging. Rewrites image <code>srcset</code> attributes and CSS <code>url(...)</code> references so the site works straight out of the ZIP file without any server.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-teal-500/20 text-teal-400"><i class="fas fa-satellite-dish"></i></div>
+                        <h4>Real-Time SSE Telemetry Stream</h4>
+                    </div>
+                    <p>Uses Server-Sent Events to stream live download stats, active queue count, bandwidth usage, and console logging directly into the web UI without polling.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-indigo-500/20 text-indigo-400"><i class="fas fa-file-archive"></i></div>
+                        <h4>One-Click Offline ZIP Bundle</h4>
+                    </div>
+                    <p>Compacts all extracted HTML, CSS, JavaScript, media, and fonts into a portable ZIP archive. Includes bundled <code>serve.py</code> and <code>OPEN_SITE.bat</code> scripts for instant one-click local previews.</p>
+                </div>
+            </div>
+
+            <h2>🚀 Installation & Quick Start</h2>
+            <p>Run WebRip locally on Python 3.11+:</p>
+            <pre># 1. Clone repository and install dependencies
+git clone https://github.com/Rvjais/Web-Scrapper.git
+cd Web-Scrapper
+pip install -r requirements.txt
+
+# 2. Install Playwright Chromium headless engine
+python -m playwright install chromium
+
+# 3. Launch the web application
+python app.py
+# Open http://localhost:5000 in your browser</pre>
+
+            <h2>🔗 Repository & Links</h2>
+            <p>
+                • <strong>GitHub Repository:</strong> <a href="https://github.com/Rvjais/Web-Scrapper" target="_blank" class="text-blue-400 hover:underline">github.com/Rvjais/Web-Scrapper</a><br>
+                • <strong>Developer:</strong> Ranveer Jaiswal (<a href="https://github.com/Rvjais" target="_blank" class="text-blue-400 hover:underline">@Rvjais</a>)
+            </p>
         `
     },
     "srchess": {
@@ -999,8 +1676,31 @@ function openReadmeModal(projectId = 'fullstack-code-visualiser') {
     if (titleEl) titleEl.innerText = data.title;
     if (subtitleEl) subtitleEl.innerText = data.subtitle;
     if (bodyEl) bodyEl.innerHTML = data.content;
-    if (npmBtn) npmBtn.href = data.npmUrl;
-    if (githubBtn) githubBtn.href = data.githubUrl;
+    
+    if (npmBtn) {
+        if (data.npmUrl) {
+            npmBtn.style.display = 'inline-flex';
+            npmBtn.href = data.npmUrl;
+            if (data.npmLabel) {
+                npmBtn.innerHTML = data.npmLabel;
+            } else if (data.npmUrl.includes('npmjs')) {
+                npmBtn.innerHTML = '<i class="fab fa-npm mr-1.5"></i> npm';
+            } else {
+                npmBtn.innerHTML = '<i class="fas fa-external-link-alt mr-1.5"></i> Live Demo';
+            }
+        } else {
+            npmBtn.style.display = 'none';
+        }
+    }
+    
+    if (githubBtn) {
+        if (data.githubUrl) {
+            githubBtn.style.display = 'inline-flex';
+            githubBtn.href = data.githubUrl;
+        } else {
+            githubBtn.style.display = 'none';
+        }
+    }
 
     if (overlay) {
         overlay.classList.add('is-active');
@@ -1045,6 +1745,70 @@ function closeSkillsFolderModal() {
 
 // --- macOS & iOS Photos / Gallery System ---
 const initialGalleryItems = [
+    {
+        id: "proj-veer-1",
+        type: "photo",
+        title: "Veer Music — Vinyl Turntable Player",
+        desc: "Rotating vinyl turntable animation with dynamic album art center badge, 1-tap lyrics karaoke toggle & Nothing OS controls",
+        src: "assets/VEER-MUSIC/Screenshot_20261016-113318.png",
+        date: "Oct 2026"
+    },
+    {
+        id: "proj-veer-2",
+        type: "photo",
+        title: "Veer Music — Real-Time Synced Lyrics",
+        desc: "Live synchronized line-by-line LRC scrolling lyrics with active glowing highlight, multi-lingual Hindi/Urdu unicode support, and tap-to-seek",
+        src: "assets/VEER-MUSIC/Screenshot_20261016-113332.png",
+        date: "Oct 2026"
+    },
+    {
+        id: "proj-veer-3",
+        type: "photo",
+        title: "Veer Music — Home Dashboard",
+        desc: "Nothing OS dot-matrix dashboard with YouTube session connection, 12 Saved offline counter, and Fresh & Trending quick picks carousel",
+        src: "assets/VEER-MUSIC/Screenshot_20261016-113243.png",
+        date: "Oct 2026"
+    },
+    {
+        id: "proj-veer-4",
+        type: "photo",
+        title: "Veer Music — Instant Search & 1-Tap Download",
+        desc: "Real-time search with Songs, Albums, Artists filter pills and direct 1-tap offline download buttons",
+        src: "assets/VEER-MUSIC/Screenshot_20261016-113255.png",
+        date: "Oct 2026"
+    },
+    {
+        id: "proj-veer-5",
+        type: "photo",
+        title: "Veer Music — Audiophile Bitrates & Themes",
+        desc: "Dark AMOLED Obsidian Black vs Ghost White Liquid Glass themes, YouTube cookie auth, and Opus 160kbps studio stream quality",
+        src: "assets/VEER-MUSIC/Screenshot_20261016-113305.png",
+        date: "Oct 2026"
+    },
+    {
+        id: "proj-veer-6",
+        type: "photo",
+        title: "Veer Music — Track Details & Metadata Inspector",
+        desc: "Detailed track metadata breakdown with cover art, YouTube Video ID (Q2U8Qk80-Es), global audio source, and native share sheet",
+        src: "assets/VEER-MUSIC/Screenshot_20261016-113321.png",
+        date: "Oct 2026"
+    },
+    {
+        id: "proj-webrip-1",
+        type: "photo",
+        title: "WebRip — Dark Mode Scraper Console",
+        desc: "Obsidian Neon scraping console with BFS crawl depth (0-20), max page limiter (1-5000), asset checkboxes, and real-time SSE progress stream",
+        src: "assets/Web-Scrapper/darkmode.png",
+        date: "Oct 2026"
+    },
+    {
+        id: "proj-webrip-2",
+        type: "photo",
+        title: "WebRip — Light Mode Scraper & Exporter",
+        desc: "High-contrast light mode view with 1-click ZIP export, Playwright Chromium SPA rendering toggle, and anti-bot Cloudflare solver",
+        src: "assets/Web-Scrapper/lightmode.png",
+        date: "Oct 2026"
+    },
     {
         id: "img-1",
         type: "photo",
@@ -1348,10 +2112,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.classList.remove('selected');
             }
         });
+        const input = document.getElementById('spotlight-input');
+        const query = input ? input.value.toLowerCase().trim() : '';
+        const filtered = searchIndex.filter(item => {
+            if (!query) return true;
+            return item.title.toLowerCase().includes(query) || 
+                   item.desc.toLowerCase().includes(query) || 
+                   item.category.toLowerCase().includes(query) ||
+                   (item.tech && item.tech.some(t => t.toLowerCase().includes(query)));
+        }).slice(0, 8);
+        if (filtered[selectedSpotlightIndex]) {
+            renderSpotlightPreview(filtered[selectedSpotlightIndex]);
+        }
     }
 
-    // Global keyboard shortcut for Spotlight: Cmd+K / Ctrl+K / Cmd+Space, and Escape for modals
+    // Global keyboard shortcut for Spotlight, Calculator, and Escape for modals
     document.addEventListener('keydown', (e) => {
+        // Calculator keyboard handler
+        const calcApp = document.getElementById('app-calculator');
+        if (calcApp && calcApp.classList.contains('is-open')) {
+            if (e.key >= '0' && e.key <= '9') {
+                e.preventDefault();
+                handleCalcDigit(e.key);
+                return;
+            } else if (e.key === '.') {
+                e.preventDefault();
+                handleCalcDigit('.');
+                return;
+            } else if (e.key === '+') {
+                e.preventDefault();
+                handleCalcOp('+');
+                return;
+            } else if (e.key === '-') {
+                e.preventDefault();
+                handleCalcOp('-');
+                return;
+            } else if (e.key === '*' || e.key === 'x' || e.key === 'X') {
+                e.preventDefault();
+                handleCalcOp('*');
+                return;
+            } else if (e.key === '/') {
+                e.preventDefault();
+                handleCalcOp('/');
+                return;
+            } else if (e.key === 'Enter' || e.key === '=') {
+                e.preventDefault();
+                handleCalcEqual();
+                return;
+            } else if (e.key === 'Backspace') {
+                e.preventDefault();
+                if (calcCurrent.length > 1 && calcCurrent !== 'Error') {
+                    calcCurrent = calcCurrent.slice(0, -1);
+                } else {
+                    calcCurrent = '0';
+                }
+                updateCalcDisplay();
+                return;
+            } else if (e.key === 'c' || e.key === 'C') {
+                handleCalcClear();
+                return;
+            }
+        }
+
         if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K' || e.code === 'Space')) {
             e.preventDefault();
             toggleSpotlight();
@@ -1363,23 +2185,47 @@ document.addEventListener('DOMContentLoaded', () => {
             closeGalleryLightbox();
             closeMissionControl();
             closeIosAppSwitcher();
+            closeAppleMenu();
+            closeControlCenter();
+            closeAboutThisMac();
+            closeApp('calculator');
+            closeApp('notes');
         }
     });
 
-    // Hide desktop dock indicator dots initially
-    ['about', 'projects', 'skills', 'contact', 'gallery'].forEach(id => {
-        const dot = document.getElementById(`dot-${id}`);
-        if (dot) dot.style.display = 'none';
+    // Outside click to close macOS 26 Tahoe Apple Menu and Control Center
+    document.addEventListener('click', (e) => {
+        const appleMenu = document.getElementById('macos-apple-menu');
+        if (appleMenu && appleMenu.classList.contains('is-open')) {
+            if (!e.target.closest('#macos-apple-menu') && !e.target.closest('.fa-apple')) {
+                closeAppleMenu();
+            }
+        }
+        const cc = document.getElementById('macos-control-center');
+        if (cc && cc.classList.contains('is-open')) {
+            if (!e.target.closest('#macos-control-center') && !e.target.closest('#mac-control-center-btn') && !e.target.closest('#mac-clock')) {
+                closeControlCenter();
+            }
+        }
     });
 
     // Initialize authentic gestures
     initIosHomeGestures();
     initDesktopMissionControlGestures();
 
-    // Ensure all full-screen overlays are strictly closed on initial page load
+    // Initialize macOS 26 Tahoe Physics Dock
+    initMacOSDock();
+
+    // Initialize iOS 18 Control Center Vertical Sliders
+    initIosControlCenterSliders();
+
+    // Ensure all overlays and dropdowns are strictly closed on initial page load
     closeMissionControl();
     closeIosAppSwitcher();
     closeSkillsFolderModal();
+    closeAppleMenu();
+    closeControlCenter();
+    closeAboutThisMac();
 });
 
 // ==========================================================================
@@ -1421,6 +2267,20 @@ const APP_METADATA = {
         icon: 'fas fa-images',
         iconColor: 'bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-500 text-white',
         badge: 'Gallery Hub'
+    },
+    'calculator': {
+        title: 'Calculator',
+        subtitle: 'Arithmetic & Decimal Math Engine',
+        icon: 'fas fa-calculator',
+        iconColor: 'bg-gradient-to-b from-amber-500 to-orange-600 text-white',
+        badge: 'Utility'
+    },
+    'notes': {
+        title: 'Notes',
+        subtitle: "Ranveer's DevPad & Engineering Journal",
+        icon: 'fas fa-note-sticky',
+        iconColor: 'bg-gradient-to-b from-amber-300 to-yellow-500 text-amber-900',
+        badge: 'DevPad'
     }
 };
 
@@ -2017,8 +2877,124 @@ function closeAllMobileApps() {
 // macOS Tahoe Mission Control (Exposé) Core
 // ==========================================================================
 
+// ==========================================================================
+// macOS 26 Tahoe Mission Control (Exposé) & Spaces Management
+// ==========================================================================
+
+let tahoeSpaces = [
+    { id: 'space-1', name: 'Desktop 1', type: 'alpine', bg: 'var(--mac-bg)' },
+    { id: 'space-2', name: 'Desktop 2 (Dev)', type: 'dev', bg: 'linear-gradient(135deg, #0b0f19 0%, #030712 100%)' }
+];
+let currentTahoeSpaceIdx = 0;
+
+function renderMissionControlSpaces() {
+    const container = document.getElementById('tahoe-spaces-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    tahoeSpaces.forEach((space, index) => {
+        const item = document.createElement('div');
+        item.className = `tahoe-space-item ${index === currentTahoeSpaceIdx ? 'is-active' : ''}`;
+        item.onclick = (e) => {
+            e.stopPropagation();
+            switchTahoeSpace(index);
+        };
+
+        const screen = document.createElement('div');
+        screen.className = 'tahoe-space-screen';
+        
+        // Use active wallpaper for Desktop 1 or configured background
+        if (index === 0) {
+            screen.style.backgroundImage = typeof TAHOE_WALLPAPERS !== 'undefined' 
+                ? `url('${TAHOE_WALLPAPERS[currentWallpaperIdx]}')` 
+                : 'var(--mac-bg)';
+        } else if (space.bg && space.bg.startsWith('url')) {
+            screen.style.backgroundImage = space.bg;
+        } else {
+            screen.style.background = space.bg || 'linear-gradient(135deg, #111827 0%, #030712 100%)';
+        }
+
+        // Mini menubar line and mini dock
+        const bar = document.createElement('div');
+        bar.className = 'tahoe-space-screen-bar';
+        const dock = document.createElement('div');
+        dock.className = 'tahoe-space-screen-dock';
+        screen.appendChild(bar);
+        screen.appendChild(dock);
+
+        // Close button for extra spaces (Desktop 2+)
+        if (index > 0) {
+            const closeBtn = document.createElement('div');
+            closeBtn.className = 'tahoe-space-close';
+            closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            closeBtn.title = 'Remove Desktop Space';
+            closeBtn.onclick = (e) => {
+                e.stopPropagation();
+                removeTahoeSpace(index);
+            };
+            item.appendChild(closeBtn);
+        }
+
+        const title = document.createElement('span');
+        title.className = 'tahoe-space-title';
+        title.innerText = space.name;
+
+        item.appendChild(screen);
+        item.appendChild(title);
+        container.appendChild(item);
+    });
+
+    // Add Space Button if spaces < 6
+    if (tahoeSpaces.length < 6) {
+        const addBtn = document.createElement('div');
+        addBtn.className = 'tahoe-space-add-btn';
+        addBtn.title = 'Create New Desktop Space';
+        addBtn.innerHTML = `
+            <i class="fas fa-plus text-xs mb-0.5"></i>
+            <span class="text-[10px] font-semibold">New Space</span>
+        `;
+        addBtn.onclick = (e) => {
+            e.stopPropagation();
+            addTahoeSpace();
+        };
+        container.appendChild(addBtn);
+    }
+}
+
+function switchTahoeSpace(idx) {
+    currentTahoeSpaceIdx = idx;
+    renderMissionControlSpaces();
+    showToast(`Switched to ${tahoeSpaces[idx].name}`, 'fas fa-desktop');
+}
+
+function addTahoeSpace() {
+    const newIdx = tahoeSpaces.length + 1;
+    tahoeSpaces.push({
+        id: `space-${newIdx}`,
+        name: `Desktop ${newIdx}`,
+        type: 'custom',
+        bg: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)'
+    });
+    currentTahoeSpaceIdx = tahoeSpaces.length - 1;
+    renderMissionControlSpaces();
+    showToast(`Created Desktop ${newIdx} Space`, 'fas fa-plus');
+}
+
+function removeTahoeSpace(idx) {
+    if (tahoeSpaces.length <= 1) return;
+    const removedName = tahoeSpaces[idx].name;
+    tahoeSpaces.splice(idx, 1);
+    if (currentTahoeSpaceIdx >= tahoeSpaces.length) {
+        currentTahoeSpaceIdx = tahoeSpaces.length - 1;
+    }
+    renderMissionControlSpaces();
+    showToast(`Closed ${removedName}`, 'fas fa-times');
+}
+
 function closeMissionControl() {
     isMissionControlOpen = false;
+    document.body.classList.remove('tahoe-mc-mode');
     const missionControlEl = document.getElementById('macos-mission-control');
     if (missionControlEl) {
         missionControlEl.classList.remove('is-active');
@@ -2034,11 +3010,14 @@ function openMissionControl() {
     if (!missionControlEl) return;
 
     isMissionControlOpen = true;
+    document.body.classList.add('tahoe-mc-mode');
     missionControlEl.style.display = 'flex';
     void missionControlEl.offsetWidth; // force reflow
     missionControlEl.classList.add('is-active');
     missionControlEl.style.opacity = '1';
     missionControlEl.style.pointerEvents = 'auto';
+
+    renderMissionControlSpaces();
     renderMissionControlTiles();
 }
 
@@ -2059,8 +3038,13 @@ function toggleMissionControl(forceState) {
 }
 
 function handleMissionControlBackdropClick(e) {
-    // If the click did not land on a window card, pill, close button or interactive control, immediately exit Mission Control!
-    if (!e.target.closest('.mission-window-card') && !e.target.closest('.mission-window-pill') && !e.target.closest('.mission-control-tile-close') && !e.target.closest('button') && !e.target.closest('.mission-control-top-bar')) {
+    // If the click did not land on a window card, pill, close button, space item, or interactive control, immediately exit Mission Control!
+    if (!e.target.closest('.mission-window-card') && 
+        !e.target.closest('.mission-window-pill') && 
+        !e.target.closest('.mission-control-tile-close') && 
+        !e.target.closest('.tahoe-spaces-shelf') && 
+        !e.target.closest('.tahoe-mc-empty-palette') && 
+        !e.target.closest('button')) {
         closeMissionControl();
     }
 }
@@ -2075,31 +3059,81 @@ function renderMissionControlTiles() {
     const openWindows = document.querySelectorAll('.app-window.is-open');
 
     if (openWindows.length === 0) {
+        // macOS Tahoe Clean Quick-Launch Matrix (Authentic Launchpad style, no clunky box)
         tilesContainer.innerHTML = `
-            <div class="flex flex-col items-center justify-center text-center p-10 max-w-lg mx-auto bg-white/10 border border-white/20 rounded-3xl backdrop-blur-3xl text-white shadow-2xl">
-                <div class="w-16 h-16 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center text-3xl mb-4 shadow-lg">
-                    <i class="fas fa-table-cells-large"></i>
+            <div class="tahoe-mc-empty-palette" onclick="event.stopPropagation()">
+                <div class="flex items-center space-x-2 text-cyan-400 text-xs font-semibold uppercase tracking-widest mb-1">
+                    <i class="fab fa-apple text-sm"></i>
+                    <span>macOS Tahoe 26.1 • ${tahoeSpaces[currentTahoeSpaceIdx] ? tahoeSpaces[currentTahoeSpaceIdx].name : 'Desktop 1'}</span>
                 </div>
-                <h3 class="text-xl font-bold text-white mb-1">No Open Windows</h3>
-                <p class="text-xs text-gray-300 mb-6">Launch an application from the Desktop or Dock to organize your workspace in Mission Control.</p>
-                <div class="flex flex-wrap items-center justify-center gap-2">
-                    <button onclick="event.stopPropagation(); toggleMissionControl(false); openApp('about')" class="px-3.5 py-1.5 rounded-xl bg-blue-600/40 hover:bg-blue-600/60 border border-blue-500/50 text-xs font-semibold text-blue-200 transition">About Me</button>
-                    <button onclick="event.stopPropagation(); toggleMissionControl(false); openApp('projects')" class="px-3.5 py-1.5 rounded-xl bg-green-600/40 hover:bg-green-600/60 border border-green-500/50 text-xs font-semibold text-green-200 transition">Projects</button>
-                    <button onclick="event.stopPropagation(); toggleMissionControl(false); openSkillsFolderModal()" class="px-3.5 py-1.5 rounded-xl bg-amber-600/40 hover:bg-amber-600/60 border border-amber-500/50 text-xs font-semibold text-amber-200 transition">Skills Folder</button>
-                    <button onclick="event.stopPropagation(); toggleMissionControl(false); openApp('contact')" class="px-3.5 py-1.5 rounded-xl bg-indigo-600/40 hover:bg-indigo-600/60 border border-indigo-500/50 text-xs font-semibold text-indigo-200 transition">Contact</button>
-                    <button onclick="event.stopPropagation(); toggleMissionControl(false); openApp('gallery')" class="px-3.5 py-1.5 rounded-xl bg-pink-600/40 hover:bg-pink-600/60 border border-pink-500/50 text-xs font-semibold text-pink-200 transition">Gallery</button>
+                <h2 class="text-xl font-bold text-white tracking-tight">Desktop Workspace Clean</h2>
+                <p class="text-xs text-gray-300/80 max-w-md mt-1">No applications are open in this space. Click any app below to launch into your workspace:</p>
+                
+                <div class="tahoe-mc-app-grid">
+                    <div class="tahoe-mc-app-item" onclick="event.stopPropagation(); toggleMissionControl(false); openApp('about')">
+                        <div class="tahoe-mc-app-icon bg-gradient-to-tr from-sky-400 to-blue-600">
+                            <i class="fab fa-safari"></i>
+                        </div>
+                        <span class="tahoe-mc-app-label">Safari</span>
+                        <span class="tahoe-mc-app-sub">About Me</span>
+                    </div>
+                    <div class="tahoe-mc-app-item" onclick="event.stopPropagation(); toggleMissionControl(false); openApp('projects')">
+                        <div class="tahoe-mc-app-icon bg-black text-green-400 border border-gray-700">
+                            <i class="fas fa-terminal"></i>
+                        </div>
+                        <span class="tahoe-mc-app-label">Terminal</span>
+                        <span class="tahoe-mc-app-sub">Projects</span>
+                    </div>
+                    <div class="tahoe-mc-app-item" onclick="event.stopPropagation(); toggleMissionControl(false); openSkillsFolderModal()">
+                        <div class="tahoe-mc-app-icon bg-gradient-to-b from-gray-200 to-gray-400 text-gray-800">
+                            <i class="fas fa-gear"></i>
+                        </div>
+                        <span class="tahoe-mc-app-label">Settings</span>
+                        <span class="tahoe-mc-app-sub">Skills</span>
+                    </div>
+                    <div class="tahoe-mc-app-item" onclick="event.stopPropagation(); toggleMissionControl(false); openApp('contact')">
+                        <div class="tahoe-mc-app-icon bg-gradient-to-tr from-sky-400 to-blue-600">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <span class="tahoe-mc-app-label">Mail</span>
+                        <span class="tahoe-mc-app-sub">Contact</span>
+                    </div>
+                    <div class="tahoe-mc-app-item" onclick="event.stopPropagation(); toggleMissionControl(false); openApp('gallery')">
+                        <div class="tahoe-mc-app-icon bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-500">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <span class="tahoe-mc-app-label">Photos</span>
+                        <span class="tahoe-mc-app-sub">Gallery</span>
+                    </div>
+                    <div class="tahoe-mc-app-item" onclick="event.stopPropagation(); toggleMissionControl(false); openApp('calculator')">
+                        <div class="tahoe-mc-app-icon bg-gradient-to-b from-amber-500 to-orange-600">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <span class="tahoe-mc-app-label">Calculator</span>
+                        <span class="tahoe-mc-app-sub">Math</span>
+                    </div>
+                    <div class="tahoe-mc-app-item" onclick="event.stopPropagation(); toggleMissionControl(false); openApp('notes')">
+                        <div class="tahoe-mc-app-icon bg-gradient-to-b from-amber-300 to-yellow-500 text-amber-900">
+                            <i class="fas fa-note-sticky"></i>
+                        </div>
+                        <span class="tahoe-mc-app-label">Notes</span>
+                        <span class="tahoe-mc-app-sub">DevPad</span>
+                    </div>
                 </div>
             </div>
         `;
         return;
     }
 
-    // Size cards proportionally
+    // Size cards dynamically according to window count
     let cardWidth = '520px';
     let cardHeight = '340px';
     if (openWindows.length === 1) {
-        cardWidth = '680px';
-        cardHeight = '420px';
+        cardWidth = '660px';
+        cardHeight = '410px';
+    } else if (openWindows.length === 2) {
+        cardWidth = '540px';
+        cardHeight = '350px';
     } else if (openWindows.length >= 4) {
         cardWidth = '460px';
         cardHeight = '295px';
@@ -2107,7 +3141,7 @@ function renderMissionControlTiles() {
 
     openWindows.forEach(win => {
         const appId = win.id.replace('app-', '');
-        const meta = APP_METADATA[appId] || {
+        const meta = (typeof APP_METADATA !== 'undefined' && APP_METADATA[appId]) || {
             title: appId,
             subtitle: appId,
             icon: 'fas fa-window-maximize',
@@ -2118,7 +3152,7 @@ function renderMissionControlTiles() {
         const itemContainer = document.createElement('div');
         itemContainer.className = 'mission-item-container';
 
-        // Floating Title Pill ABOVE window (NEVER cut off)
+        // Floating Title Pill ABOVE window (macOS Tahoe style)
         const pill = document.createElement('div');
         pill.className = 'mission-window-pill';
         pill.innerHTML = `<i class="${meta.icon} text-cyan-400"></i> <span class="font-bold text-white">${meta.title}</span> <span class="text-white/60 text-xs">— ${meta.subtitle}</span>`;
@@ -2135,23 +3169,24 @@ function renderMissionControlTiles() {
         titlebar.innerHTML = `
             <div class="flex items-center space-x-2">
                 <div class="mission-control-tile-close" title="Close Window"><i class="fas fa-times"></i></div>
-                <div class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123] opacity-80"></div>
-                <div class="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29] opacity-80"></div>
+                <div class="w-3.5 h-3.5 rounded-full bg-[#ffbd2e] border border-[#dea123] opacity-80"></div>
+                <div class="w-3.5 h-3.5 rounded-full bg-[#27c93f] border border-[#1aab29] opacity-80"></div>
             </div>
             <div class="text-xs font-semibold text-gray-300 flex items-center space-x-1.5">
                 <i class="${meta.icon} text-xs text-blue-400"></i>
                 <span>${meta.title}</span>
             </div>
-            <div class="text-[10px] text-gray-400 font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10">macOS</div>
+            <div class="text-[10px] text-gray-400 font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10">macOS 26</div>
         `;
 
-        // Red traffic light close handler
+        // Red traffic light close handler directly closes the app from Mission Control
         const closeBtn = titlebar.querySelector('.mission-control-tile-close');
         if (closeBtn) {
             closeBtn.onclick = (e) => {
                 e.stopPropagation();
                 closeApp(appId);
                 renderMissionControlTiles();
+                renderMissionControlSpaces();
             };
         }
 
@@ -2281,6 +3316,54 @@ function renderMissionControlTiles() {
                     <span class="text-blue-400 font-semibold">Click to focus &rarr;</span>
                 </div>
             `;
+        } else if (appId === 'calculator') {
+            body.className += ' bg-gradient-to-b from-[#1c1d22] to-[#121316] text-white';
+            bodyHtml = `
+                <div class="space-y-3">
+                    <div class="p-3 bg-black/40 rounded-xl border border-white/10 text-right">
+                        <span class="text-[10px] text-gray-500 block font-mono">1,024 × 8</span>
+                        <span class="text-2xl font-light text-white font-mono tracking-tight">8,192</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1.5 text-center text-xs font-semibold">
+                        <div class="p-2 rounded-lg bg-gray-600/50 text-white">C</div>
+                        <div class="p-2 rounded-lg bg-gray-600/50 text-white">±</div>
+                        <div class="p-2 rounded-lg bg-gray-600/50 text-white">%</div>
+                        <div class="p-2 rounded-lg bg-amber-500 text-white">÷</div>
+                        <div class="p-2 rounded-lg bg-gray-700/60 text-white">7</div>
+                        <div class="p-2 rounded-lg bg-gray-700/60 text-white">8</div>
+                        <div class="p-2 rounded-lg bg-gray-700/60 text-white">9</div>
+                        <div class="p-2 rounded-lg bg-amber-500 text-white">×</div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-gray-400">
+                    <span>macOS Calculator Engine</span>
+                    <span class="text-amber-400 font-semibold">Click to focus &rarr;</span>
+                </div>
+            `;
+        } else if (appId === 'notes') {
+            body.className += ' bg-gradient-to-b from-[#1e1c18] to-[#14120e] text-white';
+            bodyHtml = `
+                <div class="space-y-2.5">
+                    <div class="flex items-center space-x-2 text-amber-400 text-xs font-semibold pb-1.5 border-b border-white/10">
+                        <i class="fas fa-note-sticky text-sm"></i>
+                        <span>Ranveer's DevPad • Scratchpad</span>
+                    </div>
+                    <div class="space-y-1.5 text-xs text-gray-300">
+                        <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                            <span class="text-[11px] font-bold text-amber-300 block">⚡ Full Stack Architecture:</span>
+                            <span class="text-[11px] text-gray-400">REST APIs, JWT, Redis caching, Docker containerization.</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                            <span class="text-[11px] font-bold text-sky-300 block">📌 Branding Pioneers Milestones:</span>
+                            <span class="text-[11px] text-gray-400">Built task tracking system boosting sprint turnaround by 50%.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-gray-400">
+                    <span>DevPad Auto-saved</span>
+                    <span class="text-amber-400 font-semibold">Click to focus &rarr;</span>
+                </div>
+            `;
         } else {
             body.className += ' bg-gradient-to-b from-[#181a24] to-[#0f1118] text-white';
             bodyHtml = `
@@ -2352,11 +3435,545 @@ function initDesktopMissionControlGestures() {
             closeReadmeModal();
             closeGalleryLightbox();
             closeSpotlight();
+            closeAppleMenu();
+            closeControlCenter();
+            closeAboutThisMac();
         } else if (isMissionControlOpen && (e.key === 'ArrowDown' || ((e.ctrlKey || e.metaKey) && e.key === 'ArrowDown'))) {
             e.preventDefault();
             closeMissionControl();
         }
     });
+}
+
+// ==========================================================================
+// macOS 26 Tahoe Interactive Physics Dock (React-ported Cosine Magnification)
+// ==========================================================================
+
+const macDockApps = [
+    {
+        id: "about",
+        name: "Finder",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/finder-2021-09-10.png?rf=1024",
+        action: () => openApp('about')
+    },
+    {
+        id: "projects",
+        name: "Terminal",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/terminal-2021-06-03.png?rf=1024",
+        action: () => openApp('projects')
+    },
+    {
+        id: "nothing-veer",
+        name: "Veer Music",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/music-2021-05-25.png?rf=1024",
+        action: () => openReadmeModal('nothing-veer')
+    },
+    {
+        id: "skills",
+        name: "System Settings",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/system-preferences-2021-05-25.png?rf=1024",
+        action: () => openSkillsFolderModal()
+    },
+    {
+        id: "calculator",
+        name: "Calculator",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/calculator-2021-04-29.png?rf=1024",
+        action: () => openApp('calculator')
+    },
+    {
+        id: "contact",
+        name: "Mail",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/mail-2021-05-25.png?rf=1024",
+        action: () => openApp('contact')
+    },
+    {
+        id: "gallery",
+        name: "Photos",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/photos-2021-05-28.png?rf=1024",
+        action: () => openApp('gallery')
+    },
+    {
+        id: "srchess",
+        name: "Safari",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/safari-2021-06-02.png?rf=1024",
+        action: () => window.open('https://srchess.vercel.app/', '_blank')
+    },
+    {
+        id: "notes",
+        name: "Notes",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/notes-2021-05-25.png?rf=1024",
+        action: () => openApp('notes')
+    },
+    {
+        id: "folder",
+        name: "Projects",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/calendar-2021-04-29.png?rf=1024",
+        action: () => openFolderModal()
+    }
+];
+
+let dockMouseX = null;
+let dockCurrentScales = macDockApps.map(() => 1);
+let dockCurrentPositions = [];
+let dockAnimFrame = null;
+let dockLastMouseMoveTime = 0;
+let dockConfig = { baseIconSize: 64, maxScale: 1.8, effectWidth: 300 };
+
+function getDockResponsiveConfig() {
+    const smallerDimension = Math.min(window.innerWidth, window.innerHeight);
+    if (smallerDimension < 480) {
+        return {
+            baseIconSize: Math.max(40, smallerDimension * 0.08),
+            maxScale: 1.4,
+            effectWidth: smallerDimension * 0.4
+        };
+    }
+    if (smallerDimension < 768) {
+        return {
+            baseIconSize: Math.max(48, smallerDimension * 0.07),
+            maxScale: 1.5,
+            effectWidth: smallerDimension * 0.35
+        };
+    }
+    if (smallerDimension < 1024) {
+        return {
+            baseIconSize: Math.max(56, smallerDimension * 0.06),
+            maxScale: 1.6,
+            effectWidth: smallerDimension * 0.3
+        };
+    }
+    return {
+        baseIconSize: Math.max(60, Math.min(76, smallerDimension * 0.05)),
+        maxScale: 1.75,
+        effectWidth: 280
+    };
+}
+
+function calculateTargetMagnification(mousePosition, appsCount, baseIconSize, baseSpacing, effectWidth, maxScale, minScale) {
+    if (mousePosition === null) {
+        return Array(appsCount).fill(minScale);
+    }
+    return Array.from({ length: appsCount }, (_, index) => {
+        const normalIconCenter = index * (baseIconSize + baseSpacing) + baseIconSize / 2;
+        const minX = mousePosition - effectWidth / 2;
+        const maxX = mousePosition + effectWidth / 2;
+
+        if (normalIconCenter < minX || normalIconCenter > maxX) {
+            return minScale;
+        }
+
+        const theta = ((normalIconCenter - minX) / effectWidth) * 2 * Math.PI;
+        const cappedTheta = Math.min(Math.max(theta, 0), 2 * Math.PI);
+        const scaleFactor = (1 - Math.cos(cappedTheta)) / 2;
+
+        return minScale + scaleFactor * (maxScale - minScale);
+    });
+}
+
+function calculateDockPositions(scales, baseIconSize, baseSpacing) {
+    let currentX = 0;
+    return scales.map(scale => {
+        const scaledWidth = baseIconSize * scale;
+        const centerX = currentX + scaledWidth / 2;
+        currentX += scaledWidth + baseSpacing;
+        return centerX;
+    });
+}
+
+function initMacOSDock() {
+    const dockContainer = document.getElementById('macos-dock');
+    const dockInner = document.getElementById('macos-dock-inner');
+    if (!dockContainer || !dockInner) return;
+
+    dockConfig = getDockResponsiveConfig();
+    const { baseIconSize, effectWidth, maxScale } = dockConfig;
+    const minScale = 1.0;
+    const baseSpacing = Math.max(4, baseIconSize * 0.08);
+
+    dockCurrentScales = macDockApps.map(() => minScale);
+    dockCurrentPositions = calculateDockPositions(dockCurrentScales, baseIconSize, baseSpacing);
+
+    // Render DOM elements for each app
+    dockInner.innerHTML = macDockApps.map((app, index) => {
+        return `
+            <div id="dock-item-${app.id}" class="absolute cursor-pointer flex flex-col items-center justify-end"
+                 onclick="handleMacDockAppClick('${app.id}', ${index})"
+                 style="transform-origin: bottom center; will-change: transform, left, width, height;"
+                 title="${app.name}">
+                <img id="dock-img-${app.id}" src="${app.icon}" alt="${app.name}" class="object-contain"
+                     style="width: 100%; height: 100%; pointer-events: none;"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="hidden w-full h-full rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 items-center justify-center text-white text-xl font-bold shadow-md">
+                    ${app.name.charAt(0)}
+                </div>
+                <div id="dock-dot-${app.id}" class="absolute w-1.5 h-1.5 rounded-full bg-white/90 shadow-sm"
+                     style="bottom: -5px; left: 50%; transform: translateX(-50%); display: ${runningApps.includes(app.id) ? 'block' : 'none'};"></div>
+            </div>
+        `;
+    }).join('');
+
+    // Dock container styles matching user's React component
+    const padding = Math.max(8, baseIconSize * 0.12);
+    dockContainer.style.background = "rgba(45, 45, 45, 0.75)";
+    dockContainer.style.borderRadius = `${Math.max(14, baseIconSize * 0.4)}px`;
+    dockContainer.style.border = "1px solid rgba(255, 255, 255, 0.18)";
+    dockContainer.style.boxShadow = `
+        0 ${Math.max(4, baseIconSize * 0.1)}px ${Math.max(16, baseIconSize * 0.4)}px rgba(0, 0, 0, 0.4),
+        0 ${Math.max(2, baseIconSize * 0.05)}px ${Math.max(8, baseIconSize * 0.2)}px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+    `;
+    dockContainer.style.padding = `${padding}px`;
+    dockInner.style.height = `${baseIconSize}px`;
+
+    // Mouse Listeners
+    dockContainer.addEventListener('mousemove', (e) => {
+        const now = performance.now();
+        if (now - dockLastMouseMoveTime < 16) return;
+        dockLastMouseMoveTime = now;
+        const rect = dockContainer.getBoundingClientRect();
+        dockMouseX = e.clientX - rect.left - padding;
+        if (!dockAnimFrame) {
+            dockAnimFrame = requestAnimationFrame(animateDockToTarget);
+        }
+    });
+
+    dockContainer.addEventListener('mouseleave', () => {
+        dockMouseX = null;
+        if (!dockAnimFrame) {
+            dockAnimFrame = requestAnimationFrame(animateDockToTarget);
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        dockConfig = getDockResponsiveConfig();
+        if (!dockAnimFrame) {
+            dockAnimFrame = requestAnimationFrame(animateDockToTarget);
+        }
+    });
+
+    // Start initial frame
+    dockAnimFrame = requestAnimationFrame(animateDockToTarget);
+}
+
+function animateDockToTarget() {
+    dockAnimFrame = null;
+    const dockContainer = document.getElementById('macos-dock');
+    if (!dockContainer) return;
+
+    const { baseIconSize, effectWidth, maxScale } = dockConfig;
+    const minScale = 1.0;
+    const baseSpacing = Math.max(4, baseIconSize * 0.08);
+    const padding = Math.max(8, baseIconSize * 0.12);
+
+    const targetScales = calculateTargetMagnification(dockMouseX, macDockApps.length, baseIconSize, baseSpacing, effectWidth, maxScale, minScale);
+    const targetPositions = calculateDockPositions(targetScales, baseIconSize, baseSpacing);
+    const lerpFactor = dockMouseX !== null ? 0.2 : 0.12;
+
+    let maxRight = 0;
+
+    macDockApps.forEach((app, index) => {
+        // Interpolate scale & position
+        const scaleDiff = targetScales[index] - dockCurrentScales[index];
+        dockCurrentScales[index] += scaleDiff * lerpFactor;
+
+        const posDiff = targetPositions[index] - dockCurrentPositions[index];
+        dockCurrentPositions[index] += posDiff * lerpFactor;
+
+        const scale = dockCurrentScales[index];
+        const position = dockCurrentPositions[index];
+        const scaledSize = baseIconSize * scale;
+
+        const el = document.getElementById(`dock-item-${app.id}`);
+        if (el) {
+            el.style.left = `${position - scaledSize / 2}px`;
+            el.style.bottom = "0px";
+            el.style.width = `${scaledSize}px`;
+            el.style.height = `${scaledSize}px`;
+            el.style.zIndex = Math.round(scale * 10);
+
+            const img = document.getElementById(`dock-img-${app.id}`);
+            if (img) {
+                const shadowScale = scale > 1.2 ? Math.max(2, baseIconSize * 0.05) : Math.max(1, baseIconSize * 0.03);
+                const blurScale = scale > 1.2 ? Math.max(4, baseIconSize * 0.1) : Math.max(2, baseIconSize * 0.06);
+                const alpha = 0.2 + (scale - 1) * 0.15;
+                img.style.filter = `drop-shadow(0 ${shadowScale}px ${blurScale}px rgba(0,0,0,${alpha}))`;
+            }
+        }
+
+        const iconRight = position + scaledSize / 2;
+        if (iconRight > maxRight) maxRight = iconRight;
+    });
+
+    // Update dynamic dock container width
+    const contentWidth = maxRight > 0 ? maxRight : (macDockApps.length * (baseIconSize + baseSpacing) - baseSpacing);
+    dockContainer.style.width = `${contentWidth + padding * 2}px`;
+
+    // Check if still needing animation
+    const scalesNeedUpdate = dockCurrentScales.some((scale, index) => Math.abs(scale - targetScales[index]) > 0.002);
+    const positionsNeedUpdate = dockCurrentPositions.some((pos, index) => Math.abs(pos - targetPositions[index]) > 0.1);
+
+    if (scalesNeedUpdate || positionsNeedUpdate || dockMouseX !== null) {
+        dockAnimFrame = requestAnimationFrame(animateDockToTarget);
+    }
+}
+
+function handleMacDockAppClick(appId, index) {
+    const el = document.getElementById(`dock-item-${appId}`);
+    if (el) {
+        const bounceHeight = Math.max(-12, -dockConfig.baseIconSize * 0.22);
+        el.style.transition = "transform 0.18s cubic-bezier(0.28, 0.84, 0.42, 1)";
+        el.style.transform = `translateY(${bounceHeight}px)`;
+        setTimeout(() => {
+            el.style.transform = "translateY(0px)";
+        }, 180);
+    }
+
+    const app = macDockApps[index];
+    if (app && typeof app.action === 'function') {
+        app.action();
+    }
+    updateMacOSDockOpenApps();
+}
+
+function updateMacOSDockOpenApps() {
+    macDockApps.forEach(app => {
+        const dot = document.getElementById(`dock-dot-${app.id}`);
+        if (dot) {
+            dot.style.display = runningApps.includes(app.id) ? 'block' : 'none';
+        }
+    });
+}
+
+// --- macOS 26 Tahoe Apple Menu, Control Center & System Profiler ---
+function toggleAppleMenu(e) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('macos-apple-menu');
+    if (!menu) return;
+    const isOpen = menu.classList.contains('is-open');
+    closeControlCenter();
+    if (isOpen) {
+        menu.classList.remove('is-open');
+    } else {
+        menu.classList.add('is-open');
+    }
+}
+
+function closeAppleMenu() {
+    const menu = document.getElementById('macos-apple-menu');
+    if (menu) menu.classList.remove('is-open');
+}
+
+function toggleControlCenter(e) {
+    if (e) e.stopPropagation();
+    const cc = document.getElementById('macos-control-center');
+    const btn = document.getElementById('mac-control-center-btn');
+    if (!cc) return;
+    const isOpen = cc.classList.contains('is-open');
+    closeAppleMenu();
+    if (isOpen) {
+        cc.classList.remove('is-open');
+        if (btn) btn.classList.remove('active');
+    } else {
+        cc.classList.add('is-open');
+        if (btn) btn.classList.add('active');
+    }
+}
+
+function closeControlCenter() {
+    const cc = document.getElementById('macos-control-center');
+    const iosCc = document.getElementById('ios-control-center');
+    const btn = document.getElementById('mac-control-center-btn');
+    if (cc) cc.classList.remove('is-open');
+    if (iosCc) iosCc.classList.remove('is-open');
+    if (btn) btn.classList.remove('active');
+}
+
+function openAboutThisMac() {
+    closeMissionControl();
+    closeControlCenter();
+    closeAppleMenu();
+    const modal = document.getElementById('macos-about-mac-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('is-active');
+    }
+}
+
+function closeAboutThisMac() {
+    const modal = document.getElementById('macos-about-mac-modal');
+    if (modal) {
+        modal.classList.remove('is-active');
+        modal.style.display = 'none';
+    }
+    closeAppleMenu();
+    closeControlCenter();
+}
+
+function returnToDesktop() {
+    closeAboutThisMac();
+    closeMissionControl();
+    closeControlCenter();
+    closeAppleMenu();
+    closeSpotlight();
+    closeReadmeModal();
+    closeFolderModal();
+    closeSkillsFolderModal();
+    closeGalleryLightbox();
+    showToast('Desktop', 'fas fa-desktop');
+}
+
+// Control Center Toggles
+let ccWifiActive = true;
+function toggleCcWifi() {
+    ccWifiActive = !ccWifiActive;
+    const icon = document.getElementById('cc-wifi-icon');
+    const label = document.getElementById('cc-wifi-label');
+    const iosBtn = document.getElementById('ios-cc-wifi-btn');
+    if (icon) {
+        icon.className = ccWifiActive ? 'cc-toggle-icon bg-[#007aff] text-white' : 'cc-toggle-icon bg-white/10 text-gray-400';
+    }
+    if (label) {
+        label.innerText = ccWifiActive ? 'Home_Fiber_5G' : 'Off';
+        label.className = ccWifiActive ? 'text-[10px] text-blue-300' : 'text-[10px] text-gray-500';
+    }
+    if (iosBtn) {
+        iosBtn.classList.toggle('is-active-blue', ccWifiActive);
+    }
+    showToast(ccWifiActive ? 'Wi-Fi: Connected to Home_Fiber_5G' : 'Wi-Fi: Disconnected', 'fas fa-wifi');
+}
+
+let ccBtActive = true;
+function toggleCcBluetooth() {
+    ccBtActive = !ccBtActive;
+    const icon = document.getElementById('cc-bt-icon');
+    const label = document.getElementById('cc-bt-label');
+    const iosBtn = document.getElementById('ios-cc-bt-btn');
+    if (icon) {
+        icon.className = ccBtActive ? 'cc-toggle-icon bg-[#007aff] text-white' : 'cc-toggle-icon bg-white/10 text-gray-400';
+    }
+    if (label) {
+        label.innerText = ccBtActive ? 'AirPods Pro' : 'Off';
+        label.className = ccBtActive ? 'text-[10px] text-blue-300' : 'text-[10px] text-gray-500';
+    }
+    if (iosBtn) {
+        iosBtn.classList.toggle('is-active-blue', ccBtActive);
+    }
+    showToast(ccBtActive ? 'Bluetooth: Connected to AirPods Pro' : 'Bluetooth: Off', 'fab fa-bluetooth-b');
+}
+
+let ccFocusActive = true;
+function toggleCcFocus() {
+    ccFocusActive = !ccFocusActive;
+    const icon = document.getElementById('cc-focus-icon');
+    const label = document.getElementById('cc-focus-label');
+    const iosBtn = document.getElementById('ios-cc-focus-btn');
+    if (icon) {
+        icon.className = ccFocusActive ? 'cc-toggle-icon bg-indigo-600 text-white' : 'cc-toggle-icon bg-white/10 text-gray-400';
+    }
+    if (label) {
+        label.innerText = ccFocusActive ? 'Developer' : 'Off';
+        label.className = ccFocusActive ? 'text-[10px] text-indigo-300' : 'text-[10px] text-gray-500';
+    }
+    if (iosBtn) {
+        iosBtn.classList.toggle('is-active-indigo', ccFocusActive);
+    }
+    showToast(ccFocusActive ? 'Focus: Developer Focus Enabled' : 'Focus: Disabled', 'fas fa-moon');
+}
+
+function handleBrightnessSlider(val) {
+    document.body.style.filter = `brightness(${Math.max(60, val)}%)`;
+    const iosFill = document.getElementById('ios-cc-bright-fill');
+    if (iosFill) iosFill.style.height = `${val}%`;
+}
+
+function handleVolumeSlider(val) {
+    const iosFill = document.getElementById('ios-cc-vol-fill');
+    if (iosFill) iosFill.style.height = `${val}%`;
+    showToast(`Volume: ${Math.round(val)}%`, val == 0 ? 'fas fa-volume-mute' : 'fas fa-volume-up');
+}
+
+let isPlayingMusic = true;
+function togglePlayState() {
+    isPlayingMusic = !isPlayingMusic;
+    const btn = document.getElementById('cc-play-btn');
+    const iosPlayBtn = document.getElementById('ios-cc-play-btn');
+    if (btn) {
+        btn.className = isPlayingMusic ? 'fas fa-pause text-[10px]' : 'fas fa-play text-[10px] ml-0.5';
+    }
+    if (iosPlayBtn) {
+        iosPlayBtn.innerHTML = isPlayingMusic ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+    }
+    showToast(isPlayingMusic ? 'Veer Music: Playing' : 'Veer Music: Paused', 'fas fa-music');
+}
+
+function initIosControlCenterSliders() {
+    const brightCapsule = document.getElementById('ios-cc-bright-capsule');
+    const brightFill = document.getElementById('ios-cc-bright-fill');
+    const volCapsule = document.getElementById('ios-cc-vol-capsule');
+    const volFill = document.getElementById('ios-cc-vol-fill');
+
+    function attachSlider(capsule, fill, onUpdate) {
+        if (!capsule || !fill) return;
+
+        let isDragging = false;
+
+        const updateFromY = (clientY) => {
+            const rect = capsule.getBoundingClientRect();
+            let fraction = (rect.bottom - clientY) / rect.height;
+            fraction = Math.max(0.05, Math.min(1, fraction));
+            fill.style.height = `${fraction * 100}%`;
+            onUpdate(fraction * 100);
+        };
+
+        capsule.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            try { capsule.setPointerCapture(e.pointerId); } catch(err) {}
+            updateFromY(e.clientY);
+        });
+
+        capsule.addEventListener('pointermove', (e) => {
+            if (isDragging) {
+                updateFromY(e.clientY);
+            }
+        });
+
+        const stopDrag = (e) => {
+            if (isDragging) {
+                isDragging = false;
+                try { capsule.releasePointerCapture(e.pointerId); } catch(err) {}
+            }
+        };
+
+        capsule.addEventListener('pointerup', stopDrag);
+        capsule.addEventListener('pointercancel', stopDrag);
+    }
+
+    attachSlider(brightCapsule, brightFill, (val) => {
+        handleBrightnessSlider(val);
+    });
+
+    attachSlider(volCapsule, volFill, (val) => {
+        handleVolumeSlider(val);
+    });
+}
+
+const TAHOE_WALLPAPERS = [
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=85&w=2800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=85&w=2800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=85&w=2800&auto=format&fit=crop'
+];
+let currentWallpaperIdx = 0;
+
+function setTahoeWallpaper(idx) {
+    currentWallpaperIdx = idx % TAHOE_WALLPAPERS.length;
+    document.body.style.backgroundImage = `url('${TAHOE_WALLPAPERS[currentWallpaperIdx]}')`;
+    if (isMissionControlOpen) renderMissionControlSpaces();
+    showToast('Applied macOS Tahoe Wallpaper', 'fas fa-image');
+}
+
+function cycleTahoeWallpaper() {
+    setTahoeWallpaper((currentWallpaperIdx + 1) % TAHOE_WALLPAPERS.length);
 }
 
 

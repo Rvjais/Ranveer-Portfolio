@@ -26,13 +26,37 @@
          SPOTLIGHT SEARCH MODAL (macOS Tahoe & iOS)
          ==================================================================== -->
     <div id="spotlight-overlay" onclick="if(event.target === this) closeSpotlight()">
-        <div class="spotlight-card">
-            <div class="p-3.5 border-b border-white/10 flex items-center space-x-3 bg-white/5">
-                <i class="fas fa-search text-gray-400 text-sm pl-2"></i>
-                <input type="text" id="spotlight-input" placeholder="Spotlight Search — Type app, project, skill, resume..." class="w-full bg-transparent text-sm text-white placeholder-gray-400 focus:outline-none">
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-white/10 text-gray-400 border border-white/15">ESC</span>
+        <div class="spotlight-card tahoe-spotlight">
+            <!-- Tahoe Search Header -->
+            <div class="spotlight-header p-3.5 md:p-4 border-b border-white/10 flex items-center space-x-3.5 bg-white/[0.04]">
+                <div class="w-8 h-8 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 text-sm shadow-sm shrink-0">
+                    <i class="fas fa-search"></i>
+                </div>
+                <input type="text" id="spotlight-input" placeholder="Spotlight Search — Apps, Projects, Skills, Resume..." class="w-full bg-transparent text-sm md:text-base font-medium text-white placeholder-gray-400/80 focus:outline-none" autocomplete="off" spellcheck="false">
+                <div class="flex items-center space-x-1.5 shrink-0">
+                    <button id="spotlight-clear-btn" class="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-gray-400 hover:text-white flex items-center justify-center text-[10px] transition hidden" onclick="clearSpotlightInput()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <span class="hidden md:inline-flex px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold bg-white/10 text-gray-300 border border-white/15">ESC</span>
+                </div>
             </div>
-            <div id="spotlight-results" class="p-2 max-h-[380px] overflow-y-auto space-y-1"></div>
+            <!-- Tahoe Split Layout: Left Results List, Right Inspector Preview -->
+            <div class="spotlight-split-body flex flex-col md:flex-row overflow-hidden max-h-[440px]">
+                <!-- Results List (Left) -->
+                <div id="spotlight-results" class="flex-1 p-2 overflow-y-auto dark-scroll space-y-1"></div>
+                <!-- Live Preview Inspector (Right) -->
+                <div id="spotlight-preview-pane" class="hidden md:flex w-[310px] border-l border-white/10 bg-white/[0.02] flex-col justify-between p-5 overflow-y-auto dark-scroll text-left">
+                    <!-- Dynamic preview content populated in script.js -->
+                </div>
+            </div>
+            <!-- Tahoe Footer Bar -->
+            <div class="px-4 py-2 border-t border-white/10 bg-black/30 flex items-center justify-between text-[11px] text-gray-400">
+                <div class="flex items-center space-x-3">
+                    <span><kbd class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-gray-300">↑</kbd> <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-gray-300">↓</kbd> Navigate</span>
+                    <span><kbd class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-gray-300">↵</kbd> Open</span>
+                </div>
+                <span class="text-gray-400 font-mono text-[10px]">macOS Tahoe 26.1</span>
+            </div>
         </div>
     </div>
 
@@ -76,17 +100,20 @@
          iOS AUTHENTIC FOLDER OVERLAY MODAL (Projects Folder)
          ==================================================================== -->
     <div id="folder-modal-overlay" onclick="if(event.target === this) closeFolderModal()">
-        <div class="ios-folder-card">
+        <div class="ios-folder-card" style="max-height: min(88vh, 640px); overflow-y: auto;">
             <!-- Folder Title -->
-            <div class="w-full flex items-center justify-between mb-5 px-1">
-                <span class="text-white font-bold text-lg tracking-tight">Projects</span>
+            <div class="w-full flex items-center justify-between mb-4 px-1 sticky top-0 bg-[#1c1d22]/90 backdrop-blur-md z-10 py-1 border-b border-white/10">
+                <div class="flex items-center space-x-2">
+                    <span class="text-white font-bold text-lg tracking-tight">Projects</span>
+                    <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-[10px] font-bold border border-blue-500/30">12 Apps</span>
+                </div>
                 <button onclick="closeFolderModal()" class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition">
                     <i class="fas fa-times text-xs"></i>
                 </button>
             </div>
 
-            <!-- Folder 3x3 App Grid -->
-            <div class="grid grid-cols-3 gap-y-5 gap-x-3 w-full justify-items-center">
+            <!-- Folder 3-Column All Projects Grid -->
+            <div class="grid grid-cols-3 gap-y-4 gap-x-2.5 w-full justify-items-center">
                 <!-- Folder Item 1: HR-Buddy -->
                 <div class="ios-app-item" onclick="closeFolderModal(); window.open('https://hr-buddy-beta.vercel.app/', '_blank');">
                     <div class="ios-icon bg-gradient-to-b from-amber-400 to-orange-600">
@@ -111,7 +138,31 @@
                     <span class="ios-app-label">Visualiser</span>
                 </div>
 
-                <!-- Folder Item 4: PioneerOS -->
+                <!-- Folder Item 4: Veer Music (Nothing-Veer) -->
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('nothing-veer');">
+                    <div class="ios-icon bg-gradient-to-b from-zinc-900 to-red-800 border border-red-500/30">
+                        <i class="fas fa-record-vinyl text-2xl text-red-400"></i>
+                    </div>
+                    <span class="ios-app-label">Veer Music</span>
+                </div>
+
+                <!-- Folder Item 5: WebRip (Web-Scrapper) -->
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('web-ripper');">
+                    <div class="ios-icon bg-gradient-to-b from-teal-600 to-emerald-800">
+                        <i class="fas fa-spider text-2xl text-white"></i>
+                    </div>
+                    <span class="ios-app-label">WebRip</span>
+                </div>
+
+                <!-- Folder Item 6: Ranveer H.U.D. -->
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('ranveer-echo');">
+                    <div class="ios-icon bg-gradient-to-b from-cyan-600 to-blue-800">
+                        <i class="fas fa-robot text-2xl text-white"></i>
+                    </div>
+                    <span class="ios-app-label">Ranveer HUD</span>
+                </div>
+
+                <!-- Folder Item 7: PioneerOS -->
                 <div class="ios-app-item" onclick="closeFolderModal(); openApp('projects'); switchProjectsView('cards', null);">
                     <div class="ios-icon bg-gradient-to-b from-sky-500 to-blue-700">
                         <i class="fas fa-desktop text-2xl text-white"></i>
@@ -119,7 +170,7 @@
                     <span class="ios-app-label">PioneerOS</span>
                 </div>
 
-                <!-- Folder Item 5: Rain CRM -->
+                <!-- Folder Item 8: Rain CRM -->
                 <div class="ios-app-item" onclick="closeFolderModal(); openApp('projects'); switchProjectsView('cards', null);">
                     <div class="ios-icon bg-gradient-to-b from-emerald-500 to-teal-700">
                         <i class="fas fa-users-cog text-2xl text-white"></i>
@@ -127,16 +178,47 @@
                     <span class="ios-app-label">Rain CRM</span>
                 </div>
 
-                <!-- Folder Item 6: All Projects Showcase -->
-                <div class="ios-app-item" onclick="closeFolderModal(); openApp('projects'); switchProjectsView('cards', null);">
-                    <div class="ios-icon bg-gradient-to-b from-indigo-500 to-purple-700">
-                        <i class="fas fa-th-large text-2xl text-white"></i>
+                <!-- Folder Item 9: TextLens OCR -->
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('textlens');">
+                    <div class="ios-icon bg-gradient-to-b from-indigo-500 to-violet-700">
+                        <i class="fas fa-file-alt text-2xl text-white"></i>
                     </div>
-                    <span class="ios-app-label">Showcase</span>
+                    <span class="ios-app-label">TextLens</span>
+                </div>
+
+                <!-- Folder Item 10: AICRMZ CRM -->
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('aicrmz');">
+                    <div class="ios-icon bg-gradient-to-b from-green-500 to-emerald-700">
+                        <i class="fab fa-whatsapp text-2xl text-white"></i>
+                    </div>
+                    <span class="ios-app-label">AICRMZ</span>
+                </div>
+
+                <!-- Folder Item 11: Stock Manager (C++ Qt) -->
+                <div class="ios-app-item" onclick="closeFolderModal(); openApp('projects'); switchProjectsView('cards', null);">
+                    <div class="ios-icon bg-gradient-to-b from-cyan-600 to-blue-800">
+                        <i class="fas fa-boxes text-2xl text-white"></i>
+                    </div>
+                    <span class="ios-app-label">Stock C++</span>
+                </div>
+
+                <!-- Folder Item 12: SR Chess 3D -->
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('srchess');">
+                    <div class="ios-icon bg-gradient-to-b from-amber-500 to-purple-800">
+                        <i class="fas fa-dice-d20 text-2xl text-white"></i>
+                    </div>
+                    <span class="ios-app-label">Chess 3D</span>
                 </div>
             </div>
-            
-            <p class="text-[11px] text-white/60 mt-5">Tap outside or &times; to close folder</p>
+
+            <!-- Authentic NavLink to Navigate to Full Projects List / Terminal -->
+            <div class="w-full mt-5 pt-3 border-t border-white/10 flex flex-col items-center">
+                <button onclick="closeFolderModal(); openApp('projects'); switchProjectsView('cards', null);" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs flex items-center justify-center space-x-2 shadow-xl transition active:scale-[0.98]">
+                    <i class="fas fa-layer-group text-xs"></i>
+                    <span>List All Projects in Terminal & Cards Showcase &rarr;</span>
+                </button>
+                <p class="text-[11px] text-white/50 mt-2">Tap any app icon or click above to explore all</p>
+            </div>
         </div>
     </div>
 
@@ -273,24 +355,349 @@
          ==================================================================== -->
     <nav class="desktop-only glass-tahoe-dark w-full h-7 absolute top-0 z-40 items-center justify-between px-4 text-white text-xs shadow-sm border-b border-white/15 backdrop-blur-2xl">
         <div class="flex items-center space-x-3.5 font-medium">
-            <i class="fab fa-apple text-base cursor-pointer hover:opacity-80 transition" onclick="showToast('macOS Tahoe — Ranveer Jaiswal Edition', 'fab fa-apple')"></i>
-            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition font-semibold" onclick="showToast('Ranveer Jaiswal — Full Stack / MERN Developer')">Ranveer Jaiswal</span>
-            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="toggleMissionControl()" title="Mission Control (3-finger swipe up or F3)"><i class="fas fa-table-cells-large text-cyan-400 mr-1.5"></i>Mission Control</span>
+            <i class="fab fa-apple text-base cursor-pointer hover:opacity-80 transition" onclick="toggleAppleMenu(event)" title="Apple Menu"></i>
+            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition font-semibold" onclick="openAboutThisMac()">Ranveer Jaiswal</span>
+            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="toggleMissionControl()" title="Mission Control (F3)"><i class="fas fa-table-cells-large text-cyan-400 mr-1.5"></i>Mission Control</span>
             <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="openApp('about'); switchAboutTab('exp', null);">Experience</span>
             <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="openApp('projects'); switchProjectsView('cards', null);">Projects</span>
-            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="openApp('skills')">Skills</span>
+            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="openSkillsFolderModal()">Skills</span>
             <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="openApp('contact')">Contact</span>
             <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="window.open('ranveer_jaiswal.pdf', '_blank')">Resume.pdf</span>
         </div>
         <div class="flex items-center space-x-3.5 text-xs font-normal">
             <span class="text-gray-300 hidden sm:inline"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> Gurgaon, India</span>
-            <i class="fas fa-search cursor-pointer hover:opacity-80 transition" onclick="toggleSpotlight()" title="Spotlight Search (Cmd+K)"></i>
-            <i class="fas fa-sliders-h cursor-pointer hover:opacity-80 transition" onclick="showToast('Gurgaon, India • +91 9648165493')"></i>
-            <i class="fas fa-wifi"></i>
-            <i class="fas fa-battery-three-quarters text-sm"></i>
-            <span id="mac-clock" class="font-medium tracking-tight">Tue 9:41 AM</span>
+            <i class="fas fa-search cursor-pointer hover:opacity-80 transition" onclick="toggleSpotlight()" title="Spotlight Search (Cmd+Space / Cmd+K)"></i>
+            <div id="mac-control-center-btn" class="menu-pill-btn cursor-pointer" onclick="toggleControlCenter(event)" title="Control Center">
+                <i class="fas fa-sliders-h text-xs"></i>
+            </div>
+            <i class="fas fa-wifi text-emerald-400" title="Wi-Fi: Connected"></i>
+            <div class="flex items-center space-x-1" title="Battery: 98% (Power Adapter Connected)">
+                <span class="text-[10px] text-gray-300">98%</span>
+                <i class="fas fa-battery-three-quarters text-sm text-green-400"></i>
+            </div>
+            <span id="mac-clock" class="font-medium tracking-tight cursor-pointer hover:opacity-80" onclick="toggleControlCenter(event)">Tue 9:41 AM</span>
         </div>
     </nav>
+
+    <!-- macOS 26 Tahoe Apple Menu Dropdown -->
+    <div id="macos-apple-menu" class="macos-dropdown" onclick="event.stopPropagation()">
+        <div class="macos-dropdown-item" onclick="openAboutThisMac(); closeAppleMenu();">
+            <span><i class="fab fa-apple mr-2 text-gray-300"></i> About This Mac</span>
+            <span class="text-[10px] text-gray-400">Tahoe 26.1</span>
+        </div>
+        <div class="macos-dropdown-divider"></div>
+        <div class="macos-dropdown-item" onclick="openSkillsFolderModal(); closeAppleMenu();">
+            <span><i class="fas fa-cog mr-2 text-gray-400"></i> System Settings...</span>
+        </div>
+        <div class="macos-dropdown-item" onclick="openApp('projects'); switchProjectsView('cards', null); closeAppleMenu();">
+            <span><i class="fas fa-layer-group mr-2 text-cyan-400"></i> App Store (Projects)...</span>
+        </div>
+        <div class="macos-dropdown-divider"></div>
+        <div class="macos-dropdown-item" onclick="toggleMissionControl(); closeAppleMenu();">
+            <span><i class="fas fa-table-cells-large mr-2 text-blue-400"></i> Mission Control</span>
+            <span class="text-[10px] text-gray-400">F3</span>
+        </div>
+        <div class="macos-dropdown-item" onclick="toggleSpotlight(); closeAppleMenu();">
+            <span><i class="fas fa-search mr-2 text-emerald-400"></i> Spotlight Search</span>
+            <span class="text-[10px] text-gray-400">⌘ Space</span>
+        </div>
+        <div class="macos-dropdown-divider"></div>
+        <div class="macos-dropdown-item" onclick="cycleTahoeWallpaper(); closeAppleMenu();">
+            <span><i class="fas fa-image mr-2 text-purple-400"></i> Next Tahoe Wallpaper</span>
+        </div>
+        <div class="macos-dropdown-divider"></div>
+        <div class="macos-dropdown-item" onclick="showToast('Lock Screen • Screen Secured', 'fas fa-lock'); closeAppleMenu();">
+            <span><i class="fas fa-lock mr-2 text-gray-400"></i> Lock Screen</span>
+        </div>
+        <div class="macos-dropdown-item" onclick="location.reload();">
+            <span><i class="fas fa-redo-alt mr-2 text-amber-400"></i> Restart...</span>
+        </div>
+    </div>
+
+    <!-- macOS 26 Tahoe Interactive Control Center Panel -->
+    <div id="macos-control-center" onclick="event.stopPropagation()">
+        <!-- Top 2x2 Connected Grid -->
+        <div class="grid grid-cols-2 gap-2.5">
+            <!-- Wi-Fi Tile -->
+            <div class="cc-tile flex items-center justify-between cursor-pointer" onclick="toggleCcWifi()">
+                <div class="flex items-center space-x-2.5">
+                    <div id="cc-wifi-icon" class="cc-toggle-icon bg-[#007aff] text-white">
+                        <i class="fas fa-wifi text-xs"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold text-white block leading-tight">Wi-Fi</span>
+                        <span id="cc-wifi-label" class="text-[10px] text-blue-300">Home_Fiber_5G</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bluetooth Tile -->
+            <div class="cc-tile flex items-center justify-between cursor-pointer" onclick="toggleCcBluetooth()">
+                <div class="flex items-center space-x-2.5">
+                    <div id="cc-bt-icon" class="cc-toggle-icon bg-[#007aff] text-white">
+                        <i class="fab fa-bluetooth-b text-xs"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold text-white block leading-tight">Bluetooth</span>
+                        <span id="cc-bt-label" class="text-[10px] text-blue-300">AirPods Pro</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AirDrop Tile -->
+            <div class="cc-tile flex items-center justify-between cursor-pointer" onclick="showToast('AirDrop: Set to Contacts Only', 'fas fa-satellite-dish')">
+                <div class="flex items-center space-x-2.5">
+                    <div class="cc-toggle-icon bg-[#007aff] text-white">
+                        <i class="fas fa-satellite-dish text-xs"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold text-white block leading-tight">AirDrop</span>
+                        <span class="text-[10px] text-gray-400">Contacts Only</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Focus / Do Not Disturb Tile -->
+            <div class="cc-tile flex items-center justify-between cursor-pointer" onclick="toggleCcFocus()">
+                <div class="flex items-center space-x-2.5">
+                    <div id="cc-focus-icon" class="cc-toggle-icon bg-indigo-600 text-white">
+                        <i class="fas fa-moon text-xs"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold text-white block leading-tight">Focus</span>
+                        <span id="cc-focus-label" class="text-[10px] text-indigo-300">Developer</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Display Brightness Slider -->
+        <div class="cc-slider-wrap">
+            <i class="fas fa-sun text-yellow-400 text-xs"></i>
+            <input type="range" min="30" max="100" value="95" class="cc-slider" oninput="handleBrightnessSlider(this.value)" title="Display Brightness">
+        </div>
+
+        <!-- Sound Volume Slider -->
+        <div class="cc-slider-wrap">
+            <i class="fas fa-volume-up text-blue-400 text-xs"></i>
+            <input type="range" min="0" max="100" value="75" class="cc-slider" oninput="handleVolumeSlider(this.value)" title="Sound Volume">
+        </div>
+
+        <!-- Now Playing Card (Veer Music) -->
+        <div class="cc-tile flex items-center justify-between cursor-pointer hover:border-red-500/40" onclick="openReadmeModal('nothing-veer')">
+            <div class="flex items-center space-x-3">
+                <img src="assets/VEER-MUSIC/Screenshot_20261016-113318.png" alt="Veer Music" class="w-10 h-10 rounded-lg object-cover border border-white/20">
+                <div class="text-left">
+                    <span class="text-xs font-bold text-white block leading-tight">Veer Music</span>
+                    <span class="text-[11px] text-gray-300">Starboy — The Weeknd</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 text-white">
+                <button class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition" onclick="event.stopPropagation(); togglePlayState();">
+                    <i id="cc-play-btn" class="fas fa-pause text-[10px]"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tahoe Wallpaper Selector -->
+        <div class="flex items-center justify-between text-[11px] text-gray-400 pt-1">
+            <span>Tahoe Wallpaper:</span>
+            <div class="flex items-center space-x-1.5">
+                <button onclick="setTahoeWallpaper(0)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white text-[10px]">Alpine</button>
+                <button onclick="setTahoeWallpaper(1)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white text-[10px]">Sunset</button>
+                <button onclick="setTahoeWallpaper(2)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white text-[10px]">Midnight</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         MOBILE ONLY: Authentic iOS 18 Control Center Overlay
+         ==================================================================== -->
+    <div id="ios-control-center" class="mobile-only" onclick="handleIosCcBackdropClick(event)">
+        <!-- Top Dismiss Handle -->
+        <div class="ios-cc-pull-bar"></div>
+
+        <!-- Scrollable Module Container -->
+        <div class="ios-cc-scroll-body" onclick="event.stopPropagation()">
+            <!-- 4-Column Control Center Grid -->
+            <div class="ios-cc-grid">
+                <!-- ================= ROW 1 & 2 ================= -->
+                <!-- Connectivity Platter (Col 1-2, Row 1-2) -->
+                <div class="ios-cc-card ios-cc-col-span-2 ios-cc-row-span-2 ios-cc-connectivity-box">
+                    <!-- Airplane Mode -->
+                    <button type="button" id="ios-cc-airplane-btn" class="ios-cc-circle-btn" onclick="toggleIosAirplane()" title="Airplane Mode">
+                        <i class="fas fa-plane"></i>
+                    </button>
+                    <!-- AirDrop -->
+                    <button type="button" id="ios-cc-airdrop-btn" class="ios-cc-circle-btn is-active-blue" onclick="toggleIosAirDrop()" title="AirDrop">
+                        <i class="fas fa-satellite-dish"></i>
+                    </button>
+                    <!-- Wi-Fi -->
+                    <button type="button" id="ios-cc-wifi-btn" class="ios-cc-circle-btn is-active-blue" onclick="toggleCcWifi()" title="Wi-Fi">
+                        <i class="fas fa-wifi"></i>
+                    </button>
+                    <!-- Bluetooth -->
+                    <button type="button" id="ios-cc-bt-btn" class="ios-cc-circle-btn is-active-blue" onclick="toggleCcBluetooth()" title="Bluetooth">
+                        <i class="fab fa-bluetooth-b"></i>
+                    </button>
+                </div>
+
+                <!-- Music / Now Playing Platter (Col 3-4, Row 1-2) -->
+                <div class="ios-cc-card ios-cc-col-span-2 ios-cc-row-span-2 ios-cc-music-box" onclick="openReadmeModal('nothing-veer')">
+                    <div class="ios-cc-music-title">Music</div>
+                    <div class="ios-cc-music-controls" onclick="event.stopPropagation()">
+                        <button type="button" class="ios-cc-music-btn" onclick="prevTrack()" title="Previous">
+                            <i class="fas fa-backward-step"></i>
+                        </button>
+                        <button type="button" id="ios-cc-play-btn" class="ios-cc-music-btn ios-cc-play-main" onclick="togglePlayState()" title="Play / Pause">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button type="button" class="ios-cc-music-btn" onclick="nextTrack()" title="Next">
+                            <i class="fas fa-forward-step"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ================= ROW 3 & 4 ================= -->
+                <!-- Portrait Orientation Lock (Col 1, Row 3) -->
+                <button type="button" id="ios-cc-rotation-btn" class="ios-cc-card ios-cc-btn-tile" onclick="toggleIosOrientationLock()" title="Portrait Orientation Lock">
+                    <div class="ios-cc-rotation-icon-wrap">
+                        <i class="fas fa-redo-alt ios-cc-rot-arrow"></i>
+                        <i class="fas fa-lock ios-cc-rot-lock"></i>
+                    </div>
+                </button>
+
+                <!-- Focus / Do Not Disturb (Col 2, Row 3) -->
+                <button type="button" id="ios-cc-focus-btn" class="ios-cc-card ios-cc-btn-tile" onclick="toggleCcFocus()" title="Focus / Do Not Disturb">
+                    <i class="fas fa-moon text-xl"></i>
+                </button>
+
+                <!-- Brightness Vertical Slider (Col 3, Row 3-4) -->
+                <div class="ios-cc-card ios-cc-row-span-2 ios-cc-slider-capsule" id="ios-cc-bright-capsule" title="Display Brightness">
+                    <div class="ios-cc-slider-fill" id="ios-cc-bright-fill" style="height: 85%;"></div>
+                    <div class="ios-cc-slider-icon">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                </div>
+
+                <!-- Sound Volume Vertical Slider (Col 4, Row 3-4) -->
+                <div class="ios-cc-card ios-cc-row-span-2 ios-cc-slider-capsule" id="ios-cc-vol-capsule" title="Sound Volume">
+                    <div class="ios-cc-slider-fill" id="ios-cc-vol-fill" style="height: 70%;"></div>
+                    <div class="ios-cc-slider-icon">
+                        <i class="fas fa-volume-high"></i>
+                    </div>
+                </div>
+
+                <!-- Screen Mirroring (Col 1-2, Row 4) -->
+                <button type="button" class="ios-cc-card ios-cc-col-span-2 ios-cc-mirror-tile" onclick="showToast('Screen Mirroring: Searching for AirPlay Displays...', 'fas fa-clone')" title="Screen Mirroring">
+                    <i class="fas fa-clone text-xl text-white mr-3"></i>
+                    <div class="text-left">
+                        <span class="text-xs font-semibold text-white block leading-tight">Screen</span>
+                        <span class="text-xs font-semibold text-white block leading-tight">Mirroring</span>
+                    </div>
+                </button>
+
+                <!-- ================= ROW 5 ================= -->
+                <!-- Silent Mode / Bell -->
+                <button type="button" id="ios-cc-silent-btn" class="ios-cc-card ios-cc-btn-tile" onclick="toggleIosSilentMode()" title="Silent Mode">
+                    <i class="fas fa-bell text-xl"></i>
+                </button>
+                <!-- Timer -->
+                <button type="button" class="ios-cc-card ios-cc-btn-tile" onclick="showToast('Timer: Set for 15 minutes', 'fas fa-stopwatch')" title="Timer">
+                    <i class="fas fa-stopwatch text-xl"></i>
+                </button>
+                <!-- Camera -->
+                <button type="button" class="ios-cc-card ios-cc-btn-tile" onclick="closeControlCenter(); openApp('gallery')" title="Camera / Photos">
+                    <i class="fas fa-camera text-xl"></i>
+                </button>
+                <!-- Screen Recording -->
+                <button type="button" id="ios-cc-record-btn" class="ios-cc-card ios-cc-btn-tile" onclick="toggleIosRecording()" title="Screen Recording">
+                    <i class="far fa-circle-dot text-xl"></i>
+                </button>
+
+                <!-- ================= ROW 6 ================= -->
+                <!-- Low Power Mode / Lock -->
+                <button type="button" id="ios-cc-power-btn" class="ios-cc-card ios-cc-btn-tile" onclick="toggleIosPowerMode()" title="Low Power Mode">
+                    <i class="fas fa-battery-quarter text-xl text-yellow-400"></i>
+                </button>
+                <!-- Text Size (AA) -->
+                <button type="button" class="ios-cc-card ios-cc-btn-tile" onclick="showToast('Text Size: 100% (Default)', 'fas fa-font')" title="Text Size">
+                    <span class="text-white font-extrabold text-base leading-none">A<span class="text-xs font-semibold">A</span></span>
+                </button>
+                <!-- Accessibility -->
+                <button type="button" class="ios-cc-card ios-cc-btn-tile" onclick="showToast('Accessibility: Enabled High Contrast', 'fas fa-universal-access')" title="Accessibility">
+                    <i class="fas fa-universal-access text-xl"></i>
+                </button>
+                <!-- Magnifier -->
+                <button type="button" class="ios-cc-card ios-cc-btn-tile" onclick="showToast('Magnifier: 2.0x Zoom Mode', 'fas fa-magnifying-glass-plus')" title="Magnifier">
+                    <i class="fas fa-magnifying-glass-plus text-xl"></i>
+                </button>
+
+                <!-- ================= ROW 7 ================= -->
+                <!-- Quick Note -->
+                <button type="button" class="ios-cc-card ios-cc-btn-tile" onclick="closeControlCenter(); openApp('notes')" title="Quick Notes">
+                    <i class="fas fa-pen-to-square text-xl"></i>
+                </button>
+                <!-- Alarm -->
+                <button type="button" class="ios-cc-card ios-cc-btn-tile" onclick="showToast('Next Alarm: 7:00 AM (Dev Morning)', 'far fa-clock')" title="Alarm">
+                    <i class="far fa-clock text-xl"></i>
+                </button>
+                <!-- Stopwatch -->
+                <button type="button" class="ios-cc-card ios-cc-btn-tile" onclick="showToast('Stopwatch: Ready to Lap', 'fas fa-stopwatch-20')" title="Stopwatch">
+                    <i class="fas fa-stopwatch-20 text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- macOS 26 Tahoe "About This Mac" Modal -->
+    <div id="macos-about-mac-modal" onclick="if(event.target === this) closeAboutThisMac()">
+        <div class="about-mac-window" onclick="event.stopPropagation()">
+            <!-- Window Titlebar with Authentic macOS Traffic Lights -->
+            <div class="h-10 bg-white/5 border-b border-white/10 flex items-center justify-between px-4 select-none">
+                <div class="traffic-container flex items-center space-x-2">
+                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e] cursor-pointer flex items-center justify-center" onclick="closeAboutThisMac()" title="Close"><i class="fas fa-times text-[8px] text-black/70"></i></div>
+                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123] cursor-pointer flex items-center justify-center" onclick="closeAboutThisMac()" title="Minimize"><i class="fas fa-minus text-[8px] text-black/70"></i></div>
+                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29] cursor-pointer flex items-center justify-center" title="Zoom"><i class="fas fa-expand-alt text-[7px] text-black/70"></i></div>
+                </div>
+                <span class="text-xs font-semibold text-white/90">About This Mac</span>
+                <div class="w-14"></div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-7 flex flex-col md:flex-row items-center gap-6">
+                <!-- Big Apple Tahoe Emblem -->
+                <div class="w-28 h-28 rounded-3xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-purple-700 flex items-center justify-center text-white text-5xl shadow-2xl border border-white/25 shrink-0">
+                    <i class="fab fa-apple"></i>
+                </div>
+
+                <!-- System Specs -->
+                <div class="flex-1 text-left">
+                    <h2 class="text-2xl font-extrabold text-white tracking-tight">macOS Tahoe</h2>
+                    <p class="text-xs text-sky-400 font-mono mt-0.5">Version 26.1 (Build 26A531) • Ranveer Jaiswal Edition</p>
+                    
+                    <div class="mt-4 space-y-1.5 text-xs text-gray-300">
+                        <div class="flex"><span class="w-28 text-gray-400 font-medium">MacBook Pro:</span> <span class="text-white font-semibold">16-inch, 2026 (Apple Silicon)</span></div>
+                        <div class="flex"><span class="w-28 text-gray-400 font-medium">Chip:</span> <span class="text-white">Apple M4 Max (16-core CPU, 40-core GPU)</span></div>
+                        <div class="flex"><span class="w-28 text-gray-400 font-medium">Memory:</span> <span class="text-white">64 GB Unified Memory</span></div>
+                        <div class="flex"><span class="w-28 text-gray-400 font-medium">Developer:</span> <span class="text-emerald-400 font-semibold">Ranveer Jaiswal (Full Stack MERN)</span></div>
+                        <div class="flex"><span class="w-28 text-gray-400 font-medium">Location:</span> <span class="text-white">Gurgaon, Haryana, India 🇮🇳</span></div>
+                        <div class="flex"><span class="w-28 text-gray-400 font-medium">Serial Number:</span> <span class="text-gray-400 font-mono">RV-JAIS-2026-PRO</span></div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-5 flex items-center flex-wrap gap-2">
+                        <button class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition" onclick="closeAboutThisMac(); openSkillsFolderModal();">
+                            System Report (Skills)...
+                        </button>
+                        <a href="https://github.com/Rvjais" target="_blank" class="px-3 py-1.5 rounded-lg bg-[#007aff] hover:bg-blue-600 text-white text-xs font-semibold transition">
+                            GitHub <i class="fas fa-external-link-alt ml-1 text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <!-- ====================================================================
@@ -339,8 +746,8 @@
             </div>
         </div>
 
-        <!-- iOS Right Status Indicators -->
-        <div class="w-20 flex items-center justify-end space-x-1.5 pr-1 pointer-events-auto">
+        <!-- iOS Right Status Indicators / Mobile Control Center Trigger -->
+        <div class="w-20 flex items-center justify-end space-x-1.5 pr-1 pointer-events-auto cursor-pointer" onclick="toggleMobileControlCenter(event)" title="Control Center (Tap to toggle)">
             <i class="fas fa-signal text-[11px]"></i>
             <span class="text-[10px] font-extrabold tracking-tighter">5G</span>
             <i class="fas fa-wifi text-[12px]"></i>
@@ -510,14 +917,22 @@
             </a>
 
             <!-- App 16: Notes -->
-            <div class="ios-app-item" onclick="showToast('Notes: Full Stack MERN Developer based in Gurgaon', 'fas fa-sticky-note')">
+            <div class="ios-app-item" onclick="openApp('notes')">
                 <div class="ios-icon bg-gradient-to-b from-amber-300 to-yellow-500">
                     <i class="fas fa-note-sticky text-2xl text-amber-900"></i>
                 </div>
                 <span class="ios-app-label">Notes</span>
             </div>
 
-            <!-- App 17: Photos (Gallery) -->
+            <!-- App 17: Calculator -->
+            <div class="ios-app-item" onclick="openApp('calculator')">
+                <div class="ios-icon bg-gradient-to-b from-amber-500 to-orange-600">
+                    <i class="fas fa-calculator text-2xl text-white"></i>
+                </div>
+                <span class="ios-app-label">Calculator</span>
+            </div>
+
+            <!-- App 18: Photos (Gallery) -->
             <div class="ios-app-item" onclick="openApp('gallery')">
                 <div class="ios-icon bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-500">
                     <i class="fas fa-images text-2xl text-white"></i>
@@ -645,60 +1060,30 @@
             </div>
             <span class="shortcut-label">Gallery</span>
         </div>
+
+        <!-- Icon 10: Notes -->
+        <div class="desktop-shortcut pointer-events-auto" style="top: 485px; right: 130px;" onclick="if(!this.dataset.dragged) openApp('notes')">
+            <div class="shortcut-icon bg-gradient-to-b from-amber-400 to-yellow-600 shadow-xl border border-white/20">
+                <i class="fas fa-note-sticky text-3xl text-white"></i>
+            </div>
+            <span class="shortcut-label">Notes</span>
+        </div>
+
+        <!-- Icon 11: Calculator -->
+        <div class="desktop-shortcut pointer-events-auto" style="top: 595px; right: 28px;" onclick="if(!this.dataset.dragged) openApp('calculator')">
+            <div class="shortcut-icon bg-gradient-to-b from-amber-500 to-orange-600 shadow-xl border border-white/20">
+                <i class="fas fa-calculator text-3xl text-white"></i>
+            </div>
+            <span class="shortcut-label">Calculator</span>
+        </div>
     </div>
 
     <!-- ====================================================================
-         DESKTOP ONLY: macOS Tahoe Bottom Dock
+         DESKTOP ONLY: macOS 26 Tahoe Interactive Physics Dock
          ==================================================================== -->
-    <div class="desktop-only absolute bottom-3 left-1/2 transform -translate-x-1/2 z-30">
-        <div class="glass-dock-dark rounded-2xl p-2.5 flex items-center space-x-3.5 backdrop-blur-2xl">
-            <!-- Dock Item 1: About -->
-            <div class="dock-icon w-14 h-14 bg-gradient-to-tr from-sky-400 to-blue-600 rounded-2xl flex items-center justify-center cursor-pointer relative group shadow-md" onclick="openApp('about')">
-                <i class="fab fa-safari text-3xl text-white"></i>
-                <div class="absolute -top-9 bg-black/80 text-white text-xs px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">About Me (Safari)</div>
-                <div class="w-1 h-1 bg-white rounded-full absolute -bottom-1.5" id="dot-about"></div>
-            </div>
-
-            <!-- Dock Item 2: Projects -->
-            <div class="dock-icon w-14 h-14 bg-[#141416] border border-gray-700/60 rounded-2xl flex items-center justify-center cursor-pointer relative group shadow-md" onclick="openApp('projects')">
-                <i class="fas fa-terminal text-2xl text-green-400"></i>
-                <div class="absolute -top-9 bg-black/80 text-white text-xs px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">Terminal & Projects</div>
-                <div class="w-1 h-1 bg-white rounded-full absolute -bottom-1.5" id="dot-projects"></div>
-            </div>
-
-            <!-- Dock Item 3: Skills Folder -->
-            <div class="dock-icon w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center cursor-pointer relative group shadow-md" onclick="openSkillsFolderModal()">
-                <i class="fas fa-layer-group text-2xl text-white"></i>
-                <div class="absolute -top-9 bg-black/80 text-white text-xs px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">Skills Folder</div>
-                <div class="w-1 h-1 bg-white rounded-full absolute -bottom-1.5" id="dot-skills"></div>
-            </div>
-
-            <!-- Dock Item 4: Contact -->
-            <div class="dock-icon w-14 h-14 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center cursor-pointer relative group shadow-md" onclick="openApp('contact')">
-                <i class="fas fa-paper-plane text-2xl text-white"></i>
-                <div class="absolute -top-9 bg-black/80 text-white text-xs px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">Mail (Contact)</div>
-                <div class="w-1 h-1 bg-white rounded-full absolute -bottom-1.5" id="dot-contact"></div>
-            </div>
-
-            <!-- Dock Item 5: Gallery (Photos & Videos) -->
-            <div class="dock-icon w-14 h-14 bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-500 rounded-2xl flex items-center justify-center cursor-pointer relative group shadow-md" onclick="openApp('gallery')">
-                <i class="fas fa-images text-2xl text-white"></i>
-                <div class="absolute -top-9 bg-black/80 text-white text-xs px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">Photos (Gallery)</div>
-                <div class="w-1 h-1 bg-white rounded-full absolute -bottom-1.5" id="dot-gallery"></div>
-            </div>
-
-            <!-- Dock Item 6: Projects Folder -->
-            <div class="dock-icon w-14 h-14 bg-gradient-to-tr from-amber-500 via-orange-500 to-red-500 rounded-2xl flex items-center justify-center cursor-pointer relative group shadow-md" onclick="openFolderModal()">
-                <i class="fas fa-folder-open text-2xl text-white"></i>
-                <div class="absolute -top-9 bg-black/80 text-white text-xs px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">Projects Folder</div>
-            </div>
-
-            <!-- Dock Item 7: Mission Control -->
-            <div class="dock-icon w-14 h-14 bg-gradient-to-tr from-slate-800 to-slate-900 border border-white/20 rounded-2xl flex items-center justify-center cursor-pointer relative group shadow-md" onclick="toggleMissionControl()" title="Mission Control (3-finger swipe up or F3)">
-                <i class="fas fa-table-cells-large text-2xl text-cyan-400"></i>
-                <div class="absolute -top-9 bg-black/80 text-white text-xs px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">Mission Control (F3)</div>
-            </div>
-
+    <div id="macos-dock-wrapper" class="desktop-only fixed bottom-3 left-1/2 transform -translate-x-1/2 z-30 select-none">
+        <div id="macos-dock" class="relative backdrop-blur-md">
+            <div id="macos-dock-inner" class="relative"></div>
         </div>
     </div>
 
@@ -1175,32 +1560,67 @@
                     </div>
 
                     <!-- Project 7: Veer Music — Nothing OS Music App -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                        <div class="flex items-start space-x-4">
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-black to-red-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
-                                <i class="fas fa-music"></i>
+                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col gap-3">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-zinc-900 to-red-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0 border border-red-500/30">
+                                    <i class="fas fa-record-vinyl text-red-400"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                                        <h3 class="text-base font-bold text-white">Veer Music — Nothing OS Music App</h3>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-bold border border-red-500/30">REACT NATIVE EXPO 54</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold border border-purple-500/30">OPUS 160K / AAC</span>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-1">Nothing OS-style YouTube Music client with Node.js yt-dlp proxy. Features an interactive rotating vinyl record player, line-by-line synchronized LRC karaoke lyrics (with Hindi/Urdu unicode support), 1-tap offline song downloads with smart LRU cache, and dark AMOLED Obsidian Black theme.</p>
+                                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                                        <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-semibold"><i class="fab fa-react mr-1 text-[#61dafb]"></i> Expo 54</span>
+                                        <span class="px-2 py-0.5 rounded bg-green-500/20 text-green-300 text-[10px] font-semibold"><i class="fab fa-node-js mr-1 text-[#68a063]"></i> Node.js 22</span>
+                                        <span class="px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[10px] font-semibold"><i class="fab fa-youtube mr-1"></i> yt-dlp Proxy</span>
+                                        <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-semibold"><i class="fas fa-align-left mr-1"></i> Synced LRC</span>
+                                        <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-semibold"><i class="fas fa-download mr-1"></i> Smart Cache</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="flex items-center space-x-2">
-                                    <h3 class="text-base font-bold text-white">Veer Music — Nothing OS Music App</h3>
-                                    <span class="text-[10px] px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-bold border border-red-500/30">REACT NATIVE + EXPO</span>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">Nothing OS-style YouTube Music client + yt-dlp proxy. Vinyl player, synced LRC lyrics, downloads + smart cache, offline mode, AMOLED + Glyph EQ.</p>
-                                <div class="flex flex-wrap gap-1.5 mt-2.5">
-                                    <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-semibold">Expo 54</span>
-                                    <span class="px-2 py-0.5 rounded bg-green-500/20 text-green-300 text-[10px] font-semibold">Node 22</span>
-                                    <span class="px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-[10px] font-semibold">yt-dlp</span>
-                                    <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-semibold">Zustand</span>
-                                </div>
+                            <div class="flex items-center space-x-2 shrink-0">
+                                <button class="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('nothing-veer')">
+                                    <i class="fas fa-images mr-1.5"></i> Screenshots & Specs
+                                </button>
+                                <a href="https://github.com/Rvjais/Nothing-Veer" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
+                                    <i class="fab fa-github"></i>
+                                </a>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-2 shrink-0">
-                            <button class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('nothing-veer')">
-                                <i class="fas fa-book-open mr-1.5"></i> Readme
-                            </button>
-                            <a href="https://github.com/Rvjais/Nothing-Veer" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
-                                <i class="fab fa-github"></i>
-                            </a>
+
+                        <!-- Screenshot Preview Strip (6 UI views from assets) -->
+                        <div class="pt-2 border-t border-gray-800/80">
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 block">UI Previews (Click to inspect):</span>
+                            <div class="project-card-previews">
+                                <div class="project-thumb-item" onclick="openReadmeModal('nothing-veer')" title="Vinyl Turntable Player">
+                                    <img src="assets/VEER-MUSIC/Screenshot_20261016-113318.png" alt="Vinyl Player" loading="lazy">
+                                    <div class="thumb-label">Vinyl Player</div>
+                                </div>
+                                <div class="project-thumb-item" onclick="openReadmeModal('nothing-veer')" title="Synchronized Karaoke Lyrics">
+                                    <img src="assets/VEER-MUSIC/Screenshot_20261016-113332.png" alt="Synced Lyrics" loading="lazy">
+                                    <div class="thumb-label">Karaoke Lyrics</div>
+                                </div>
+                                <div class="project-thumb-item" onclick="openReadmeModal('nothing-veer')" title="Home Dashboard & Quick Picks">
+                                    <img src="assets/VEER-MUSIC/Screenshot_20261016-113243.png" alt="Home Dashboard" loading="lazy">
+                                    <div class="thumb-label">Home Dashboard</div>
+                                </div>
+                                <div class="project-thumb-item" onclick="openReadmeModal('nothing-veer')" title="Instant Search & Filters">
+                                    <img src="assets/VEER-MUSIC/Screenshot_20261016-113255.png" alt="Search & Download" loading="lazy">
+                                    <div class="thumb-label">1-Tap Download</div>
+                                </div>
+                                <div class="project-thumb-item" onclick="openReadmeModal('nothing-veer')" title="Audiophile Bitrates & Themes">
+                                    <img src="assets/VEER-MUSIC/Screenshot_20261016-113305.png" alt="Settings & Quality" loading="lazy">
+                                    <div class="thumb-label">Settings & Quality</div>
+                                </div>
+                                <div class="project-thumb-item" onclick="openReadmeModal('nothing-veer')" title="Track Details & Metadata">
+                                    <img src="assets/VEER-MUSIC/Screenshot_20261016-113321.png" alt="Metadata Inspector" loading="lazy">
+                                    <div class="thumb-label">ID3 Metadata</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1235,31 +1655,51 @@
                     </div>
 
                     <!-- Project 9: WebRip — Full Website Scraper -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                        <div class="flex items-start space-x-4">
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
-                                <i class="fas fa-globe"></i>
+                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col gap-3">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0 border border-teal-500/30">
+                                    <i class="fas fa-spider text-teal-300"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                                        <h3 class="text-base font-bold text-white">WebRip — Full Website Scraper & Offline Cloner</h3>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-teal-500/20 text-teal-400 font-bold border border-teal-500/30">FLASK + PLAYWRIGHT</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-semibold border border-blue-500/30">BFS SPIDER</span>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-1">Full-spectrum BFS crawler to offline ZIP clone. Headless Playwright Chromium rendering with auto-scroll and post-hydration DOM snapshot (fixes blank-page React/Next.js SPAs), anti-bot CDP :9222 cookie injection & manual captcha challenge wait, offline link rewriting, and real-time SSE progress telemetry.</p>
+                                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                                        <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-semibold"><i class="fab fa-python mr-1 text-[#3776ab]"></i> Python 3.11</span>
+                                        <span class="px-2 py-0.5 rounded bg-green-500/20 text-green-300 text-[10px] font-semibold"><i class="fas fa-window-maximize mr-1"></i> Playwright</span>
+                                        <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-semibold"><i class="fas fa-shield-alt mr-1"></i> Anti-Bot CDP</span>
+                                        <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-semibold"><i class="fas fa-file-archive mr-1"></i> Offline ZIP</span>
+                                        <span class="px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 text-[10px] font-semibold"><i class="fas fa-stream mr-1"></i> SSE Live</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="flex items-center space-x-2">
-                                    <h3 class="text-base font-bold text-white">WebRip — Full Website Scraper</h3>
-                                    <span class="text-[10px] px-2 py-0.5 rounded bg-teal-500/20 text-teal-400 font-bold border border-teal-500/30">FLASK + PLAYWRIGHT</span>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">BFS crawler to offline ZIP clone. JS SPA rendering, anti-bot CDP + cookies, link rewriting, live SSE progress, Render-ready.</p>
-                                <div class="flex flex-wrap gap-1.5 mt-2.5">
-                                    <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-semibold">Python 3.11</span>
-                                    <span class="px-2 py-0.5 rounded bg-green-500/20 text-green-300 text-[10px] font-semibold">Playwright</span>
-                                    <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-semibold">Gunicorn</span>
-                                </div>
+                            <div class="flex items-center space-x-2 shrink-0">
+                                <button class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('web-ripper')">
+                                    <i class="fas fa-images mr-1.5"></i> Screenshots & Specs
+                                </button>
+                                <a href="https://github.com/Rvjais/Web-Scrapper" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
+                                    <i class="fab fa-github"></i>
+                                </a>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-2 shrink-0">
-                            <button class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('web-ripper')">
-                                <i class="fas fa-book-open mr-1.5"></i> Readme
-                            </button>
-                            <a href="https://github.com/Rvjais/Web-Scrapper" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
-                                <i class="fab fa-github"></i>
-                            </a>
+
+                        <!-- Screenshot Preview Strip (Dark and Light mode consoles) -->
+                        <div class="pt-2 border-t border-gray-800/80">
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 block">Console Previews (Click to inspect):</span>
+                            <div class="project-card-previews">
+                                <div class="project-thumb-item" onclick="openReadmeModal('web-ripper')" title="Dark Mode Scraper Console (Obsidian Neon)">
+                                    <img src="assets/Web-Scrapper/darkmode.png" alt="Dark Mode Console" loading="lazy">
+                                    <div class="thumb-label">Dark Mode Console</div>
+                                </div>
+                                <div class="project-thumb-item" onclick="openReadmeModal('web-ripper')" title="Light Mode Scraper & Exporter">
+                                    <img src="assets/Web-Scrapper/lightmode.png" alt="Light Mode Console" loading="lazy">
+                                    <div class="thumb-label">Light Mode UI</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1847,6 +2287,138 @@
             </div>
         </div>
 
+        <!-- ----------------------------------------------------------------
+             APP 6: CALCULATOR (macOS Tahoe & iOS)
+             ---------------------------------------------------------------- -->
+        <div id="app-calculator" class="app-window bg-[#1c1c1e] text-white shadow-2xl glass-tahoe" style="width: 320px; height: 490px;">
+            <!-- Header -->
+            <div class="app-header bg-[#2c2c2e]/90 border-b border-white/10 h-14 md:h-11 flex items-center px-4 justify-between backdrop-blur-xl select-none cursor-move">
+                <!-- Desktop Traffic Lights -->
+                <div class="hidden md:flex items-center space-x-2 traffic-container w-20">
+                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e]" onclick="closeApp('calculator')" title="Close"><i class="fas fa-times"></i></div>
+                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123]" onclick="minimizeApp('calculator')" title="Minimize"><i class="fas fa-minus"></i></div>
+                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29]" onclick="maximizeApp('calculator')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                </div>
+
+                <!-- iOS Back Button -->
+                <button class="md:hidden ios-nav-back-btn text-amber-400 focus:outline-none" onclick="closeApp('calculator')" title="Back to Home">
+                    <i class="fas fa-chevron-left text-lg font-bold"></i>
+                    <span>Back</span>
+                </button>
+
+                <!-- Center Title -->
+                <div class="text-sm md:text-xs font-semibold text-gray-200 flex items-center space-x-1.5">
+                    <i class="fas fa-calculator text-amber-400"></i>
+                    <span>Calculator</span>
+                </div>
+
+                <!-- Done / Spacer -->
+                <div class="w-20 flex justify-end">
+                    <button class="md:hidden text-amber-400 font-semibold text-sm focus:outline-none" onclick="closeApp('calculator')">Done</button>
+                </div>
+            </div>
+
+            <!-- Calculator Body -->
+            <div class="flex-1 flex flex-col justify-between p-4 bg-black/40">
+                <!-- Screen Display -->
+                <div class="p-3.5 text-right flex flex-col justify-end select-text mb-3 bg-white/5 rounded-2xl border border-white/5">
+                    <div id="calc-history" class="text-xs text-gray-400 font-mono h-5 overflow-hidden whitespace-nowrap"></div>
+                    <div id="calc-display" class="text-4xl md:text-5xl font-light tracking-tight text-white overflow-hidden whitespace-nowrap text-ellipsis">0</div>
+                </div>
+
+                <!-- Keypad 4x5 Grid -->
+                <div class="grid grid-cols-4 gap-2.5 flex-1">
+                    <button type="button" class="calc-btn calc-btn-func" onclick="handleCalcClear()">AC</button>
+                    <button type="button" class="calc-btn calc-btn-func" onclick="handleCalcNegate()">±</button>
+                    <button type="button" class="calc-btn calc-btn-func" onclick="handleCalcPercent()">%</button>
+                    <button type="button" class="calc-btn calc-btn-op" onclick="handleCalcOp('/')">÷</button>
+
+                    <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('7')">7</button>
+                    <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('8')">8</button>
+                    <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('9')">9</button>
+                    <button type="button" class="calc-btn calc-btn-op" onclick="handleCalcOp('*')">×</button>
+
+                    <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('4')">4</button>
+                    <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('5')">5</button>
+                    <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('6')">6</button>
+                    <button type="button" class="calc-btn calc-btn-op" onclick="handleCalcOp('-')">−</button>
+
+                    <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('1')">1</button>
+                    <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('2')">2</button>
+                    <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('3')">3</button>
+                    <button type="button" class="calc-btn calc-btn-op" onclick="handleCalcOp('+')">+</button>
+
+                    <button type="button" class="calc-btn calc-btn-num col-span-2 text-left pl-6" onclick="handleCalcDigit('0')">0</button>
+                    <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('.')">.</button>
+                    <button type="button" class="calc-btn calc-btn-op bg-amber-500 hover:bg-amber-400" onclick="handleCalcEqual()">=</button>
+                </div>
+            </div>
+
+            <!-- iOS Home Bar -->
+            <div class="md:hidden py-3 bg-[#181920] border-t border-white/10 flex items-center justify-center cursor-pointer" onclick="closeApp('calculator')">
+                <div class="ios-home-bar dark"></div>
+            </div>
+        </div>
+
+        <!-- ----------------------------------------------------------------
+             APP 7: NOTES (macOS Tahoe & iOS)
+             ---------------------------------------------------------------- -->
+        <div id="app-notes" class="app-window bg-[#1e1e24] text-white shadow-2xl glass-tahoe" style="width: 840px; height: 570px;">
+            <!-- Header -->
+            <div class="app-header bg-[#2a2a32]/90 border-b border-white/10 h-14 md:h-11 flex items-center px-4 justify-between backdrop-blur-xl select-none cursor-move">
+                <!-- Desktop Traffic Lights -->
+                <div class="hidden md:flex items-center space-x-2 traffic-container w-24">
+                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e]" onclick="closeApp('notes')" title="Close"><i class="fas fa-times"></i></div>
+                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123]" onclick="minimizeApp('notes')" title="Minimize"><i class="fas fa-minus"></i></div>
+                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29]" onclick="maximizeApp('notes')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                </div>
+
+                <!-- iOS Back Button -->
+                <button class="md:hidden ios-nav-back-btn text-yellow-400 focus:outline-none" onclick="closeApp('notes')" title="Back to Home">
+                    <i class="fas fa-chevron-left text-lg font-bold"></i>
+                    <span>Back</span>
+                </button>
+
+                <!-- Center Title -->
+                <div class="text-sm md:text-xs font-semibold text-gray-200 flex items-center space-x-1.5">
+                    <i class="fas fa-note-sticky text-yellow-400"></i>
+                    <span>Notes — Ranveer's DevPad</span>
+                </div>
+
+                <!-- Action Button -->
+                <div class="w-24 flex justify-end">
+                    <button class="text-xs bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/30 px-2.5 py-1 rounded-md font-medium flex items-center space-x-1 transition" onclick="createNewNote()">
+                        <i class="fas fa-plus text-xs"></i>
+                        <span class="hidden sm:inline">New Note</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notes Split View Body -->
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+                <!-- Notes Sidebar (Left) -->
+                <div class="w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10 bg-[#16161c] flex flex-col shrink-0">
+                    <div class="p-2.5 border-b border-white/10">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-2.5 top-2.5 text-xs text-gray-400"></i>
+                            <input type="text" id="notes-search-input" placeholder="Search Notes..." class="w-full pl-7 pr-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-gray-400 focus:outline-none" oninput="filterNotes(this.value)">
+                        </div>
+                    </div>
+                    <div id="notes-list-container" class="flex-1 overflow-y-auto dark-scroll p-1.5 space-y-1"></div>
+                </div>
+
+                <!-- Note Content Pane (Right) -->
+                <div class="flex-1 flex flex-col bg-[#1c1d24] overflow-hidden">
+                    <div id="note-view-pane" class="flex-1 p-5 md:p-6 overflow-y-auto dark-scroll text-left"></div>
+                </div>
+            </div>
+
+            <!-- iOS Home Bar -->
+            <div class="md:hidden py-3 bg-[#181920] border-t border-white/10 flex items-center justify-center cursor-pointer" onclick="closeApp('notes')">
+                <div class="ios-home-bar dark"></div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Gallery Lightbox Modal -->
@@ -1881,42 +2453,26 @@
     </div>
 
     <!-- ====================================================================
-         DESKTOP ONLY: macOS Tahoe Mission Control (Exposé Tiling View)
+         DESKTOP ONLY: macOS 26 Tahoe Mission Control (Exposé Tiling View)
          ==================================================================== -->
     <div id="macos-mission-control" onclick="handleMissionControlBackdropClick(event)">
-        <!-- Top Floating Quick Close Button (Guaranteed Exit) -->
-        <button type="button" onclick="event.stopPropagation(); closeMissionControl();" class="fixed top-4 right-6 z-[600] px-4 py-1.5 rounded-xl bg-red-500/80 hover:bg-red-500 text-white font-bold text-xs flex items-center space-x-1.5 transition shadow-2xl cursor-pointer" title="Exit Mission Control (Esc)">
-            <i class="fas fa-times text-sm"></i>
-            <span>Exit (Esc)</span>
-        </button>
-
-        <!-- Top Mission Control Spaces Bar -->
-        <div class="mission-control-top-bar flex items-center justify-between w-full max-w-6xl mx-auto pt-3 pb-3 border-b border-white/10 pointer-events-auto">
-            <div class="flex items-center space-x-3">
-                <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-white/20 border border-white/25 text-white shadow-sm">
-                    <i class="fas fa-desktop text-blue-400 text-xs"></i>
-                    <span class="text-xs font-semibold">Desktop 1 (Main)</span>
-                </div>
-                <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition cursor-pointer" onclick="showToast('Switched to Desktop 2 Space', 'fas fa-desktop')">
-                    <i class="fas fa-desktop text-xs"></i>
-                    <span class="text-xs font-medium">Desktop 2 (Dev)</span>
-                </div>
-                <div class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-gray-400 hover:text-white flex items-center justify-center text-xs transition cursor-pointer" onclick="showToast('Mission Control: Created New Desktop Space', 'fas fa-plus')" title="Add Desktop Space">
-                    <i class="fas fa-plus"></i>
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-3 text-white text-xs pr-24">
-                <span class="text-gray-400 hidden sm:inline"><kbd class="px-1.5 py-0.5 bg-white/10 rounded border border-white/20 text-gray-200">F3</kbd> or <kbd class="px-1.5 py-0.5 bg-white/10 rounded border border-white/20 text-gray-200">Ctrl+↑</kbd></span>
+        <!-- Top Mission Control Spaces Shelf (macOS Tahoe Authentic Dock) -->
+        <div class="tahoe-spaces-wrapper w-full flex items-center justify-center pt-2 pb-1 pointer-events-auto select-none" onclick="event.stopPropagation()">
+            <div id="tahoe-spaces-container" class="tahoe-spaces-shelf flex items-center space-x-3.5">
+                <!-- Populated dynamically via renderMissionControlSpaces() in script.js -->
             </div>
         </div>
 
-        <!-- Center Stage: Tiled Open Windows Grid -->
+        <!-- Center Stage: Tiled Open Windows Grid or Tahoe Quick-Launch Matrix -->
         <div id="mission-control-tiles" class="flex-1 w-full max-w-7xl mx-auto flex items-center justify-center p-6 overflow-y-auto pointer-events-auto" onclick="handleMissionControlBackdropClick(event)"></div>
 
-        <!-- Bottom Status / Hint Bar -->
-        <div class="text-center text-xs text-gray-400 pb-2 pointer-events-none">
-            <span>Click any window to bring to front • Click background or press <kbd class="px-1.5 py-0.5 bg-white/10 rounded border border-white/20 text-white">Esc</kbd> to exit</span>
+        <!-- Bottom Subtle Ambient Hint (macOS style) -->
+        <div class="mission-control-bottom-hint text-center text-[11px] text-gray-400 pb-3 pointer-events-none select-none flex items-center justify-center space-x-2">
+            <span class="opacity-80">Click any window to bring to front</span>
+            <span class="opacity-40">•</span>
+            <span class="opacity-80">Click background or press <kbd class="px-1.5 py-0.5 bg-white/10 rounded border border-white/20 text-white font-mono text-[10px]">Esc</kbd> to return</span>
+            <span class="opacity-40">•</span>
+            <span class="opacity-80"><kbd class="px-1.5 py-0.5 bg-white/10 rounded border border-white/20 text-white font-mono text-[10px]">F3</kbd></span>
         </div>
     </div>
 

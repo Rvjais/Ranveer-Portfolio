@@ -4,7 +4,7 @@
 
 :root {
     --ios-bg: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
-    --mac-bg: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
+    --mac-bg: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=85&w=2800&auto=format&fit=crop');
     --glass-bg: rgba(255, 255, 255, 0.18);
     --glass-border: rgba(255, 255, 255, 0.28);
     --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
@@ -517,18 +517,29 @@ nav.mobile-only {
 
     /* Safe Area clearance for iOS Dynamic Island & Status Bar */
     .app-window .app-header {
-        padding-top: max(env(safe-area-inset-top, 0px), 50px) !important;
-        min-height: 94px !important;
+        padding-top: calc(48px + max(env(safe-area-inset-top, 0px), 4px)) !important;
+        min-height: calc(92px + max(env(safe-area-inset-top, 0px), 4px)) !important;
         height: auto !important;
-        padding-bottom: 10px !important;
+        padding-bottom: 8px !important;
         padding-left: 14px !important;
         padding-right: 14px !important;
         display: flex !important;
-        align-items: center !important;
+        align-items: flex-end !important;
         justify-content: space-between !important;
         position: relative !important;
         z-index: 20 !important;
         flex-shrink: 0 !important;
+    }
+
+    /* Prevent mobile app titles from overlapping with back/done buttons or Dynamic Island */
+    .app-window .app-header > div:nth-child(3),
+    .app-window .app-header > .app-header-title {
+        max-width: 50vw !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        text-align: center !important;
+        margin-bottom: 8px !important;
     }
 
     /* iOS Navigation Back Button Styling */
@@ -536,9 +547,9 @@ nav.mobile-only {
         display: inline-flex !important;
         align-items: center !important;
         gap: 5px !important;
-        min-height: 44px !important;
+        min-height: 40px !important;
         min-width: 50px !important;
-        padding: 6px 10px !important;
+        padding: 4px 8px !important;
         border-radius: 10px !important;
         font-size: 16px !important;
         font-weight: 500 !important;
@@ -549,6 +560,7 @@ nav.mobile-only {
         transition: transform 0.15s ease, opacity 0.15s ease !important;
         position: relative !important;
         z-index: 30 !important;
+        margin-bottom: 4px !important;
     }
     .ios-nav-back-btn:active {
         opacity: 0.55 !important;
@@ -1079,6 +1091,193 @@ nav.mobile-only {
     color: #93c5fd;
 }
 
+/* --- Project Readme Screenshot Galleries & Feature Grids --- */
+.readme-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+    margin-bottom: 8px;
+}
+
+.readme-screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 18px 0 24px 0;
+}
+
+.readme-screenshot-card {
+    background: #11141c;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.readme-screenshot-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(96, 165, 250, 0.45);
+    box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.55), 0 0 16px -2px rgba(59, 130, 246, 0.25);
+}
+
+.readme-screenshot-img-wrap {
+    position: relative;
+    width: 100%;
+    background: #000;
+    overflow: hidden;
+    cursor: zoom-in;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.readme-screenshot-img-wrap img {
+    width: 100%;
+    height: auto;
+    max-height: 380px;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.readme-screenshot-card:hover .readme-screenshot-img-wrap img {
+    transform: scale(1.03);
+}
+
+.readme-screenshot-caption {
+    padding: 12px 14px;
+    background: #131722;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex: 1;
+}
+
+.readme-screenshot-caption h4 {
+    color: #f1f5f9;
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.readme-screenshot-caption p {
+    color: #94a3b8;
+    font-size: 11.5px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.readme-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    margin: 14px 0 20px 0;
+}
+
+.readme-feature-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.readme-feature-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.readme-feature-item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.readme-feature-item-header .feat-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.readme-feature-item-header h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.readme-feature-item p {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* --- Inline Card Screenshot Previews in Project List --- */
+.project-card-previews {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+}
+
+.project-thumb-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: #000;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-thumb-item:hover {
+    transform: translateY(-2px) scale(1.03);
+    border-color: #60a5fa;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+}
+
+.project-thumb-item img {
+    height: 64px;
+    width: auto;
+    max-width: 110px;
+    object-fit: cover;
+    display: block;
+}
+
+.project-thumb-item .thumb-label {
+    position: absolute;
+    bottom: 0;
+    inset-x: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    font-size: 9px;
+    font-weight: 600;
+    color: #fff;
+    padding: 2px 4px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ==========================================================================
    macOS & iOS Photos / Gallery App
    ========================================================================== */
@@ -1361,7 +1560,7 @@ nav.mobile-only {
 }
 
 /* ==========================================================================
-   macOS Tahoe Mission Control (Exposé)
+   macOS 26 Tahoe Mission Control (Exposé) & Spaces Shelf
    ========================================================================== */
 
 #macos-mission-control {
@@ -1370,19 +1569,19 @@ nav.mobile-only {
     width: 100vw;
     height: 100vh;
     z-index: 500;
-    background: rgba(10, 13, 20, 0.78);
-    backdrop-filter: blur(50px) saturate(210%);
-    -webkit-backdrop-filter: blur(50px) saturate(210%);
+    background: radial-gradient(120% 120% at 50% 15%, rgba(15, 20, 32, 0.72) 0%, rgba(6, 9, 15, 0.88) 100%);
+    backdrop-filter: blur(45px) saturate(210%);
+    -webkit-backdrop-filter: blur(45px) saturate(210%);
     display: none;
     flex-direction: column !important;
     justify-content: space-between;
-    padding: 24px 48px 16px 48px;
+    padding: 16px 36px 12px 36px;
     overflow-y: auto;
     user-select: none;
     -webkit-user-select: none;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #macos-mission-control.is-active {
@@ -1397,16 +1596,163 @@ nav.mobile-only {
     }
 }
 
+/* macOS Tahoe Top Spaces Shelf */
+.tahoe-spaces-wrapper {
+    z-index: 510;
+}
+
+.tahoe-spaces-shelf {
+    background: rgba(22, 28, 42, 0.65);
+    backdrop-filter: blur(30px) saturate(190%);
+    -webkit-backdrop-filter: blur(30px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+    padding: 8px 14px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tahoe-space-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tahoe-space-screen {
+    width: 118px;
+    height: 72px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tahoe-space-item:hover .tahoe-space-screen {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.tahoe-space-item.is-active .tahoe-space-screen {
+    outline: 2.5px solid #007aff;
+    outline-offset: 1px;
+    box-shadow: 0 0 18px rgba(0, 122, 255, 0.55), 0 8px 24px rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Screen miniaturization details */
+.tahoe-space-screen-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(4px);
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.2);
+}
+
+.tahoe-space-screen-dock {
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 44px;
+    height: 4px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(4px);
+}
+
+.tahoe-space-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    margin-top: 5px;
+    letter-spacing: -0.01em;
+    transition: color 0.15s ease;
+}
+
+.tahoe-space-item:hover .tahoe-space-title {
+    color: #ffffff;
+}
+
+.tahoe-space-item.is-active .tahoe-space-title {
+    color: #38bdf8;
+    font-weight: 700;
+}
+
+/* Close button for extra spaces */
+.tahoe-space-close {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.95);
+    color: #ffffff;
+    font-size: 9px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    z-index: 20;
+    transition: transform 0.15s ease;
+}
+
+.tahoe-space-item:hover .tahoe-space-close {
+    display: flex;
+}
+
+.tahoe-space-close:hover {
+    transform: scale(1.15);
+    background: #dc2626;
+}
+
+/* Add Space Button */
+.tahoe-space-add-btn {
+    width: 118px;
+    height: 72px;
+    border-radius: 12px;
+    border: 1.5px dashed rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.tahoe-space-add-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Center Stage: Mission Control Tiles */
 #mission-control-tiles {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 36px 32px;
-    max-width: 1400px;
+    gap: 32px 30px;
+    max-width: 1440px;
     margin: auto;
     width: 100%;
-    padding: 24px 0;
+    padding: 16px 0;
 }
 
 /* Mission Control Item Container: Pill above, Window below */
@@ -1419,37 +1765,38 @@ nav.mobile-only {
 }
 
 .mission-window-pill {
-    background: rgba(18, 22, 32, 0.9);
-    backdrop-filter: blur(20px);
+    background: rgba(18, 22, 34, 0.85);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 20px;
-    padding: 4px 16px;
+    padding: 5px 16px;
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
     font-size: 12px;
     font-weight: 600;
     color: #ffffff;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
     margin-bottom: 12px;
     white-space: nowrap;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .mission-item-container:hover .mission-window-pill {
-    background: rgba(30, 40, 60, 0.95);
-    border-color: rgba(96, 165, 250, 0.8);
-    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+    background: rgba(28, 38, 58, 0.95);
+    border-color: rgba(96, 165, 250, 0.85);
+    box-shadow: 0 10px 28px rgba(59, 130, 246, 0.35);
 }
 
 .mission-window-card {
     position: relative;
-    border-radius: 16px;
-    background: rgba(20, 23, 30, 0.9);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
+    border-radius: 18px;
+    background: rgba(18, 22, 30, 0.88);
+    backdrop-filter: blur(35px) saturate(190%);
+    -webkit-backdrop-filter: blur(35px) saturate(190%);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.22);
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
@@ -1460,27 +1807,129 @@ nav.mobile-only {
 .mission-item-container:hover .mission-window-card {
     transform: translateY(-8px) scale(1.025);
     border-color: rgba(96, 165, 250, 0.85);
-    box-shadow: 0 35px 90px rgba(0, 0, 0, 0.75), 0 0 30px rgba(59, 130, 246, 0.35);
+    box-shadow: 0 35px 90px rgba(0, 0, 0, 0.78), 0 0 32px rgba(59, 130, 246, 0.35);
 }
 
 .mission-control-tile-close {
-    width: 22px;
-    height: 22px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    background: rgba(255, 95, 86, 0.9);
-    border: 1px solid #e0443e;
-    color: #ffffff;
+    background: #ff5f56;
+    border: 0.5px solid #e0443e;
+    color: #000000;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
-    transition: transform 0.15s ease, background 0.15s ease;
+    font-size: 8px;
+    font-weight: bold;
+    opacity: 0.9;
     cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.mission-control-tile-close i {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.mission-window-card:hover .mission-control-tile-close i {
+    opacity: 0.75;
 }
 
 .mission-control-tile-close:hover {
-    transform: scale(1.15);
-    background: #ff5f56;
+    transform: scale(1.2);
+    opacity: 1;
+}
+
+/* macOS Tahoe Mission Control Empty State — Quick Launch Palette */
+.tahoe-mc-empty-palette {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 760px;
+    width: 100%;
+    padding: 32px 40px;
+    background: rgba(18, 23, 36, 0.68);
+    backdrop-filter: blur(35px) saturate(190%);
+    -webkit-backdrop-filter: blur(35px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 28px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: tahoeScaleFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tahoeScaleFade {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.tahoe-mc-app-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
+    width: 100%;
+    margin-top: 24px;
+}
+
+@media (max-width: 900px) {
+    .tahoe-mc-app-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.tahoe-mc-app-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px 6px;
+    border-radius: 16px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tahoe-mc-app-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-5px) scale(1.06);
+}
+
+.tahoe-mc-app-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: box-shadow 0.2s ease;
+}
+
+.tahoe-mc-app-item:hover .tahoe-mc-app-icon {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 255, 255, 0.2);
+}
+
+.tahoe-mc-app-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-top: 8px;
+    text-align: center;
+    letter-spacing: -0.01em;
+}
+
+.tahoe-mc-app-sub {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 1px;
 }
 
 /* ==========================================================================
@@ -1644,6 +2093,627 @@ nav.mobile-only {
     .about-tab-content {
         padding-bottom: 20px !important;
     }
+}
+
+/* ==========================================================================
+   macOS 26 Tahoe Authentic System Components
+   ========================================================================== */
+
+/* Apple Menu Dropdown */
+.macos-dropdown {
+    position: absolute;
+    top: 30px;
+    left: 12px;
+    background: rgba(22, 25, 34, 0.92);
+    backdrop-filter: blur(45px) saturate(220%);
+    -webkit-backdrop-filter: blur(45px) saturate(220%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 5px;
+    min-width: 230px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    z-index: 1000;
+    display: none;
+    animation: macDropdownFade 0.14s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.macos-dropdown.is-open {
+    display: block !important;
+}
+@keyframes macDropdownFade {
+    from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.macos-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #f1f5f9;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+    user-select: none;
+}
+.macos-dropdown-item:hover {
+    background: #007aff;
+    color: #ffffff;
+}
+.macos-dropdown-item:hover i {
+    color: #ffffff !important;
+}
+.macos-dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.12);
+    margin: 4px 6px;
+}
+
+/* Menu Bar Pill Button & Active States */
+.menu-pill-btn {
+    padding: 2px 7px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.menu-pill-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+.menu-pill-btn.active {
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+/* macOS 26 Tahoe Control Center Panel */
+#macos-control-center {
+    position: fixed;
+    top: 34px;
+    right: 14px;
+    width: 330px;
+    background: rgba(18, 22, 32, 0.9);
+    backdrop-filter: blur(50px) saturate(230%);
+    -webkit-backdrop-filter: blur(50px) saturate(230%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+    padding: 14px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    user-select: none;
+    animation: macControlCenterFade 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+#macos-control-center.is-open {
+    display: flex !important;
+}
+@keyframes macControlCenterFade {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cc-tile {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 10px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.cc-tile:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.cc-quick-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.cc-quick-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+.cc-toggle-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+.cc-quick-toggle.active .cc-toggle-icon {
+    background: #007aff;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(0, 122, 255, 0.6);
+}
+
+.cc-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 10px 12px;
+}
+.cc-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    outline: none;
+    overflow: hidden;
+    cursor: pointer;
+}
+.cc-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0;
+    box-shadow: -400px 0 0 400px #ffffff;
+}
+.cc-slider::-moz-range-thumb {
+    width: 0;
+    border: none;
+    background: #ffffff;
+}
+
+/* macOS 26 Tahoe "About This Mac" Modal */
+#macos-about-mac-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 1100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+#macos-about-mac-modal.is-active {
+    display: flex !important;
+}
+@media (max-width: 767px) {
+    #macos-about-mac-modal,
+    #macos-apple-menu {
+        display: none !important;
+    }
+
+/* ==========================================================================
+   MOBILE ONLY: Authentic iOS 18 Control Center Overlay
+   ========================================================================== */
+
+#ios-control-center {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 1500;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: calc(env(safe-area-inset-top, 24px) + 8px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 24px) + 24px);
+    padding-left: 16px;
+    padding-right: 16px;
+    background: rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(45px) saturate(200%);
+    -webkit-backdrop-filter: blur(45px) saturate(200%);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#ios-control-center.is-open {
+    display: flex !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    animation: iosControlCenterSlideDown 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes iosControlCenterSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-24px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (min-width: 768px) {
+    #ios-control-center {
+        display: none !important;
+    }
+}
+
+.ios-cc-pull-bar {
+    width: 44px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.45);
+    margin: 4px auto 16px auto;
+    flex-shrink: 0;
+}
+
+.ios-cc-scroll-body {
+    width: 100%;
+    max-width: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+}
+
+.ios-cc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 68px;
+    gap: 12px;
+    width: 100%;
+}
+
+.ios-cc-col-span-2 {
+    grid-column: span 2;
+}
+
+.ios-cc-row-span-2 {
+    grid-row: span 2;
+}
+
+.ios-cc-card {
+    background: rgba(32, 35, 46, 0.72);
+    backdrop-filter: blur(30px) saturate(190%);
+    -webkit-backdrop-filter: blur(30px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ios-cc-card:active {
+    transform: scale(0.93);
+}
+
+/* Connectivity Platter: 2x2 circular buttons */
+.ios-cc-connectivity-box {
+    border-radius: 28px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+    align-items: center;
+    justify-items: center;
+}
+
+.ios-cc-circle-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.ios-cc-circle-btn:active {
+    transform: scale(0.88);
+}
+
+.ios-cc-circle-btn.is-active-blue {
+    background: #007aff !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 16px rgba(0, 122, 255, 0.55);
+}
+
+.ios-cc-circle-btn.is-active-orange {
+    background: #ff9500 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 16px rgba(255, 149, 0, 0.55);
+}
+
+/* Music Platter */
+.ios-cc-music-box {
+    border-radius: 28px;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.ios-cc-music-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+    letter-spacing: -0.01em;
+}
+
+.ios-cc-music-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: 8px;
+}
+
+.ios-cc-music-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.1s ease, color 0.1s ease;
+}
+
+.ios-cc-music-btn:active {
+    transform: scale(0.85);
+    color: #ffffff;
+}
+
+.ios-cc-play-main {
+    font-size: 22px;
+    color: #ffffff;
+}
+
+/* Single Tile Buttons */
+.ios-cc-btn-tile {
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.ios-cc-btn-tile.is-active-red {
+    background: #ff3b30 !important;
+    color: #ffffff !important;
+}
+
+.ios-cc-btn-tile.is-active-indigo {
+    background: #5856d6 !important;
+    color: #ffffff !important;
+}
+
+/* Orientation Lock Icon */
+.ios-cc-rotation-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ios-cc-rot-arrow {
+    font-size: 24px;
+    color: #ffffff;
+}
+
+.ios-cc-rot-lock {
+    position: absolute;
+    font-size: 9px;
+    color: #ffffff;
+}
+
+/* Screen Mirroring Tile */
+.ios-cc-mirror-tile {
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    cursor: pointer;
+}
+
+/* Vertical Capsule Sliders */
+.ios-cc-slider-capsule {
+    border-radius: 28px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    touch-action: none;
+}
+
+.ios-cc-slider-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 0 0 28px 28px;
+    pointer-events: none;
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    transition: height 0.05s ease-out;
+}
+
+.ios-cc-slider-icon {
+    position: absolute;
+    bottom: 16px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 20px;
+    color: #ffffff;
+    mix-blend-mode: difference;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@media (max-width: 767px) {
+    #macos-apple-menu {
+        display: none !important;
+    }
+
+    #macos-control-center {
+        display: none !important;
+    }
+}
+.about-mac-window {
+    width: 530px;
+    max-width: 95vw;
+    background: rgba(20, 24, 34, 0.94);
+    backdrop-filter: blur(50px) saturate(230%);
+    -webkit-backdrop-filter: blur(50px) saturate(230%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    box-shadow: 0 35px 90px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+    animation: aboutMacScale 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes aboutMacScale {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Dock Bounce Animation */
+@keyframes dockBounce {
+    0%, 100% { transform: translateY(0); }
+    35% { transform: translateY(-26px) scale(1.1); }
+    65% { transform: translateY(-10px) scale(1.04); }
+}
+.dock-bouncing {
+    animation: dockBounce 0.6s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+/* ==========================================================================
+   macOS 26 Tahoe Spotlight Upgrade
+   ========================================================================== */
+.spotlight-card.tahoe-spotlight {
+    width: 92%;
+    max-width: 740px;
+    background: rgba(18, 22, 32, 0.94);
+    backdrop-filter: blur(50px) saturate(230%);
+    -webkit-backdrop-filter: blur(50px) saturate(230%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+    box-shadow: 0 35px 90px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.spotlight-result-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+.spotlight-result-item:hover,
+.spotlight-result-item.selected {
+    background: linear-gradient(135deg, #007aff 0%, #0056cb 100%) !important;
+    box-shadow: 0 4px 14px rgba(0, 122, 255, 0.45);
+}
+.spotlight-result-item:hover .text-gray-400,
+.spotlight-result-item.selected .text-gray-400 {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* ==========================================================================
+   Calculator Styles
+   ========================================================================== */
+.calc-btn {
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 19px;
+    transition: filter 0.15s ease, transform 0.1s ease;
+    cursor: pointer;
+    user-select: none;
+    min-height: 48px;
+    border: none;
+    outline: none;
+}
+.calc-btn:active {
+    transform: scale(0.94);
+    filter: brightness(1.2);
+}
+.calc-btn-num {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+}
+.calc-btn-num:hover {
+    background: rgba(255, 255, 255, 0.26);
+}
+.calc-btn-func {
+    background: rgba(255, 255, 255, 0.38);
+    color: #000000;
+    font-weight: 600;
+}
+.calc-btn-func:hover {
+    background: rgba(255, 255, 255, 0.48);
+}
+.calc-btn-op {
+    background: #ff9f0a;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 22px;
+}
+.calc-btn-op:hover {
+    background: #ffb340;
+}
+
+/* ==========================================================================
+   Notes App Styles
+   ========================================================================== */
+.notes-item {
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+.notes-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+.notes-item.active {
+    background: rgba(250, 204, 21, 0.18);
+    border: 1px solid rgba(250, 204, 21, 0.35);
+}
+
+/* Status Bar Light Theme adaptation */
+nav.mobile-only.light-theme {
+    color: #1c1c1e !important;
+}
+nav.mobile-only.light-theme #ios-clock,
+nav.mobile-only.light-theme i,
+nav.mobile-only.light-theme span {
+    color: #1c1c1e !important;
+    text-shadow: none !important;
+}
+nav.mobile-only.light-theme .ios-battery {
+    border-color: rgba(28, 28, 30, 0.8) !important;
+}
+nav.mobile-only.light-theme .ios-battery-fill {
+    background-color: #1c1c1e !important;
 }
 
 
