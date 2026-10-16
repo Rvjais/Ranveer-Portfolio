@@ -862,7 +862,8 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-#folder-modal-overlay {
+#folder-modal-overlay,
+#skills-folder-modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.55);
@@ -874,7 +875,8 @@ body {
     justify-content: center;
     padding: 24px 20px;
 }
-#folder-modal-overlay.is-active {
+#folder-modal-overlay.is-active,
+#skills-folder-modal-overlay.is-active {
     display: flex;
     animation: folderFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -1135,44 +1137,42 @@ body {
     width: 120px;
 }
 
-/* iOS App Switcher (Multitasking View) */
-#ios-app-switcher {
-    position: fixed;
-    inset: 0;
-    z-index: 450;
-    background: rgba(8, 10, 15, 0.7);
-    backdrop-filter: blur(35px) saturate(180%);
-    -webkit-backdrop-filter: blur(35px) saturate(180%);
-    display: none;
-    flex-direction: column;
-    justify-content: space-between;
-    padding-top: max(env(safe-area-inset-top, 0px), 48px);
 /* ==========================================================================
    iOS 18 Multitasking App Switcher (Recent Apps)
    ========================================================================== */
 
 #ios-app-switcher {
-    position: fixed;
-    inset: 0;
-    z-index: 250;
-    background: rgba(10, 14, 22, 0.45);
-    backdrop-filter: blur(36px) saturate(180%);
-    -webkit-backdrop-filter: blur(36px) saturate(180%);
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 250 !important;
+    background: rgba(10, 14, 22, 0.5) !important;
+    backdrop-filter: blur(36px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(36px) saturate(180%) !important;
     display: none;
-    flex-direction: column;
-    justify-content: space-between;
-    padding-top: max(env(safe-area-inset-top, 0px), 20px);
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
-    overflow: hidden;
-    user-select: none;
-    -webkit-user-select: none;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    padding-top: max(env(safe-area-inset-top, 0px), 36px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px) !important;
+    overflow: hidden !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
     opacity: 0;
-    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 #ios-app-switcher.is-active {
     display: flex !important;
-    opacity: 1;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+@media (min-width: 768px) {
+    #ios-app-switcher {
+        display: none !important;
+    }
 }
 
 #ios-switcher-cards {
@@ -1295,24 +1295,34 @@ body {
 #macos-mission-control {
     position: fixed;
     inset: 0;
-    z-index: 300;
-    background: rgba(10, 13, 20, 0.68);
-    backdrop-filter: blur(45px) saturate(210%);
-    -webkit-backdrop-filter: blur(45px) saturate(210%);
+    width: 100vw;
+    height: 100vh;
+    z-index: 500;
+    background: rgba(10, 13, 20, 0.78);
+    backdrop-filter: blur(50px) saturate(210%);
+    -webkit-backdrop-filter: blur(50px) saturate(210%);
     display: none;
-    flex-direction: column;
+    flex-direction: column !important;
     justify-content: space-between;
-    padding: 20px 40px 16px 40px;
+    padding: 24px 48px 16px 48px;
     overflow-y: auto;
     user-select: none;
     -webkit-user-select: none;
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #macos-mission-control.is-active {
     display: flex !important;
-    opacity: 1;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+@media (max-width: 767px) {
+    #macos-mission-control {
+        display: none !important;
+    }
 }
 
 #mission-control-tiles {

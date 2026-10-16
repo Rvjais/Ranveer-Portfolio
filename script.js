@@ -525,11 +525,12 @@ const searchIndex = [
     { title: "SRChess (Live App)", category: "Project", desc: "Full-stack interactive chess platform (React, WebSockets)", action: () => window.open('https://srchess.vercel.app/', '_blank'), icon: "fas fa-chess-knight text-purple-400", badge: "LIVE DEMO" },
     { title: "PioneerOS", category: "Project", desc: "Multi-module internal platform with project management & queue system", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-desktop text-blue-400", badge: "PLATFORM" },
     { title: "Rain CRM", category: "Project", desc: "CRM with AI WhatsApp bots, Twilio calling & automated email client", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-users-cog text-emerald-400", badge: "CRM" },
+    { title: "Skills Folder (All Skills)", category: "Folder", desc: "Interactive folder listing Docker, AWS, React, Node.js, TypeScript & MongoDB", action: () => openSkillsFolderModal(), icon: "fas fa-layer-group text-blue-400", badge: "FOLDER" },
     { title: "System Settings (Skills)", category: "Application", desc: "Full-stack languages, frameworks, databases & tooling", action: () => openApp('skills'), icon: "fas fa-gear text-gray-400" },
     { title: "Photos & Videos (Gallery)", category: "Application", desc: "Personal media gallery, photos & video uploads", action: () => openApp('gallery'), icon: "fas fa-images text-pink-400" },
     { title: "Mail Composer (Contact)", category: "Application", desc: "Send an email or message directly to Ranveer", action: () => openApp('contact'), icon: "fas fa-envelope text-blue-400" },
-    { title: "Docker (Containerization)", category: "DevOps", desc: "Docker Compose, Dockerfile, multi-stage builds & container workflows", action: () => openApp('skills'), icon: "fab fa-docker text-[#2496ed]", badge: "DOCKER" },
-    { title: "AWS (Amazon Web Services)", category: "Cloud", desc: "EC2, S3, Lambda, CloudFront, IAM & cloud deployment architecture", action: () => openApp('skills'), icon: "fab fa-aws text-[#ff9900]", badge: "AWS" },
+    { title: "Docker (Containerization)", category: "DevOps", desc: "Docker Compose, Dockerfile, multi-stage builds & container workflows", action: () => { openSkillsFolderModal(); showToast('Docker: Containerization & Compose', 'fab fa-docker'); }, icon: "fab fa-docker text-[#2496ed]", badge: "DOCKER" },
+    { title: "AWS (Amazon Web Services)", category: "Cloud", desc: "EC2, S3, Lambda, CloudFront, IAM & cloud deployment architecture", action: () => { openSkillsFolderModal(); showToast('AWS: Cloud Infrastructure & Services', 'fab fa-aws'); }, icon: "fab fa-aws text-[#ff9900]", badge: "AWS" },
     { title: "Branding Pioneers Experience", category: "Work", desc: "Full Stack App/Web Developer & Intern (Gurgaon, India)", action: () => { openApp('about'); switchAboutTab('exp', null); }, icon: "fas fa-briefcase text-blue-500" },
     { title: "Resume (PDF)", category: "Document", desc: "Official resume of Ranveer Jaiswal (ranveer_jaiswal.pdf)", action: () => window.open('ranveer_jaiswal.pdf', '_blank'), icon: "fas fa-file-pdf text-red-500", badge: "PDF" },
     { title: "Krishnarpit Institute of Technology", category: "Education", desc: "Bachelor of Pharmacy (B. Pharm), 2021-2025, CGPA 7.0/10", action: () => { openApp('about'); switchAboutTab('edu', null); }, icon: "fas fa-graduation-cap text-indigo-400" },
@@ -859,6 +860,20 @@ function closeFolderModal() {
     }
 }
 
+function openSkillsFolderModal() {
+    const overlay = document.getElementById('skills-folder-modal-overlay');
+    if (overlay) {
+        overlay.classList.add('is-active');
+    }
+}
+
+function closeSkillsFolderModal() {
+    const overlay = document.getElementById('skills-folder-modal-overlay');
+    if (overlay) {
+        overlay.classList.remove('is-active');
+    }
+}
+
 // --- macOS & iOS Photos / Gallery System ---
 const initialGalleryItems = [
     {
@@ -1171,13 +1186,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K' || e.code === 'Space')) {
             e.preventDefault();
             toggleSpotlight();
-        } else if (e.key === 'Escape') {
+        } else if (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27) {
             closeSpotlight();
             closeReadmeModal();
             closeFolderModal();
+            closeSkillsFolderModal();
             closeGalleryLightbox();
-            if (isMissionControlOpen) toggleMissionControl(false);
-            if (isIosSwitcherOpen) closeIosAppSwitcher();
+            closeMissionControl();
+            closeIosAppSwitcher();
         }
     });
 
@@ -1190,6 +1206,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize authentic gestures
     initIosHomeGestures();
     initDesktopMissionControlGestures();
+
+    // Ensure all full-screen overlays are strictly closed on initial page load
+    closeMissionControl();
+    closeIosAppSwitcher();
+    closeSkillsFolderModal();
 });
 
 // ==========================================================================
@@ -1301,6 +1322,12 @@ function initIosHomeGestures() {
         const homeBar = document.getElementById('ios-global-home-bar');
         if (homeBar) homeBar.classList.remove('active-pull');
 
+        // When iOS Switcher is open: ANY swipe up, tap, or release immediately exits back to Home!
+        if (isIosSwitcherOpen) {
+            closeIosAppSwitcher();
+            return;
+        }
+
         if (holdTriggered) {
             return;
         }
@@ -1309,8 +1336,8 @@ function initIosHomeGestures() {
         const velocity = currentDeltaY / (elapsed || 1);
 
         if (activeAppEl) {
-            if (currentDeltaY > 55 || velocity > 0.35) {
-                // User pulled up to go to Home Screen!
+            if (currentDeltaY > 35 || velocity > 0.28 || (elapsed < 260 && Math.abs(currentDeltaY) < 12)) {
+                // User pulled up or tapped to go to Home Screen!
                 activeAppEl.style.transform = '';
                 activeAppEl.style.borderRadius = '';
                 activeAppEl.style.transition = '';
@@ -1329,13 +1356,21 @@ function initIosHomeGestures() {
                     }
                 }, 250);
             }
-        } else {
-            // On home screen or in switcher
-            if (isIosSwitcherOpen) {
-                closeIosAppSwitcher();
-            }
         }
     }
+
+    // Direct click/tap on home indicator returns Home immediately
+    indicatorZone.addEventListener('click', (e) => {
+        if (isIosSwitcherOpen) {
+            closeIosAppSwitcher();
+            return;
+        }
+        const currentActive = document.querySelector('.app-window.is-open');
+        if (currentActive) {
+            const appId = currentActive.id.replace('app-', '');
+            closeApp(appId);
+        }
+    });
 
     // Touch event listeners
     indicatorZone.addEventListener('touchstart', (e) => {
@@ -1373,20 +1408,28 @@ function initIosHomeGestures() {
 }
 
 function openIosAppSwitcher() {
+    if (window.innerWidth >= 768) return; // Mobile only
     const switcher = document.getElementById('ios-app-switcher');
     if (!switcher) return;
 
     isIosSwitcherOpen = true;
+    switcher.style.display = 'flex';
+    void switcher.offsetWidth;
     switcher.classList.add('is-active');
+    switcher.style.opacity = '1';
+    switcher.style.pointerEvents = 'auto';
     renderIosSwitcherCards();
 }
 
 function closeIosAppSwitcher() {
-    const switcher = document.getElementById('ios-app-switcher');
-    if (!switcher) return;
-
     isIosSwitcherOpen = false;
-    switcher.classList.remove('is-active');
+    const switcher = document.getElementById('ios-app-switcher');
+    if (switcher) {
+        switcher.classList.remove('is-active');
+        switcher.style.display = 'none';
+        switcher.style.opacity = '0';
+        switcher.style.pointerEvents = 'none';
+    }
 }
 
 function handleIosSwitcherBackdropClick(e) {
@@ -1794,30 +1837,51 @@ function closeAllMobileApps() {
 // macOS Tahoe Mission Control (Exposé) Core
 // ==========================================================================
 
-function toggleMissionControl(forceState) {
-    if (window.innerWidth < 768) return; // Desktop only
+function closeMissionControl() {
+    isMissionControlOpen = false;
+    const missionControlEl = document.getElementById('macos-mission-control');
+    if (missionControlEl) {
+        missionControlEl.classList.remove('is-active');
+        missionControlEl.style.display = 'none';
+        missionControlEl.style.opacity = '0';
+        missionControlEl.style.pointerEvents = 'none';
+    }
+}
 
+function openMissionControl() {
+    if (window.innerWidth < 768) return; // Desktop only
     const missionControlEl = document.getElementById('macos-mission-control');
     if (!missionControlEl) return;
 
-    if (forceState !== undefined) {
-        isMissionControlOpen = forceState;
-    } else {
-        isMissionControlOpen = !isMissionControlOpen;
-    }
+    isMissionControlOpen = true;
+    missionControlEl.style.display = 'flex';
+    void missionControlEl.offsetWidth; // force reflow
+    missionControlEl.classList.add('is-active');
+    missionControlEl.style.opacity = '1';
+    missionControlEl.style.pointerEvents = 'auto';
+    renderMissionControlTiles();
+}
 
-    if (isMissionControlOpen) {
-        missionControlEl.classList.add('is-active');
-        renderMissionControlTiles();
+function toggleMissionControl(forceState) {
+    if (window.innerWidth < 768) return; // Desktop only
+
+    if (forceState === true) {
+        openMissionControl();
+    } else if (forceState === false) {
+        closeMissionControl();
     } else {
-        missionControlEl.classList.remove('is-active');
+        if (isMissionControlOpen) {
+            closeMissionControl();
+        } else {
+            openMissionControl();
+        }
     }
 }
 
 function handleMissionControlBackdropClick(e) {
     // If the click did not land on a window card, pill, close button or interactive control, immediately exit Mission Control!
-    if (!e.target.closest('.mission-window-card') && !e.target.closest('.mission-control-pill') && !e.target.closest('.mission-control-tile-close') && !e.target.closest('button')) {
-        toggleMissionControl(false);
+    if (!e.target.closest('.mission-window-card') && !e.target.closest('.mission-window-pill') && !e.target.closest('.mission-control-tile-close') && !e.target.closest('button') && !e.target.closest('.mission-control-top-bar')) {
+        closeMissionControl();
     }
 }
 
@@ -1832,18 +1896,18 @@ function renderMissionControlTiles() {
 
     if (openWindows.length === 0) {
         tilesContainer.innerHTML = `
-            <div class="flex flex-col items-center justify-center text-center p-12 max-w-lg mx-auto bg-white/5 border border-white/10 rounded-3xl backdrop-blur-2xl text-white shadow-2xl">
+            <div class="flex flex-col items-center justify-center text-center p-10 max-w-lg mx-auto bg-white/10 border border-white/20 rounded-3xl backdrop-blur-3xl text-white shadow-2xl">
                 <div class="w-16 h-16 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center text-3xl mb-4 shadow-lg">
                     <i class="fas fa-table-cells-large"></i>
                 </div>
                 <h3 class="text-xl font-bold text-white mb-1">No Open Windows</h3>
-                <p class="text-xs text-gray-400 mb-6">Launch an application from the Desktop or Dock to organize your workspace in Mission Control.</p>
+                <p class="text-xs text-gray-300 mb-6">Launch an application from the Desktop or Dock to organize your workspace in Mission Control.</p>
                 <div class="flex flex-wrap items-center justify-center gap-2">
-                    <button onclick="toggleMissionControl(false); openApp('about')" class="px-3.5 py-1.5 rounded-xl bg-blue-600/30 hover:bg-blue-600/50 border border-blue-500/40 text-xs font-semibold text-blue-300 transition">About Me</button>
-                    <button onclick="toggleMissionControl(false); openApp('projects')" class="px-3.5 py-1.5 rounded-xl bg-green-600/30 hover:bg-green-600/50 border border-green-500/40 text-xs font-semibold text-green-300 transition">Projects</button>
-                    <button onclick="toggleMissionControl(false); openApp('skills')" class="px-3.5 py-1.5 rounded-xl bg-gray-600/30 hover:bg-gray-600/50 border border-gray-500/40 text-xs font-semibold text-gray-300 transition">Skills</button>
-                    <button onclick="toggleMissionControl(false); openApp('contact')" class="px-3.5 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-xs font-semibold text-indigo-300 transition">Contact</button>
-                    <button onclick="toggleMissionControl(false); openApp('gallery')" class="px-3.5 py-1.5 rounded-xl bg-pink-600/30 hover:bg-pink-600/50 border border-pink-500/40 text-xs font-semibold text-pink-300 transition">Gallery</button>
+                    <button onclick="event.stopPropagation(); toggleMissionControl(false); openApp('about')" class="px-3.5 py-1.5 rounded-xl bg-blue-600/40 hover:bg-blue-600/60 border border-blue-500/50 text-xs font-semibold text-blue-200 transition">About Me</button>
+                    <button onclick="event.stopPropagation(); toggleMissionControl(false); openApp('projects')" class="px-3.5 py-1.5 rounded-xl bg-green-600/40 hover:bg-green-600/60 border border-green-500/50 text-xs font-semibold text-green-200 transition">Projects</button>
+                    <button onclick="event.stopPropagation(); toggleMissionControl(false); openSkillsFolderModal()" class="px-3.5 py-1.5 rounded-xl bg-amber-600/40 hover:bg-amber-600/60 border border-amber-500/50 text-xs font-semibold text-amber-200 transition">Skills Folder</button>
+                    <button onclick="event.stopPropagation(); toggleMissionControl(false); openApp('contact')" class="px-3.5 py-1.5 rounded-xl bg-indigo-600/40 hover:bg-indigo-600/60 border border-indigo-500/50 text-xs font-semibold text-indigo-200 transition">Contact</button>
+                    <button onclick="event.stopPropagation(); toggleMissionControl(false); openApp('gallery')" class="px-3.5 py-1.5 rounded-xl bg-pink-600/40 hover:bg-pink-600/60 border border-pink-500/50 text-xs font-semibold text-pink-200 transition">Gallery</button>
                 </div>
             </div>
         `;
@@ -1984,27 +2048,27 @@ function renderMissionControlTiles() {
                     <div class="text-[11px] font-bold uppercase tracking-wider text-gray-400">System Preferences • Tech Stack</div>
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <div class="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                            <span class="flex items-center"><i class="fab fa-js text-yellow-400 mr-2 text-base"></i> JavaScript</span>
+                            <span class="flex items-center"><i class="devicon-javascript-plain colored mr-2 text-base"></i> JavaScript</span>
                             <span class="text-[10px] text-blue-300 font-semibold">ES6+</span>
                         </div>
                         <div class="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                            <span class="flex items-center"><i class="fab fa-react text-sky-400 mr-2 text-base"></i> React / Next</span>
+                            <span class="flex items-center"><i class="devicon-react-original colored mr-2 text-base"></i> React / Next</span>
                             <span class="text-[10px] text-blue-300 font-semibold">MERN</span>
                         </div>
                         <div class="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                            <span class="flex items-center"><i class="fab fa-docker text-[#2496ed] mr-2 text-base"></i> Docker</span>
+                            <span class="flex items-center"><i class="devicon-docker-plain colored mr-2 text-base"></i> Docker</span>
                             <span class="text-[10px] text-emerald-300 font-semibold">Advanced</span>
                         </div>
                         <div class="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                            <span class="flex items-center"><i class="fab fa-aws text-[#ff9900] mr-2 text-base"></i> AWS Cloud</span>
+                            <span class="flex items-center"><i class="devicon-amazonwebservices-plain-wordmark colored mr-2 text-base"></i> AWS Cloud</span>
                             <span class="text-[10px] text-amber-300 font-semibold">Proficient</span>
                         </div>
                         <div class="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                            <span class="flex items-center"><i class="fas fa-leaf text-green-500 mr-2 text-base"></i> MongoDB</span>
+                            <span class="flex items-center"><i class="devicon-mongodb-plain colored mr-2 text-base"></i> MongoDB</span>
                             <span class="text-[10px] text-emerald-300 font-semibold">NoSQL</span>
                         </div>
                         <div class="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                            <span class="flex items-center"><i class="fas fa-database text-blue-400 mr-2 text-base"></i> PostgreSQL</span>
+                            <span class="flex items-center"><i class="devicon-postgresql-plain colored mr-2 text-base"></i> PostgreSQL</span>
                             <span class="text-[10px] text-blue-300 font-semibold">Prisma</span>
                         </div>
                     </div>
@@ -2073,40 +2137,6 @@ function renderMissionControlTiles() {
 }
 
 function initDesktopMissionControlGestures() {
-    let lastWheelTime = 0;
-    let wheelDeltaSum = 0;
-
-    // Trackpad gesture / wheel event
-    window.addEventListener('wheel', (e) => {
-        if (window.innerWidth < 768) return;
-
-        // Don't intercept if scrolling inside a modal
-        const isOverModal = e.target.closest('#gallery-lightbox') || e.target.closest('#readme-modal') || e.target.closest('#folder-modal');
-        if (isOverModal) return;
-
-        const isOverAppWindow = e.target.closest('.app-window');
-
-        const now = Date.now();
-        if (now - lastWheelTime > 250) {
-            wheelDeltaSum = 0;
-        }
-        lastWheelTime = now;
-        wheelDeltaSum += e.deltaY;
-
-        // Upward scroll (negative deltaY): 3-finger swipe up or trackpad scroll up
-        if (wheelDeltaSum < -60 || (e.ctrlKey && e.deltaY < -15)) {
-            if (!isOverAppWindow || e.ctrlKey) {
-                toggleMissionControl(true);
-                wheelDeltaSum = 0;
-            }
-        } else if (wheelDeltaSum > 60 || (e.ctrlKey && e.deltaY > 15)) {
-            if (isMissionControlOpen) {
-                toggleMissionControl(false);
-                wheelDeltaSum = 0;
-            }
-        }
-    }, { passive: true });
-
     // Multi-touch gestures (e.g. touchscreens / precision trackpads)
     let multiTouchStartY = 0;
     window.addEventListener('touchstart', (e) => {
@@ -2120,32 +2150,31 @@ function initDesktopMissionControlGestures() {
             const delta = multiTouchStartY - e.changedTouches[0].clientY;
             if (delta > 50) {
                 // 3 fingers swiped up!
-                toggleMissionControl(true);
+                openMissionControl();
             } else if (delta < -50 && isMissionControlOpen) {
                 // 3 fingers swiped down!
-                toggleMissionControl(false);
+                closeMissionControl();
             }
             multiTouchStartY = 0;
         }
     }, { passive: true });
 
-    // Keyboard shortcuts: F3 or Ctrl+ArrowUp or Cmd+ArrowUp
+    // Keyboard shortcuts: F3 or Ctrl+ArrowUp or Cmd+ArrowUp, and unconditional Escape
     window.addEventListener('keydown', (e) => {
         if (e.key === 'F3' || ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp')) {
             e.preventDefault();
             toggleMissionControl();
-        } else if (e.key === 'Escape') {
-            if (isMissionControlOpen) {
-                e.preventDefault();
-                toggleMissionControl(false);
-            }
-            if (isIosSwitcherOpen) {
-                e.preventDefault();
-                closeIosAppSwitcher();
-            }
+        } else if (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27) {
+            closeMissionControl();
+            closeIosAppSwitcher();
+            closeSkillsFolderModal();
+            closeFolderModal();
+            closeReadmeModal();
+            closeGalleryLightbox();
+            closeSpotlight();
         } else if (isMissionControlOpen && (e.key === 'ArrowDown' || ((e.ctrlKey || e.metaKey) && e.key === 'ArrowDown'))) {
             e.preventDefault();
-            toggleMissionControl(false);
+            closeMissionControl();
         }
     });
 }

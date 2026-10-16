@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Devicon Professional Tech Stack Icons -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Custom Unified Stylesheet -->
@@ -135,6 +137,134 @@
             </div>
             
             <p class="text-[11px] text-white/60 mt-5">Tap outside or &times; to close folder</p>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         iOS AUTHENTIC FOLDER OVERLAY MODAL (Skills Folder)
+         ==================================================================== -->
+    <div id="skills-folder-modal-overlay" onclick="if(event.target === this) closeSkillsFolderModal()">
+        <div class="ios-folder-card" style="max-width: 380px;">
+            <!-- Folder Title -->
+            <div class="w-full flex items-center justify-between mb-4 px-1">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-layer-group text-blue-400 text-lg"></i>
+                    <div>
+                        <span class="text-white font-bold text-lg tracking-tight block leading-tight">Skills & Stack</span>
+                        <span class="text-[10px] text-gray-300 font-medium">All Core Technologies & Tools</span>
+                    </div>
+                </div>
+                <button onclick="closeSkillsFolderModal()" class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Folder 3x4 Skills Grid -->
+            <div class="grid grid-cols-3 gap-y-4 gap-x-2.5 w-full justify-items-center">
+                <!-- Skill 1: Docker -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('Docker: Containerization, Dockerfile & Compose', 'fab fa-docker')">
+                    <div class="ios-icon bg-[#0d1b2a] border border-[#2496ed]/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-docker-plain colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">Docker</span>
+                </div>
+
+                <!-- Skill 2: AWS Cloud -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('AWS: EC2, S3, Lambda & Cloud Architecture', 'fab fa-aws')">
+                    <div class="ios-icon bg-[#161f28] border border-amber-500/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-amazonwebservices-plain-wordmark colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">AWS</span>
+                </div>
+
+                <!-- Skill 3: React.js -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('React: Next.js, Redux, Hooks & SSR', 'fab fa-react')">
+                    <div class="ios-icon bg-[#0e1a2d] border border-cyan-400/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-react-original colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">React</span>
+                </div>
+
+                <!-- Skill 4: Node.js -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('Node.js: Express, RESTful APIs & Microservices', 'fab fa-node-js')">
+                    <div class="ios-icon bg-[#0d2216] border border-emerald-500/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-nodejs-plain colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">Node.js</span>
+                </div>
+
+                <!-- Skill 5: JavaScript -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('JavaScript: Modern ES6+, Async/Await & Event Loop', 'fab fa-js')">
+                    <div class="ios-icon bg-[#292410] border border-yellow-400/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-javascript-plain colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">JavaScript</span>
+                </div>
+
+                <!-- Skill 6: TypeScript -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('TypeScript: Type Safety, Interfaces & Generics', 'fas fa-code')">
+                    <div class="ios-icon bg-[#0f233c] border border-blue-500/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-typescript-plain colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">TypeScript</span>
+                </div>
+
+                <!-- Skill 7: MongoDB -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('MongoDB: NoSQL, Aggregations & Mongoose Schemas', 'fas fa-database')">
+                    <div class="ios-icon bg-[#0f2417] border border-green-500/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-mongodb-plain colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">MongoDB</span>
+                </div>
+
+                <!-- Skill 8: PostgreSQL -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('PostgreSQL: Relational DB, SQL & Prisma ORM', 'fas fa-server')">
+                    <div class="ios-icon bg-[#102235] border border-sky-500/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-postgresql-plain colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">PostgreSQL</span>
+                </div>
+
+                <!-- Skill 9: Git & GitHub -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('Git: Version Control, CI/CD & Code Reviews', 'fab fa-git-alt')">
+                    <div class="ios-icon bg-[#271816] border border-orange-500/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-git-plain colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">Git</span>
+                </div>
+
+                <!-- Skill 10: Tailwind CSS -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('Tailwind CSS: Responsive Design & Glassmorphism', 'fab fa-css3-alt')">
+                    <div class="ios-icon bg-[#0a262d] border border-teal-400/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-tailwindcss-original colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">Tailwind</span>
+                </div>
+
+                <!-- Skill 11: AST Tooling -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('AST Tooling: Babel Parser & Codebase Mapping', 'fas fa-network-wired')">
+                    <div class="ios-icon bg-[#241d11] border border-yellow-500/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-babel-plain colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">AST Tooling</span>
+                </div>
+
+                <!-- Skill 12: C++ / OOP -->
+                <div class="ios-app-item cursor-pointer" onclick="showToast('C++: OOP, Data Structures & File Handling', 'fas fa-terminal')">
+                    <div class="ios-icon bg-[#132038] border border-blue-400/40 shadow-lg flex items-center justify-center">
+                        <i class="devicon-cplusplus-plain colored text-3xl"></i>
+                    </div>
+                    <span class="ios-app-label">C++</span>
+                </div>
+            </div>
+
+            <!-- Deep Dive Button -->
+            <button onclick="closeSkillsFolderModal(); openApp('skills');" class="mt-4 w-full py-2 px-3 rounded-2xl bg-white/20 hover:bg-white/30 border border-white/25 text-white text-xs font-semibold flex items-center justify-center space-x-2 transition shadow-sm">
+                <i class="fas fa-sliders-h text-cyan-300"></i>
+                <span>Open Full Skills Preferences App &rarr;</span>
+            </button>
+            
+            <p class="text-[11px] text-white/60 mt-3">Tap outside or &times; to close folder</p>
         </div>
     </div>
 
@@ -301,10 +431,15 @@
                 <span class="ios-app-label">Rain CRM</span>
             </div>
 
-            <!-- App 7: Skills -->
-            <div class="ios-app-item" onclick="openApp('skills')">
-                <div class="ios-icon bg-gradient-to-b from-gray-200 to-gray-400">
-                    <i class="fas fa-gear text-2xl text-gray-800"></i>
+            <!-- App 7: Skills Folder -->
+            <div class="ios-app-item cursor-pointer" onclick="openSkillsFolderModal()">
+                <div class="ios-icon shortcut-folder bg-white/20 backdrop-blur-md border border-white/40 p-1.5 shadow-md">
+                    <div class="grid grid-cols-2 gap-1 w-full h-full">
+                        <div class="rounded-xs bg-[#0b1d3a] flex items-center justify-center text-[10px]" title="Docker"><i class="devicon-docker-plain colored"></i></div>
+                        <div class="rounded-xs bg-[#161e2e] flex items-center justify-center text-[10px]" title="AWS"><i class="devicon-amazonwebservices-plain-wordmark colored"></i></div>
+                        <div class="rounded-xs bg-[#101e33] flex items-center justify-center text-[10px]" title="React"><i class="devicon-react-original colored"></i></div>
+                        <div class="rounded-xs bg-[#13241b] flex items-center justify-center text-[10px]" title="Node.js"><i class="devicon-nodejs-plain colored"></i></div>
+                    </div>
                 </div>
                 <span class="ios-app-label">Skills</span>
             </div>
@@ -389,22 +524,6 @@
                 </div>
                 <span class="ios-app-label">Photos</span>
             </div>
-
-            <!-- App 18: Docker -->
-            <div class="ios-app-item" onclick="openApp('skills'); showToast('Docker: Containerization & Compose', 'fab fa-docker')">
-                <div class="ios-icon bg-[#2496ed]">
-                    <i class="fab fa-docker text-3xl text-white"></i>
-                </div>
-                <span class="ios-app-label">Docker</span>
-            </div>
-
-            <!-- App 19: AWS -->
-            <div class="ios-app-item" onclick="openApp('skills'); showToast('AWS: Cloud Services & Architecture', 'fab fa-aws')">
-                <div class="ios-icon bg-[#232f3e]">
-                    <i class="fab fa-aws text-3xl text-[#ff9900]"></i>
-                </div>
-                <span class="ios-app-label">AWS</span>
-            </div>
         </div>
 
         <!-- iOS Pagination Dots & Working Spotlight Search Bar -->
@@ -477,10 +596,15 @@
             <span class="shortcut-label">Terminal</span>
         </div>
 
-        <!-- Icon 4: System Settings (Skills) -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 375px; right: 28px;" onclick="if(!this.dataset.dragged) openApp('skills')">
-            <div class="shortcut-icon bg-gradient-to-b from-gray-300 to-gray-500 shadow-lg">
-                <i class="fas fa-cog text-3xl text-gray-800"></i>
+        <!-- Icon 4: Skills Folder -->
+        <div class="desktop-shortcut pointer-events-auto" style="top: 375px; right: 28px;" onclick="if(!this.dataset.dragged) openSkillsFolderModal()">
+            <div class="shortcut-icon shortcut-folder bg-white/20 backdrop-blur-md border border-white/40 shadow-xl">
+                <div class="grid grid-cols-2 gap-1 p-2 w-full h-full">
+                    <div class="rounded-sm bg-[#0b1d3a] flex items-center justify-center text-[10px]" title="Docker"><i class="devicon-docker-plain colored"></i></div>
+                    <div class="rounded-sm bg-[#161e2e] flex items-center justify-center text-[10px]" title="AWS"><i class="devicon-amazonwebservices-plain-wordmark colored"></i></div>
+                    <div class="rounded-sm bg-[#101e33] flex items-center justify-center text-[10px]" title="React"><i class="devicon-react-original colored"></i></div>
+                    <div class="rounded-sm bg-[#13241b] flex items-center justify-center text-[10px]" title="Node.js"><i class="devicon-nodejs-plain colored"></i></div>
+                </div>
             </div>
             <span class="shortcut-label">Skills</span>
         </div>
@@ -524,22 +648,6 @@
             </div>
             <span class="shortcut-label">Gallery</span>
         </div>
-
-        <!-- Icon 10: Docker -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 485px; right: 130px;" onclick="if(!this.dataset.dragged) { openApp('skills'); showToast('Docker: Containerization & Compose', 'fab fa-docker'); }">
-            <div class="shortcut-icon bg-[#2496ed] shadow-xl border border-white/20">
-                <i class="fab fa-docker text-3xl text-white"></i>
-            </div>
-            <span class="shortcut-label">Docker</span>
-        </div>
-
-        <!-- Icon 11: AWS -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 595px; right: 130px;" onclick="if(!this.dataset.dragged) { openApp('skills'); showToast('AWS: Cloud Infrastructure & Services', 'fab fa-aws'); }">
-            <div class="shortcut-icon bg-[#232f3e] shadow-xl border border-white/20">
-                <i class="fab fa-aws text-3xl text-[#ff9900]"></i>
-            </div>
-            <span class="shortcut-label">AWS Cloud</span>
-        </div>
     </div>
 
     <!-- ====================================================================
@@ -561,10 +669,10 @@
                 <div class="w-1 h-1 bg-white rounded-full absolute -bottom-1.5" id="dot-projects"></div>
             </div>
 
-            <!-- Dock Item 3: Skills -->
-            <div class="dock-icon w-14 h-14 bg-gradient-to-b from-gray-200 to-gray-400 rounded-2xl flex items-center justify-center cursor-pointer relative group shadow-md" onclick="openApp('skills')">
-                <i class="fas fa-gear text-3xl text-gray-800"></i>
-                <div class="absolute -top-9 bg-black/80 text-white text-xs px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">System Settings (Skills)</div>
+            <!-- Dock Item 3: Skills Folder -->
+            <div class="dock-icon w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center cursor-pointer relative group shadow-md" onclick="openSkillsFolderModal()">
+                <i class="fas fa-layer-group text-2xl text-white"></i>
+                <div class="absolute -top-9 bg-black/80 text-white text-xs px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">Skills Folder</div>
                 <div class="w-1 h-1 bg-white rounded-full absolute -bottom-1.5" id="dot-skills"></div>
             </div>
 
@@ -1585,38 +1693,25 @@
     <!-- ====================================================================
          MOBILE ONLY: iOS 18 Recent Apps / App Switcher (Multitasking View)
          ==================================================================== -->
-    <div id="ios-app-switcher" class="mobile-only" onclick="handleIosSwitcherBackdropClick(event)">
-        <!-- Top Switcher Header -->
-        <div class="flex items-center justify-between px-5 pt-3 text-white pointer-events-auto">
-            <div class="flex items-center space-x-2">
-                <i class="fas fa-layer-group text-blue-400 text-sm"></i>
-                <span class="text-sm font-semibold tracking-tight">Recent Apps</span>
-                <span id="ios-switcher-count" class="text-[11px] px-2.5 py-0.5 rounded-full bg-white/20 text-white font-medium">Active</span>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button type="button" onclick="event.stopPropagation(); closeAllMobileApps()" class="text-xs text-red-300 hover:text-white bg-red-500/20 hover:bg-red-500/35 border border-red-500/40 px-3 py-1 rounded-full transition font-medium">Close All</button>
-                <button type="button" onclick="event.stopPropagation(); closeIosAppSwitcher()" class="text-xs text-white font-semibold bg-white/20 hover:bg-white/35 border border-white/25 px-3.5 py-1 rounded-full transition">Done</button>
-            </div>
-        </div>
-
+    <!-- ====================================================================
+         MOBILE ONLY: iOS 18 Recent Apps / App Switcher (Multitasking View)
+         ==================================================================== -->
+    <div id="ios-app-switcher" onclick="handleIosSwitcherBackdropClick(event)">
         <!-- Horizontal Swipeable Cards Deck -->
         <div id="ios-switcher-cards" class="dark-scroll" onclick="handleIosSwitcherBackdropClick(event)"></div>
 
-        <!-- Bottom Gesture Hint & Home Bar -->
-        <div class="flex flex-col items-center justify-center space-y-2 mb-2 pointer-events-auto">
-            <span class="text-[11px] text-white/60 font-medium flex items-center">
-                <i class="fas fa-arrow-up text-[10px] mr-1.5 animate-bounce"></i> Swipe up card to close • Tap card to open • Tap outside to exit
-            </span>
-            <div class="ios-home-bar cursor-pointer" onclick="event.stopPropagation(); closeIosAppSwitcher()" title="Tap to return Home"></div>
+        <!-- Bottom Home Indicator Bar (Slide up or tap to go Home) -->
+        <div class="flex flex-col items-center justify-center pb-2 pointer-events-auto">
+            <div class="ios-home-bar cursor-pointer" onclick="event.stopPropagation(); closeIosAppSwitcher()" title="Tap or slide up to return Home"></div>
         </div>
     </div>
 
     <!-- ====================================================================
          DESKTOP ONLY: macOS Tahoe Mission Control (Exposé Tiling View)
          ==================================================================== -->
-    <div id="macos-mission-control" class="desktop-only" onclick="handleMissionControlBackdropClick(event)">
+    <div id="macos-mission-control" onclick="handleMissionControlBackdropClick(event)">
         <!-- Top Floating Quick Close Button (Guaranteed Exit) -->
-        <button type="button" onclick="event.stopPropagation(); toggleMissionControl(false);" class="fixed top-4 right-6 z-50 px-3.5 py-1.5 rounded-xl bg-red-500/25 hover:bg-red-500/40 border border-red-500/50 text-red-200 font-semibold text-xs flex items-center space-x-1.5 transition shadow-xl cursor-pointer" title="Exit Mission Control (Esc)">
+        <button type="button" onclick="event.stopPropagation(); closeMissionControl();" class="fixed top-4 right-6 z-[600] px-4 py-1.5 rounded-xl bg-red-500/80 hover:bg-red-500 text-white font-bold text-xs flex items-center space-x-1.5 transition shadow-2xl cursor-pointer" title="Exit Mission Control (Esc)">
             <i class="fas fa-times text-sm"></i>
             <span>Exit (Esc)</span>
         </button>
