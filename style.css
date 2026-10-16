@@ -1483,6 +1483,169 @@ nav.mobile-only {
     background: #ff5f56;
 }
 
+/* ==========================================================================
+   MOBILE RESPONSIVENESS PATCH — 320px → 767px
+   Fixes: horizontal overflow, card squeeze, modal header wrap,
+   iOS input zoom, home-screen scroll, text truncation
+   ========================================================================== */
+@media (max-width: 767px) {
+    /* 0. Global overflow guard */
+    html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+    }
+    img, video, pre, code {
+        max-width: 100% !important;
+    }
+    pre {
+        overflow-x: auto !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        font-size: 11px !important;
+    }
+
+    /* 1. Home screen: allow natural scroll instead of space-between squeeze */
+    #ios-home-screen {
+        justify-content: flex-start !important;
+        gap: 12px !important;
+        padding-top: calc(52px + max(env(safe-area-inset-top, 0px), 4px)) !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    /* 2. App grid: tighter on very small phones */
+    @media (max-width: 360px) {
+        .ios-icon {
+            width: 52px !important;
+            height: 52px !important;
+        }
+        .ios-folder-icon {
+            width: 52px !important;
+            height: 52px !important;
+        }
+        .ios-app-label {
+            font-size: 10px !important;
+        }
+    }
+
+    /* 3. Project cards: prevent side-overflow */
+    #projects-view-cards {
+        padding: 12px !important;
+    }
+    #projects-view-cards > div {
+        max-width: 100% !important;
+    }
+    #projects-view-cards .bg-\[\#18181b\] {
+        padding: 14px !important;
+        border-radius: 16px !important;
+    }
+    #projects-view-cards .flex.items-start.space-x-4 {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+    #projects-view-cards .flex.items-start.space-x-4 > div:last-child {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
+    }
+    #projects-view-cards h3 {
+        font-size: 14px !important;
+        line-height: 1.3 !important;
+        overflow-wrap: break-word !important;
+    }
+    /* Title + badge row: allow wrap */
+    #projects-view-cards .flex.items-center.space-x-2 {
+        flex-wrap: wrap !important;
+        row-gap: 6px !important;
+    }
+    /* Card action row: full-width buttons, no squeeze */
+    #projects-view-cards .flex.items-center.space-x-2.shrink-0 {
+        width: 100% !important;
+        justify-content: stretch !important;
+    }
+    #projects-view-cards .flex.items-center.space-x-2.shrink-0 > * {
+        flex: 1 1 auto !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+    }
+
+    /* 4. Terminal: prevent iOS auto-zoom + allow wrap */
+    .term-input {
+        font-size: 16px !important; /* iOS zooms if <16px on focus */
+    }
+    #terminal-body {
+        font-size: 12px !important;
+        padding: 12px !important;
+    }
+    .quick-chip {
+        flex-shrink: 0 !important;
+    }
+
+    /* 5. README modal header: wrap on small screens */
+    .readme-card {
+        max-height: 92dvh !important;
+        border-radius: 16px !important;
+    }
+    #readme-modal-overlay {
+        padding: 10px !important;
+    }
+    #readme-modal-overlay .p-4 {
+        flex-wrap: wrap !important;
+        row-gap: 10px !important;
+    }
+    #readme-title {
+        overflow-wrap: break-word !important;
+        font-size: 13px !important;
+    }
+    #readme-subtitle {
+        display: block !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        max-width: 60vw !important;
+    }
+
+    /* 6. Spotlight results: stack badge below on narrow */
+    .spotlight-card {
+        width: calc(100vw - 24px) !important;
+    }
+    .spotlight-result-item {
+        flex-wrap: wrap !important;
+        row-gap: 6px !important;
+    }
+
+    /* 7. Folder modals: fit 320px phones */
+    #folder-modal-overlay,
+    #skills-folder-modal-overlay {
+        padding: 12px !important;
+    }
+    .ios-folder-card {
+        max-width: calc(100vw - 24px) !important;
+        border-radius: 28px !important;
+        padding: 18px 14px 14px 14px !important;
+    }
+
+    /* 8. App window header: reduce wasted top space */
+    .app-window .app-header {
+        padding-top: max(env(safe-area-inset-top, 0px), 12px) !important;
+        min-height: 60px !important;
+    }
+
+    /* 9. Dock: fit small screens */
+    .glass-dock {
+        padding: 10px !important;
+        border-radius: 26px !important;
+    }
+    .glass-dock .ios-icon {
+        width: 52px !important;
+        height: 52px !important;
+    }
+
+    /* 10. About / Skills content padding */
+    .about-tab-content {
+        padding-bottom: 20px !important;
+    }
+}
+
 
 
 
