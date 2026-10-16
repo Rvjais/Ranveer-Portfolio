@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>Ranveer Jaiswal — Full Stack & MERN Developer | macOS Tahoe & iOS</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,7 +17,7 @@
     <!-- App Logic -->
     <script src="script.js" defer></script>
 </head>
-<body class="text-gray-900 antialiased h-screen w-screen relative overflow-hidden select-none">
+<body class="text-gray-900 antialiased w-full relative overflow-hidden select-none">
 
     <!-- Toast Notifications Container -->
     <div id="toast-container" class="fixed top-14 left-1/2 transform -translate-x-1/2 z-[160] flex flex-col gap-2 pointer-events-none items-center w-full max-w-sm px-4"></div>
@@ -353,7 +353,7 @@
     <!-- ====================================================================
          MOBILE ONLY: iOS Home Screen (Widget + Full Real App Grid + Dock)
          ==================================================================== -->
-    <div class="mobile-only flex flex-col justify-between h-full w-full pt-14 pb-2 px-4 z-10 overflow-y-auto">
+    <div id="ios-home-screen" class="mobile-only">
         <!-- Top iOS Medium Widget (Developer Profile) -->
         <div class="ios-widget p-4 w-full cursor-pointer shrink-0" onclick="openApp('about')">
             <div class="flex items-center justify-between mb-2">
@@ -558,9 +558,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- iOS Bottom Home Indicator Bar -->
-        <div class="ios-home-bar mb-1 shrink-0"></div>
     </div>
 
     <!-- ====================================================================

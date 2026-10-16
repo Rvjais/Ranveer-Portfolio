@@ -9,6 +9,20 @@ let maximizedStates = {};
 let runningApps = [];
 let isMissionControlOpen = false;
 let isIosSwitcherOpen = false;
+let switcherOpenedTime = 0;
+
+// Dynamic Viewport Height Handler (Protects layout from mobile browser search/address bar shifts)
+function updateDynamicViewport() {
+    const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight) * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+window.addEventListener('resize', updateDynamicViewport);
+window.addEventListener('orientationchange', updateDynamicViewport);
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateDynamicViewport);
+    window.visualViewport.addEventListener('scroll', updateDynamicViewport);
+}
+updateDynamicViewport();
 
 // --- Clock & Status Bar Management ---
 function updateClocks() {
@@ -51,20 +65,24 @@ setInterval(updateClocks, 1000);
 updateClocks();
 
 // --- Dynamic Island Interaction ---
+let dynamicIslandCollapseTimer = null;
+
 function toggleDynamicIsland() {
     const island = document.getElementById('dynamic-island');
     if (!island) return;
     
+    clearTimeout(dynamicIslandCollapseTimer);
     island.classList.toggle('expanded');
     const compactContent = island.querySelector('.island-compact');
     const expandedContent = island.querySelector('.island-expanded');
 
     if (island.classList.contains('expanded')) {
+        if (navigator.vibrate) navigator.vibrate(20);
         if (compactContent) compactContent.classList.add('hidden');
         if (expandedContent) expandedContent.classList.remove('hidden');
         
         // Auto collapse after 5 seconds
-        setTimeout(() => {
+        dynamicIslandCollapseTimer = setTimeout(() => {
             if (island.classList.contains('expanded')) {
                 toggleDynamicIsland();
             }
@@ -74,6 +92,14 @@ function toggleDynamicIsland() {
         if (expandedContent) expandedContent.classList.add('hidden');
     }
 }
+
+// Tap outside expanded Dynamic Island to collapse
+document.addEventListener('click', (e) => {
+    const island = document.getElementById('dynamic-island');
+    if (island && island.classList.contains('expanded') && !island.contains(e.target)) {
+        toggleDynamicIsland();
+    }
+});
 
 // --- App Management (Open / Close / Minimize / Maximize) ---
 function openApp(appId) {
@@ -1322,13 +1348,19 @@ function initIosHomeGestures() {
         const homeBar = document.getElementById('ios-global-home-bar');
         if (homeBar) homeBar.classList.remove('active-pull');
 
-        // When iOS Switcher is open: ANY swipe up, tap, or release immediately exits back to Home!
-        if (isIosSwitcherOpen) {
-            closeIosAppSwitcher();
+        // If this touch was the pull-and-hold that triggered the switcher to open,
+        // releasing the finger MUST leave the switcher open!
+        if (holdTriggered) {
             return;
         }
 
-        if (holdTriggered) {
+        // If the switcher was ALREADY open before this gesture,
+        // any new upward swipe or tap on the home bar returns Home!
+        if (isIosSwitcherOpen) {
+            if (Date.now() - switcherOpenedTime < 400) {
+                return;
+            }
+            closeIosAppSwitcher();
             return;
         }
 
@@ -1361,6 +1393,10 @@ function initIosHomeGestures() {
 
     // Direct click/tap on home indicator returns Home immediately
     indicatorZone.addEventListener('click', (e) => {
+        // Prevent synthetic click right after hold-to-open gesture
+        if (Date.now() - switcherOpenedTime < 450) {
+            return;
+        }
         if (isIosSwitcherOpen) {
             closeIosAppSwitcher();
             return;
@@ -1412,6 +1448,7 @@ function openIosAppSwitcher() {
     const switcher = document.getElementById('ios-app-switcher');
     if (!switcher) return;
 
+    switcherOpenedTime = Date.now();
     isIosSwitcherOpen = true;
     switcher.style.display = 'flex';
     void switcher.offsetWidth;
