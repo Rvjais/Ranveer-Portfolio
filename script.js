@@ -59,6 +59,11 @@ function updateClocks() {
         termDateEl.innerText = `${dayStr} ${monthStr} ${dateNum} ${displayHours}:${minsFormatted}:${now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds()}`;
         termDateEl.dataset.initialized = "true";
     }
+
+    // Live Calendar Widgets & Badges Sync
+    if (typeof updateCalendarDatesDisplay === 'function') {
+        updateCalendarDatesDisplay(now);
+    }
 }
 
 setInterval(updateClocks, 1000);
@@ -153,6 +158,10 @@ function openApp(appId) {
     }
     if (appId === 'calculator' && typeof updateCalcDisplay === 'function') {
         updateCalcDisplay();
+    }
+    if (appId === 'calendar') {
+        if (typeof renderCalendarGrid === 'function') renderCalendarGrid();
+        if (typeof updateCalendarDatesDisplay === 'function') updateCalendarDatesDisplay();
     }
 
     // Desktop positioning
@@ -573,6 +582,7 @@ function setupDesktopIconDragging() {
 const searchIndex = [
     { title: "About Ranveer Jaiswal", category: "Application", desc: "Full Stack & MERN Developer profile, bio, skills and experience", action: () => openApp('about'), icon: "fas fa-user-astronaut text-blue-400", badge: "APP", tech: ["Profile", "Bio", "Gurgaon"] },
     { title: "Calculator", category: "Application", desc: "Interactive macOS Tahoe precision math & arithmetic calculator", action: () => openApp('calculator'), icon: "fas fa-calculator text-amber-400", badge: "APP", tech: ["Math", "Arithmetic", "Keypad"] },
+    { title: "Calendar", category: "Application", desc: "macOS Tahoe monthly schedule, sprint deadlines & developer agenda", action: () => openApp('calendar'), icon: "far fa-calendar-alt text-red-500", badge: "APP", tech: ["Calendar", "Schedule", "Sprint", "Agenda"] },
     { title: "Notes — Ranveer's DevPad", category: "Application", desc: "Engineering journals, full-stack architecture notes & local scratchpad", action: () => openApp('notes'), icon: "fas fa-note-sticky text-yellow-400", badge: "APP", tech: ["Notes", "Scratchpad", "Local Storage"] },
     { title: "Projects Folder", category: "Folder", desc: "Interactive iOS folder containing all 12 projects and apps", action: () => openFolderModal(), icon: "fas fa-folder text-amber-400", badge: "FOLDER", tech: ["12 Projects", "Interactive", "Directory"] },
     { title: "Projects Showcase", category: "Application", desc: "Interactive devOS Terminal and live project architecture cards", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-terminal text-green-400", badge: "APP", tech: ["Terminal", "zsh", "React Cards"] },
@@ -1102,6 +1112,190 @@ function clearScratchpad() {
         localStorage.removeItem('ranveer_notes_scratchpad');
         showToast('Scratchpad cleared', 'fas fa-trash');
     }
+}
+
+// ==========================================================================
+// macOS 26 Tahoe Calendar Engine
+// ==========================================================================
+let calCurrentYear = new Date().getFullYear();
+let calCurrentMonth = new Date().getMonth(); // 0-indexed (0 = Jan)
+let calSelectedDate = new Date();
+
+const CALENDAR_AGENDA_DATA = {
+    defaultEvents: [
+        { time: "09:30 AM", title: "Daily Engineering Sync", desc: "Branding Pioneers • Task Tracker & Sprint Progress", color: "bg-[#ff3b30]" },
+        { time: "11:00 AM", title: "MERN Stack Code Review", desc: "Babel AST Visualizer & NPM package optimization", color: "bg-blue-500" },
+        { time: "02:30 PM", title: "Docker Container Deploy", desc: "AWS EC2 & Redis Cache configuration for microservices", color: "bg-emerald-500" },
+        { time: "05:00 PM", title: "Full Stack System Architecture", desc: "PostgreSQL Prisma schema migrations & API latency checks", color: "bg-purple-500" },
+        { time: "07:30 PM", title: "SRChess Community Match", desc: "Real-time WebSockets & Stockfish AI match with dev community", color: "bg-amber-500" }
+    ]
+};
+
+function updateCalendarDatesDisplay(now = new Date()) {
+    const daysFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const daysShort = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const monthsFull = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    const dayName = daysFull[now.getDay()];
+    const dayShort = daysShort[now.getDay()];
+    const dateNum = now.getDate();
+    const monthName = monthsFull[now.getMonth()];
+    const yearNum = now.getFullYear();
+
+    // App Window: Left sidebar big date card
+    const calDayNameEl = document.getElementById('cal-today-dayname');
+    if (calDayNameEl) calDayNameEl.innerText = dayName;
+
+    const calDateNumEl = document.getElementById('cal-today-datenumber');
+    if (calDateNumEl) calDateNumEl.innerText = dateNum;
+
+    const calMonthYearEl = document.getElementById('cal-today-monthyear');
+    if (calMonthYearEl) calMonthYearEl.innerText = `${monthName} ${yearNum}`;
+
+    // Desktop Shortcut Icon
+    const deskCalDayEl = document.getElementById('desk-cal-day');
+    if (deskCalDayEl) deskCalDayEl.innerText = dayShort;
+
+    const deskCalDateEl = document.getElementById('desk-cal-date');
+    if (deskCalDateEl) deskCalDateEl.innerText = dateNum;
+
+    // iOS Home Screen Icon
+    const iosCalDayEl = document.getElementById('ios-home-cal-day');
+    if (iosCalDayEl) iosCalDayEl.innerText = dayShort;
+
+    const iosCalDateEl = document.getElementById('ios-home-cal-date');
+    if (iosCalDateEl) iosCalDateEl.innerText = dateNum;
+}
+
+function renderCalendarGrid() {
+    const monthsFull = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    // Update Header and Window Title
+    const monthTitleEl = document.getElementById('cal-month-title');
+    if (monthTitleEl) {
+        monthTitleEl.innerText = `${monthsFull[calCurrentMonth]} ${calCurrentYear}`;
+    }
+
+    const gridEl = document.getElementById('cal-days-grid');
+    if (!gridEl) return;
+
+    const today = new Date();
+    const firstDayIndex = new Date(calCurrentYear, calCurrentMonth, 1).getDay();
+    const daysInMonth = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
+    const prevMonthDays = new Date(calCurrentYear, calCurrentMonth, 0).getDate();
+
+    let gridHtml = '';
+
+    // Previous month trailing days
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const prevDayNum = prevMonthDays - i;
+        gridHtml += `
+            <div class="cal-day-cell other-month" onclick="calendarPrevMonth()">
+                <div class="cal-day-num">${prevDayNum}</div>
+            </div>
+        `;
+    }
+
+    // Current month days
+    for (let day = 1; day <= daysInMonth; day++) {
+        const isToday = (day === today.getDate() && calCurrentMonth === today.getMonth() && calCurrentYear === today.getFullYear());
+        const isSelected = (calSelectedDate && day === calSelectedDate.getDate() && calCurrentMonth === calSelectedDate.getMonth() && calCurrentYear === calSelectedDate.getFullYear());
+
+        let dotsHtml = '';
+        if (day % 3 === 0 || isToday) {
+            dotsHtml = `
+                <div class="cal-day-dots">
+                    <span class="cal-event-dot dot-work"></span>
+                    <span class="cal-event-dot dot-dev"></span>
+                    ${day % 2 === 0 ? '<span class="cal-event-dot dot-interview"></span>' : ''}
+                </div>
+            `;
+        }
+
+        gridHtml += `
+            <div class="cal-day-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}" onclick="selectCalendarDate(${day})">
+                <div class="cal-day-num">${day}</div>
+                ${dotsHtml}
+            </div>
+        `;
+    }
+
+    // Next month leading days (fill out remaining cells to 35 or 42)
+    const totalCells = firstDayIndex + daysInMonth;
+    const remainingCells = (totalCells <= 35 ? 35 : 42) - totalCells;
+    for (let j = 1; j <= remainingCells; j++) {
+        gridHtml += `
+            <div class="cal-day-cell other-month" onclick="calendarNextMonth()">
+                <div class="cal-day-num">${j}</div>
+            </div>
+        `;
+    }
+
+    gridEl.innerHTML = gridHtml;
+    renderCalendarAgenda(calSelectedDate || today);
+}
+
+function selectCalendarDate(day) {
+    calSelectedDate = new Date(calCurrentYear, calCurrentMonth, day);
+    renderCalendarGrid();
+}
+
+function calendarGoToday() {
+    const now = new Date();
+    calCurrentYear = now.getFullYear();
+    calCurrentMonth = now.getMonth();
+    calSelectedDate = new Date();
+    renderCalendarGrid();
+    updateCalendarDatesDisplay(now);
+    showToast('Navigated to Today', 'far fa-calendar-check');
+}
+
+function calendarPrevMonth() {
+    calCurrentMonth--;
+    if (calCurrentMonth < 0) {
+        calCurrentMonth = 11;
+        calCurrentYear--;
+    }
+    renderCalendarGrid();
+}
+
+function calendarNextMonth() {
+    calCurrentMonth++;
+    if (calCurrentMonth > 11) {
+        calCurrentMonth = 0;
+        calCurrentYear++;
+    }
+    renderCalendarGrid();
+}
+
+function renderCalendarAgenda(date) {
+    const agendaEl = document.getElementById('cal-agenda-list');
+    if (!agendaEl) return;
+
+    const daysShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const formatted = `${daysShort[date.getDay()]}, ${monthsShort[date.getMonth()]} ${date.getDate()}`;
+    const events = CALENDAR_AGENDA_DATA.defaultEvents;
+
+    agendaEl.innerHTML = `
+        <div class="text-[11px] font-semibold text-gray-400 mb-2 pb-1 border-b border-white/10 flex items-center justify-between">
+            <span>${formatted}</span>
+            <span class="text-[10px] text-red-400 font-mono">${events.length} Events</span>
+        </div>
+        ${events.map(ev => `
+            <div class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition cursor-pointer" onclick="showToast('${ev.title}', 'far fa-calendar')">
+                <div class="flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full ${ev.color} shrink-0"></span>
+                    <span class="text-xs font-bold text-white truncate">${ev.title}</span>
+                </div>
+                <div class="text-[10px] text-gray-400 mt-1 pl-4 flex items-center justify-between">
+                    <span>${ev.desc}</span>
+                    <span class="font-mono text-gray-500 shrink-0 ml-1">${ev.time}</span>
+                </div>
+            </div>
+        `).join('')}
+    `;
 }
 
 // --- Terminal System Simulation ---
@@ -2190,6 +2384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             closeAboutThisMac();
             closeApp('calculator');
             closeApp('notes');
+            closeApp('calendar');
         }
     });
 
@@ -2218,6 +2413,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize iOS 18 Control Center Vertical Sliders
     initIosControlCenterSliders();
+
+    // Initialize Tahoe Calendar dates & monthly grid
+    if (typeof updateCalendarDatesDisplay === 'function') updateCalendarDatesDisplay();
+    if (typeof renderCalendarGrid === 'function') renderCalendarGrid();
 
     // Ensure all overlays and dropdowns are strictly closed on initial page load
     closeMissionControl();
@@ -2281,6 +2480,13 @@ const APP_METADATA = {
         icon: 'fas fa-note-sticky',
         iconColor: 'bg-gradient-to-b from-amber-300 to-yellow-500 text-amber-900',
         badge: 'DevPad'
+    },
+    'calendar': {
+        title: 'Calendar',
+        subtitle: 'Events, Agenda & Sprint Schedule',
+        icon: 'far fa-calendar-alt',
+        iconColor: 'bg-gradient-to-b from-red-500 to-rose-600 text-white',
+        badge: 'Tahoe Calendar'
     }
 };
 
@@ -2757,6 +2963,87 @@ function renderIosSwitcherCards() {
                     </div>
                 </div>
             `;
+        } else if (appId === 'calendar') {
+            // iOS 18 Calendar Card Preview
+            const now = new Date();
+            const daysFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const monthsFull = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            previewHtml = `
+                <div class="h-full flex flex-col justify-between bg-[#1c1c1e] text-white pt-8 px-4 pb-3 select-none text-left">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                            <div>
+                                <span class="text-xs uppercase font-extrabold text-[#ff3b30] block">${daysFull[now.getDay()]}</span>
+                                <span class="text-2xl font-black text-white leading-tight">${now.getDate()} ${monthsFull[now.getMonth()]}</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-red-500/20 text-[#ff3b30] flex items-center justify-center font-bold text-sm">
+                                <i class="far fa-calendar-alt"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-xs">
+                            <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                                <div class="flex items-center space-x-1.5 text-red-400 font-bold text-[11px]">
+                                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                    <span>Branding Pioneers Sync</span>
+                                </div>
+                                <div class="text-[10px] text-gray-400 pl-3.5">09:30 AM • Task Tracker & Workflows</div>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                                <div class="flex items-center space-x-1.5 text-blue-400 font-bold text-[11px]">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    <span>MERN Code Review</span>
+                                </div>
+                                <div class="text-[10px] text-gray-400 pl-3.5">11:00 AM • AST Visualizer npm v2</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between px-3 py-1.5 bg-white/10 border border-white/15 rounded-xl text-red-400 text-[10px] font-semibold mt-2">
+                        <span>● Today</span>
+                        <span>Calendar</span>
+                    </div>
+                </div>
+            `;
+        } else if (appId === 'calculator') {
+            previewHtml = `
+                <div class="h-full flex flex-col justify-between bg-black text-white pt-8 px-4 pb-3 select-none text-right font-mono">
+                    <div class="space-y-3">
+                        <div class="text-3xl font-light text-white pt-4">8,192</div>
+                        <div class="grid grid-cols-4 gap-1.5 text-center text-xs font-semibold">
+                            <div class="p-2 rounded-full bg-gray-500 text-black">C</div>
+                            <div class="p-2 rounded-full bg-gray-500 text-black">±</div>
+                            <div class="p-2 rounded-full bg-gray-500 text-black">%</div>
+                            <div class="p-2 rounded-full bg-amber-500 text-white">÷</div>
+                            <div class="p-2 rounded-full bg-gray-800 text-white">7</div>
+                            <div class="p-2 rounded-full bg-gray-800 text-white">8</div>
+                            <div class="p-2 rounded-full bg-gray-800 text-white">9</div>
+                            <div class="p-2 rounded-full bg-amber-500 text-white">×</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between px-3 py-1.5 bg-white/10 border border-white/15 rounded-xl text-amber-400 text-[10px] font-semibold font-sans mt-2">
+                        <span>Calculator</span>
+                        <span>iOS 18</span>
+                    </div>
+                </div>
+            `;
+        } else if (appId === 'notes') {
+            previewHtml = `
+                <div class="h-full flex flex-col justify-between bg-[#1c1c1e] text-white pt-8 px-4 pb-3 select-none text-left">
+                    <div class="space-y-2.5">
+                        <div class="text-xs font-bold text-amber-400 flex items-center space-x-1.5">
+                            <i class="fas fa-note-sticky"></i>
+                            <span>Ranveer's DevPad</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-1 text-xs">
+                            <span class="text-[11px] font-bold text-amber-300 block">⚡ Full Stack Architecture:</span>
+                            <span class="text-[10px] text-gray-400 block">REST APIs, JWT, Redis caching, Docker containerization.</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between px-3 py-1.5 bg-white/10 border border-white/15 rounded-xl text-amber-300 text-[10px] font-semibold mt-2">
+                        <span>Auto-saved</span>
+                        <span>Notes</span>
+                    </div>
+                </div>
+            `;
         } else {
             // Apple Photos Gallery
             previewHtml = `
@@ -3119,6 +3406,13 @@ function renderMissionControlTiles() {
                         <span class="tahoe-mc-app-label">Notes</span>
                         <span class="tahoe-mc-app-sub">DevPad</span>
                     </div>
+                    <div class="tahoe-mc-app-item" onclick="event.stopPropagation(); toggleMissionControl(false); openApp('calendar')">
+                        <div class="tahoe-mc-app-icon bg-gradient-to-b from-red-500 to-rose-600">
+                            <i class="far fa-calendar-alt"></i>
+                        </div>
+                        <span class="tahoe-mc-app-label">Calendar</span>
+                        <span class="tahoe-mc-app-sub">Schedule</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -3364,6 +3658,41 @@ function renderMissionControlTiles() {
                     <span class="text-amber-400 font-semibold">Click to focus &rarr;</span>
                 </div>
             `;
+        } else if (appId === 'calendar') {
+            body.className += ' bg-gradient-to-b from-[#1c1a24] to-[#121118] text-white';
+            const now = new Date();
+            const daysFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const monthsFull = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            bodyHtml = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-red-500/20 text-[#ff3b30] flex items-center justify-center text-lg">
+                                <i class="far fa-calendar-alt"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs uppercase font-extrabold text-[#ff3b30] block">${daysFull[now.getDay()]}</span>
+                                <span class="text-sm font-bold text-white">${monthsFull[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-mono text-gray-400 px-2 py-0.5 rounded bg-white/5 border border-white/10">macOS 26 Tahoe</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                            <span class="text-[10px] text-red-400 font-bold block uppercase">09:30 AM • Daily Sync</span>
+                            <span class="text-xs text-gray-300">Branding Pioneers Task Tracker</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                            <span class="text-[10px] text-blue-400 font-bold block uppercase">11:00 AM • Architecture</span>
+                            <span class="text-xs text-gray-300">AST Code Visualizer Optimization</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-gray-400">
+                    <span>Synchronized with Google & Apple Calendar</span>
+                    <span class="text-red-400 font-semibold">Click to focus &rarr;</span>
+                </div>
+            `;
         } else {
             body.className += ' bg-gradient-to-b from-[#181a24] to-[#0f1118] text-white';
             bodyHtml = `
@@ -3505,9 +3834,15 @@ const macDockApps = [
         action: () => openApp('notes')
     },
     {
+        id: "calendar",
+        name: "Calendar",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/calendar-2021-04-29.png?rf=1024",
+        action: () => openApp('calendar')
+    },
+    {
         id: "folder",
         name: "Projects",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/calendar-2021-04-29.png?rf=1024",
+        icon: "https://cdn.jim-nielsen.com/macos/1024/launchpad-2021-05-25.png?rf=1024",
         action: () => openFolderModal()
     }
 ];

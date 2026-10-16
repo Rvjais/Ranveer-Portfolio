@@ -494,14 +494,14 @@ nav.mobile-only {
         width: 100vw !important;
         width: 100% !important;
         height: 100% !important;
-        height: 100vh !important;
-        height: calc(var(--vh, 1vh) * 100) !important;
         height: 100dvh !important;
-        min-height: -webkit-fill-available !important;
+        max-height: 100dvh !important;
+        overflow: hidden !important;
         z-index: 210 !important;
         border-radius: 0 !important;
         box-shadow: none !important;
         margin: 0 !important;
+        overscroll-behavior: none !important;
         animation: iosAppOpen 0.28s cubic-bezier(0.32, 0.72, 0, 1) forwards;
     }
 
@@ -515,12 +515,12 @@ nav.mobile-only {
         animation: iosAppClose 0.22s cubic-bezier(0.32, 0.72, 0, 1) forwards;
     }
 
-    /* Safe Area clearance for iOS Dynamic Island & Status Bar */
+    /* Safe Area clearance for iOS Dynamic Island & Status Bar — ensures back button never overlaps */
     .app-window .app-header {
-        padding-top: calc(48px + max(env(safe-area-inset-top, 0px), 4px)) !important;
-        min-height: calc(92px + max(env(safe-area-inset-top, 0px), 4px)) !important;
+        padding-top: calc(50px + max(env(safe-area-inset-top, 0px), 8px)) !important;
+        min-height: calc(96px + max(env(safe-area-inset-top, 0px), 8px)) !important;
         height: auto !important;
-        padding-bottom: 8px !important;
+        padding-bottom: 10px !important;
         padding-left: 14px !important;
         padding-right: 14px !important;
         display: flex !important;
@@ -2073,12 +2073,6 @@ nav.mobile-only {
         padding: 18px 14px 14px 14px !important;
     }
 
-    /* 8. App window header: reduce wasted top space */
-    .app-window .app-header {
-        padding-top: max(env(safe-area-inset-top, 0px), 12px) !important;
-        min-height: 60px !important;
-    }
-
     /* 9. Dock: fit small screens */
     .glass-dock {
         padding: 10px !important;
@@ -2716,6 +2710,84 @@ nav.mobile-only.light-theme .ios-battery-fill {
     background-color: #1c1c1e !important;
 }
 
+/* ==========================================================================
+   macOS 26 Tahoe Calendar App Styling
+   ========================================================================== */
 
+.cal-day-cell {
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-height: 56px;
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
+.cal-day-cell:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1.5px);
+}
 
+.cal-day-cell.other-month {
+    opacity: 0.3;
+}
+
+.cal-day-cell.is-selected {
+    border-color: #ff3b30;
+    background: rgba(255, 59, 48, 0.12);
+    box-shadow: 0 0 14px rgba(255, 59, 48, 0.35);
+}
+
+.cal-day-cell.is-today .cal-day-num {
+    background: #ff3b30;
+    color: #ffffff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255, 59, 48, 0.6);
+}
+
+.cal-day-num {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.cal-day-dots {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 2px;
+}
+
+.cal-day-dot,
+.cal-event-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.cal-event-dot.dot-work {
+    background: #ff3b30;
+    box-shadow: 0 0 4px rgba(255, 59, 48, 0.6);
+}
+
+.cal-event-dot.dot-dev {
+    background: #007aff;
+    box-shadow: 0 0 4px rgba(0, 122, 255, 0.6);
+}
+
+.cal-event-dot.dot-interview {
+    background: #34c759;
+    box-shadow: 0 0 4px rgba(52, 199, 89, 0.6);
+}
