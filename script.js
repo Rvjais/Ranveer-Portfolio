@@ -62,8 +62,12 @@ function updateClocks() {
 
     const macClockEl = document.getElementById('mac-clock');
     if (macClockEl) {
-        macClockEl.innerText = `${dayStr} ${monthStr} ${dateNum}  ${displayHours}:${minsFormatted} ${ampm}`;
+        macClockEl.textContent = `${dayStr} ${monthStr} ${dateNum} ${displayHours}:${minsFormatted} ${ampm}`;
     }
+
+    // Desktop clock widget + lock screen (function declarations, safe to call this early)
+    updateWidgetClock(now);
+    updateLockScreenClock(now);
 
     // Terminal initial date
     const termDateEl = document.getElementById('term-date');
@@ -119,189 +123,211 @@ document.addEventListener('click', (e) => {
 });
 
 // --- App Management (Open / Close / Minimize / Maximize) ---
+const isDesktop = () => window.innerWidth >= 768;
+let focusedAppId = null;
+
+const APP_DISPLAY_NAMES = {
+    about: 'Safari', projects: 'Terminal', skills: 'System Settings', contact: 'Mail',
+    gallery: 'Photos', calculator: 'Calculator', notes: 'Notes', calendar: 'Calendar', finder: 'Finder'
+};
+
+function getAppTheme(appId) {
+    const app = document.getElementById(`app-${appId}`);
+    return (app && app.dataset.theme) || 'dark';
+}
+
+// iOS status bar + home indicator follow the colour of the top-most app
+function syncMobileChrome() {
+    const topApp = focusedAppId || runningApps[runningApps.length - 1];
+    const light = !!topApp && document.getElementById(`app-${topApp}`)?.classList.contains('is-open') && getAppTheme(topApp) === 'light';
+    const homeBar = document.getElementById('ios-global-home-bar');
+    if (homeBar) homeBar.classList.toggle('dark', light);
+    const mobileNav = document.querySelector('nav.mobile-only');
+    if (mobileNav) mobileNav.classList.toggle('light-theme', light);
+}
+
+function setHash(hash) {
+    try {
+        const url = hash ? `#${hash}` : window.location.pathname + window.location.search;
+        history.replaceState(null, '', url);
+    } catch (e) { /* file:// or sandboxed — ignore */ }
+}
+
+// Place a newly opened desktop window: centred in the free area, cascading like macOS
+function placeNewWindow(app) {
+    const menubar = 28, dockReserve = 96;
+    const w = app.offsetWidth, h = app.offsetHeight;
+    const others = document.querySelectorAll('.app-window.is-open').length - 1;
+    const step = (Math.max(0, others) % 6) * 26;
+    let left = Math.round((window.innerWidth - w) / 2) - 60 + step;
+    let top = Math.round(menubar + (window.innerHeight - menubar - dockReserve - h) / 2) - 20 + step;
+    left = Math.max(8, Math.min(window.innerWidth - w - 8, left));
+    top = Math.max(menubar + 8, Math.min(window.innerHeight - h - 8, top));
+    app.style.left = `${left}px`;
+    app.style.top = `${top}px`;
+    app.style.transform = 'none';
+}
+
 function openApp(appId) {
     const app = document.getElementById(`app-${appId}`);
     if (!app) return;
 
-    // Track running apps
-    if (!runningApps.includes(appId)) {
-        runningApps.push(appId);
-    }
+    const wasRunning = runningApps.includes(appId);
+    const wasVisible = app.classList.contains('is-open');
+    if (!wasRunning) runningApps.push(appId);
 
     // Reset any interactive drag transforms on mobile
-    app.style.transform = '';
-    app.style.borderRadius = '';
-    app.style.transition = '';
+    if (!isDesktop()) {
+        app.style.transform = '';
+        app.style.borderRadius = '';
+        app.style.transition = '';
+    }
 
-    // Remove any closing animation classes
-    app.classList.remove('closing', 'genie-closing');
+    app.classList.remove('closing', 'genie-closing', 'win-closing');
     app.classList.add('is-open');
 
-    // Bring to front
+    // Desktop positioning (first open only — remembers where the user left it)
+    if (isDesktop() && !app.dataset.placed) {
+        placeNewWindow(app);
+        app.dataset.placed = '1';
+    }
+
     bringToFront(app);
 
-    // Show active indicator in macOS dock
-    const dot = document.getElementById(`dot-${appId}`);
-    if (dot) dot.style.display = 'block';
-
-    // Update iOS global home bar style based on app theme
-    const homeBar = document.getElementById('ios-global-home-bar');
-    if (homeBar) {
-        if (['about', 'skills', 'contact'].includes(appId)) {
-            homeBar.classList.add('dark');
-        } else {
-            homeBar.classList.remove('dark');
-        }
-    }
-
-    // Update mobile status bar theme (dark text for light-background apps like about, skills)
-    const mobileNav = document.querySelector('nav.mobile-only');
-    if (mobileNav) {
-        if (['about', 'skills'].includes(appId)) {
-            mobileNav.classList.add('light-theme');
-        } else {
-            mobileNav.classList.remove('light-theme');
-        }
-    }
+    if (!wasRunning && typeof bounceDockIcon === 'function') bounceDockIcon(appId);
+    if (typeof trackRecent === 'function') trackRecent(`app:${appId}`);
 
     // App-specific initialization
-    if (appId === 'notes' && typeof initNotesApp === 'function') {
-        initNotesApp();
-    }
-    if (appId === 'calculator' && typeof updateCalcDisplay === 'function') {
-        updateCalcDisplay();
-    }
+    if (appId === 'notes' && typeof initNotesApp === 'function' && !wasVisible) initNotesApp();
+    if (appId === 'calculator' && typeof updateCalcDisplay === 'function') updateCalcDisplay();
     if (appId === 'calendar') {
         if (typeof renderCalendarGrid === 'function') renderCalendarGrid();
         if (typeof updateCalendarDatesDisplay === 'function') updateCalendarDatesDisplay();
     }
+    if (appId === 'finder' && typeof renderFinder === 'function') renderFinder();
 
-    // Desktop positioning
-    if (window.innerWidth >= 768 && !app.style.top) {
-        const randomOffset = Math.floor(Math.random() * 30) - 15;
-        app.style.top = `calc(50% + ${randomOffset}px)`;
-        app.style.left = `calc(50% + ${randomOffset}px)`;
-        app.style.transform = `translate(-50%, -50%)`;
-    }
-
-    // If projects app is opened, ensure terminal input is focused
-    if (appId === 'projects') {
+    // Focus the terminal input on desktop only (avoids popping the iOS keyboard)
+    if (appId === 'projects' && isDesktop()) {
         setTimeout(() => {
             const input = document.getElementById('term-input');
-            if (input) input.focus();
+            const terminalVisible = !document.getElementById('projects-view-terminal')?.classList.contains('hidden');
+            if (input && terminalVisible) input.focus({ preventScroll: true });
         }, 200);
     }
 
-    // Refresh Mission Control or Switcher if open
+    if (appId !== 'finder') setHash(appId);
+    syncMobileChrome();
+
     if (isMissionControlOpen) renderMissionControlTiles();
     if (isIosSwitcherOpen) renderIosSwitcherCards();
     if (typeof updateMacOSDockOpenApps === 'function') updateMacOSDockOpenApps();
+}
+
+function focusTopmostWindow() {
+    const wins = [...document.querySelectorAll('.app-window.is-open')]
+        .filter(w => !w.classList.contains('genie-closing') && !w.classList.contains('win-closing') && !w.classList.contains('closing'));
+    document.querySelectorAll('.app-window.is-focused').forEach(w => w.classList.remove('is-focused'));
+    if (!wins.length) {
+        focusedAppId = null;
+    } else {
+        wins.sort((a, b) => (parseInt(a.style.zIndex, 10) || 0) - (parseInt(b.style.zIndex, 10) || 0));
+        const top = wins[wins.length - 1];
+        top.classList.add('is-focused');
+        focusedAppId = top.id.replace('app-', '');
+    }
+    if (typeof updateMenubarAppName === 'function') updateMenubarAppName();
+    syncMobileChrome();
+    setHash(focusedAppId && focusedAppId !== 'finder' ? focusedAppId : '');
 }
 
 function closeApp(appId) {
     const app = document.getElementById(`app-${appId}`);
     if (!app) return;
+    if (!app.classList.contains('is-open') && !runningApps.includes(appId)) return;
 
-    // Remove from running apps
     runningApps = runningApps.filter(id => id !== appId);
-
-    // Reset transforms
-    app.style.transform = '';
     app.style.borderRadius = '';
+    app.classList.remove('is-focused');
 
-    if (window.innerWidth < 768) {
-        // Mobile iOS closing animation
+    if (!isDesktop()) {
+        app.style.transform = '';
         app.classList.add('closing');
-        setTimeout(() => {
-            app.classList.remove('is-open', 'closing');
-        }, 220);
-    } else {
-        // macOS Magic Lamp / Genie animation closing
-        app.classList.add('genie-closing');
-        setTimeout(() => {
-            app.classList.remove('is-open', 'genie-closing');
-        }, 460);
+        setTimeout(() => app.classList.remove('is-open', 'closing'), 220);
+    } else if (app.classList.contains('is-open')) {
+        app.classList.add('win-closing');
+        setTimeout(() => app.classList.remove('is-open', 'win-closing'), 180);
     }
 
-    // Hide active dot in macOS dock
-    const dot = document.getElementById(`dot-${appId}`);
-    if (dot) dot.style.display = 'none';
+    if (appId === 'notes') app.classList.remove('notes-detail');
+    if (focusedAppId === appId) focusedAppId = null;
+    focusTopmostWindow();
 
-    // Update iOS home bar theme and mobile nav theme
-    const activeTopApp = runningApps[runningApps.length - 1];
-    const homeBar = document.getElementById('ios-global-home-bar');
-    if (homeBar) {
-        if (activeTopApp && ['about', 'skills', 'contact'].includes(activeTopApp)) {
-            homeBar.classList.add('dark');
-        } else {
-            homeBar.classList.remove('dark');
-        }
-    }
-    const mobileNav = document.querySelector('nav.mobile-only');
-    if (mobileNav) {
-        if (activeTopApp && ['about', 'skills'].includes(activeTopApp)) {
-            mobileNav.classList.add('light-theme');
-        } else {
-            mobileNav.classList.remove('light-theme');
-        }
-    }
-
-    // Refresh views if open
     if (isMissionControlOpen) renderMissionControlTiles();
     if (isIosSwitcherOpen) renderIosSwitcherCards();
     if (typeof updateMacOSDockOpenApps === 'function') updateMacOSDockOpenApps();
 }
 
-
 function minimizeApp(appId) {
     const app = document.getElementById(`app-${appId}`);
-    if (!app) return;
+    if (!app || !app.classList.contains('is-open')) return;
+    app.classList.remove('is-focused');
 
-    if (window.innerWidth >= 768) {
-        // macOS Magic Lamp / Genie animation minimizing into dock
+    if (isDesktop()) {
+        // Genie toward this app's Dock icon (falls back to Dock centre)
+        const rect = app.getBoundingClientRect();
+        const dockEl = document.getElementById(`dock-item-${appId}`) || document.getElementById('macos-dock');
+        if (dockEl) {
+            const d = dockEl.getBoundingClientRect();
+            app.style.setProperty('--genie-x', `${Math.round(d.left + d.width / 2 - (rect.left + rect.width / 2))}px`);
+            app.style.setProperty('--genie-y', `${Math.round(d.top + d.height / 2 - rect.bottom)}px`);
+        }
         app.classList.add('genie-closing');
-        setTimeout(() => {
-            app.classList.remove('is-open', 'genie-closing');
-        }, 460);
+        setTimeout(() => app.classList.remove('is-open', 'genie-closing'), 480);
     } else {
         app.classList.remove('is-open');
     }
-    // Dock dot remains visible on desktop
+    if (focusedAppId === appId) focusedAppId = null;
+    focusTopmostWindow();
+    if (isMissionControlOpen) renderMissionControlTiles();
+    // Dock dot remains visible: the app is still running
 }
 
 function maximizeApp(appId) {
-    if (window.innerWidth < 768) return;
+    if (!isDesktop()) return;
     const app = document.getElementById(`app-${appId}`);
     if (!app) return;
 
     if (!maximizedStates[appId]) {
-        // Save current window positioning
         maximizedStates[appId] = {
             top: app.style.top,
             left: app.style.left,
             width: app.style.width,
-            height: app.style.height,
-            transform: app.style.transform
+            height: app.style.height
         };
         app.classList.add('is-maximized');
         bringToFront(app);
     } else {
-        // Restore window
         app.classList.remove('is-maximized');
         app.style.top = maximizedStates[appId].top;
         app.style.left = maximizedStates[appId].left;
         app.style.width = maximizedStates[appId].width || '';
         app.style.height = maximizedStates[appId].height || '';
-        app.style.transform = maximizedStates[appId].transform || 'translate(-50%, -50%)';
         delete maximizedStates[appId];
     }
 }
 
 function bringToFront(appElement) {
+    if (!appElement) return;
     highestZIndex++;
-    if (appElement) {
-        appElement.style.zIndex = highestZIndex;
+    appElement.style.zIndex = highestZIndex;
+    document.querySelectorAll('.app-window.is-focused').forEach(w => {
+        if (w !== appElement) w.classList.remove('is-focused');
+    });
+    if (appElement.classList.contains('is-open')) {
+        appElement.classList.add('is-focused');
+        focusedAppId = appElement.id.replace('app-', '');
     }
+    if (typeof updateMenubarAppName === 'function') updateMenubarAppName();
 }
 
 // --- About App Tab Switching ---
@@ -380,26 +406,75 @@ function runQuickCommand(cmd) {
     }
 }
 
-// --- Toast Notifications ---
-function showToast(message, icon = 'fas fa-info-circle') {
+// --- Notification banners (macOS: top-right stack • iOS: top banner) ---
+function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+const NOTIF_TINTS = [
+    [/whatsapp|check|circle-check/, 'linear-gradient(180deg,#34c759,#248a3d)'],
+    [/exclamation|triangle|trash|times|xmark/, 'linear-gradient(180deg,#ff6961,#d70015)'],
+    [/npm|pdf|file-pdf/, 'linear-gradient(180deg,#ff6b6b,#c81e1e)'],
+    [/docker|aws|cloud/, 'linear-gradient(180deg,#5ac8fa,#0071e3)'],
+    [/music|record-vinyl/, 'linear-gradient(180deg,#ff6b88,#fa233b)'],
+    [/calendar|clock/, 'linear-gradient(180deg,#ff6b5f,#e0261b)'],
+    [/moon|focus/, 'linear-gradient(180deg,#7d7aff,#5856d6)'],
+    [/github/, 'linear-gradient(180deg,#2d333b,#0d1117)'],
+    [/image|images|photo/, 'linear-gradient(180deg,#ff9f0a,#ff375f)'],
+    [/terminal|code/, 'linear-gradient(180deg,#3a3a3e,#0d0d0f)']
+];
+
+function notify({ title, body = '', icon = 'fas fa-bell', iconBg, action = null, duration = 4200 } = {}) {
     const container = document.getElementById('toast-container');
     if (!container) return;
 
-    const toast = document.createElement('div');
-    toast.className = 'ios-toast opacity-0 translate-y-[-10px]';
-    toast.innerHTML = `<i class="${icon} text-blue-400"></i> <span>${message}</span>`;
-    container.appendChild(toast);
+    // Keep the stack short, like macOS
+    const existing = container.querySelectorAll('.notif:not(.leaving)');
+    if (existing.length >= 3) dismissNotif(existing[0]);
 
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            toast.classList.remove('opacity-0', 'translate-y-[-10px]');
-        });
+    const bg = iconBg || (NOTIF_TINTS.find(([re]) => re.test(icon)) || [null, 'linear-gradient(180deg,#5ac8fa,#0a7aff)'])[1];
+    const el = document.createElement('div');
+    el.className = `notif${action ? ' is-actionable' : ''}`;
+    el.setAttribute('role', 'status');
+    el.innerHTML = `
+        <button class="notif-close" aria-label="Dismiss"><i class="fas fa-xmark"></i></button>
+        <div class="notif-icon" style="background:${bg}"><i class="${escapeHtml(icon)}"></i></div>
+        <div class="notif-body">
+            <div class="notif-head"><span class="notif-title">${escapeHtml(title)}</span><span class="notif-time">now</span></div>
+            ${body ? `<div class="notif-text">${escapeHtml(body)}</div>` : ''}
+        </div>`;
+    el.querySelector('.notif-close').addEventListener('click', (e) => { e.stopPropagation(); dismissNotif(el); });
+    el.addEventListener('click', () => {
+        if (action) { try { action(); } catch (err) { console.warn(err); } }
+        dismissNotif(el);
     });
 
-    setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-[-10px]');
-        setTimeout(() => toast.remove(), 280);
-    }, 2800);
+    let timer = setTimeout(() => dismissNotif(el), duration);
+    el.addEventListener('mouseenter', () => clearTimeout(timer));
+    el.addEventListener('mouseleave', () => { timer = setTimeout(() => dismissNotif(el), 1800); });
+
+    container.appendChild(el);
+}
+
+function dismissNotif(el) {
+    if (!el || el.classList.contains('leaving')) return;
+    el.classList.add('leaving');
+    setTimeout(() => el.remove(), 280);
+}
+
+// Backwards-compatible helper used across the site: "Title: body" splits into a two-line banner
+function showToast(message, icon = 'fas fa-info-circle') {
+    const msg = String(message);
+    const idx = msg.indexOf(': ');
+    let title, body;
+    if (idx > 0 && idx <= 36) {
+        title = msg.slice(0, idx);
+        body = msg.slice(idx + 2);
+    } else {
+        title = focusedAppId ? (APP_DISPLAY_NAMES[focusedAppId] || 'Ranveer’s Mac') : 'Ranveer’s Mac';
+        body = msg;
+    }
+    notify({ title, body, icon, duration: 3200 });
 }
 
 // --- Contact Form Sending Simulation ---
@@ -408,246 +483,274 @@ function handleSend() {
     const msg = document.getElementById('contact-msg').value.trim();
 
     if (!subj || !msg) {
-        showToast("Please enter a subject and message.", "fas fa-exclamation-triangle");
+        notify({ title: 'Mail', body: 'Add a subject and a message first.', icon: 'fas fa-triangle-exclamation' });
+        (!subj ? document.getElementById('contact-subj') : document.getElementById('contact-msg')).focus();
         return;
     }
 
-    showToast("Message sent successfully! Ranveer will reply soon.", "fas fa-check-circle");
-    document.getElementById('contact-subj').value = '';
-    document.getElementById('contact-msg').value = '';
-
-    // Auto close app on mobile after send
-    if (window.innerWidth < 768) {
-        setTimeout(() => closeApp('contact'), 800);
-    }
+    // Hand off to the visitor's mail app so the message really reaches Ranveer
+    const href = `mailto:ranveerjais9984@gmail.com?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`;
+    window.location.href = href;
+    notify({ title: 'Mail', body: 'Opening your mail app with this message ready to send.', icon: 'fas fa-paper-plane' });
 }
 
 // --- Desktop Window Dragging & Resizing ---
+// One shared set of document listeners drives whichever window is being dragged/resized.
+let winDrag = null;   // { win, offsetX, offsetY }
+let winResize = null; // { win, startX, startY, startW, startH, minW, minH }
+
 function setupWindowDragging() {
-    const windows = document.querySelectorAll('.app-window');
-    windows.forEach(win => {
+    document.querySelectorAll('.app-window').forEach(win => {
         const header = win.querySelector('.app-header');
         if (!header) return;
 
-        let isDragging = false;
-        let offsetX = 0;
-        let offsetY = 0;
-
         win.addEventListener('mousedown', () => {
-            if (window.innerWidth >= 768) {
-                bringToFront(win);
-            }
+            if (isDesktop()) bringToFront(win);
         });
 
         header.addEventListener('mousedown', (e) => {
-            if (window.innerWidth < 768) return;
-            if (e.target.closest('.traffic-btn') || e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
+            if (!isDesktop() || e.button !== 0) return;
+            if (e.target.closest('.traffic-btn, button, a, input, label, .safari-url')) return;
 
-            isDragging = true;
-            win.classList.add('dragging');
+            const appId = win.id.replace('app-', '');
+            // Dragging a zoomed window un-zooms it under the cursor (macOS behaviour)
+            if (win.classList.contains('is-maximized')) {
+                const ratio = (e.clientX) / window.innerWidth;
+                maximizeApp(appId);
+                const w = win.offsetWidth;
+                win.style.left = `${Math.round(e.clientX - w * ratio)}px`;
+                win.style.top = `${Math.max(28, e.clientY - 20)}px`;
+            }
 
             const rect = win.getBoundingClientRect();
-            if (win.style.transform && win.style.transform.includes('translate')) {
-                win.style.top = rect.top + 'px';
-                win.style.left = rect.left + 'px';
-                win.style.transform = 'none';
-                win.style.margin = '0';
-            }
-
-            offsetX = e.clientX - rect.left;
-            offsetY = e.clientY - rect.top;
+            win.style.transform = 'none';
+            win.style.left = `${rect.left}px`;
+            win.style.top = `${rect.top}px`;
+            winDrag = { win, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
+            win.classList.add('dragging');
+            document.body.style.cursor = 'default';
+            e.preventDefault();
         });
 
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            win.style.left = `${Math.max(10, Math.min(window.innerWidth - 100, e.clientX - offsetX))}px`;
-            win.style.top = `${Math.max(30, Math.min(window.innerHeight - 80, e.clientY - offsetY))}px`;
+        header.addEventListener('dblclick', (e) => {
+            if (!isDesktop()) return;
+            if (e.target.closest('.traffic-btn, button, a, input, label')) return;
+            maximizeApp(win.id.replace('app-', ''));
         });
+    });
 
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                win.classList.remove('dragging');
-            }
-        });
+    document.addEventListener('mousemove', (e) => {
+        if (winDrag) {
+            const { win, offsetX, offsetY } = winDrag;
+            const w = win.offsetWidth;
+            const left = Math.max(100 - w, Math.min(window.innerWidth - 100, e.clientX - offsetX));
+            const top = Math.max(28, Math.min(window.innerHeight - 60, e.clientY - offsetY));
+            win.style.left = `${left}px`;
+            win.style.top = `${top}px`;
+        } else if (winResize) {
+            const r = winResize;
+            const rect = r.win.getBoundingClientRect();
+            const newW = Math.max(r.minW, Math.min(window.innerWidth - rect.left - 4, r.startW + (e.clientX - r.startX)));
+            const newH = Math.max(r.minH, Math.min(window.innerHeight - rect.top - 4, r.startH + (e.clientY - r.startY)));
+            r.win.style.width = `${newW}px`;
+            r.win.style.height = `${newH}px`;
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (winDrag) {
+            winDrag.win.classList.remove('dragging');
+            winDrag = null;
+            document.body.style.cursor = '';
+        }
+        if (winResize) {
+            winResize.win.classList.remove('resizing');
+            winResize = null;
+        }
     });
 }
 
 function setupWindowResizing() {
-    const windows = document.querySelectorAll('.app-window');
-    windows.forEach(win => {
+    document.querySelectorAll('.app-window').forEach(win => {
         const handle = win.querySelector('.window-resize-handle');
         if (!handle) return;
-
-        let isResizing = false;
-        let startX, startY, startW, startH;
-
         handle.addEventListener('mousedown', (e) => {
-            if (window.innerWidth < 768) return;
+            if (!isDesktop() || win.classList.contains('is-maximized')) return;
             e.preventDefault();
             e.stopPropagation();
-
-            isResizing = true;
-            win.classList.add('resizing');
             bringToFront(win);
-
-            startX = e.clientX;
-            startY = e.clientY;
-            startW = parseInt(document.defaultView.getComputedStyle(win).width, 10);
-            startH = parseInt(document.defaultView.getComputedStyle(win).height, 10);
-
-            // Normalize transform if needed
+            const cs = getComputedStyle(win);
             const rect = win.getBoundingClientRect();
-            if (win.style.transform && win.style.transform.includes('translate')) {
-                win.style.top = rect.top + 'px';
-                win.style.left = rect.left + 'px';
-                win.style.transform = 'none';
-                win.style.margin = '0';
-            }
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isResizing) return;
-            const newW = Math.max(440, Math.min(window.innerWidth - 20, startW + (e.clientX - startX)));
-            const newH = Math.max(320, Math.min(window.innerHeight - 50, startH + (e.clientY - startY)));
-            win.style.width = `${newW}px`;
-            win.style.height = `${newH}px`;
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (isResizing) {
-                isResizing = false;
-                win.classList.remove('resizing');
-            }
+            win.style.transform = 'none';
+            win.style.left = `${rect.left}px`;
+            win.style.top = `${rect.top}px`;
+            winResize = {
+                win,
+                startX: e.clientX,
+                startY: e.clientY,
+                startW: rect.width,
+                startH: rect.height,
+                minW: parseFloat(cs.minWidth) || 320,
+                minH: parseFloat(cs.minHeight) || 260
+            };
+            win.classList.add('resizing');
         });
     });
 }
 
-// --- Desktop Free-form Icon Dragging ---
+// --- Desktop icons: macOS-style columns from the top-right, selection, free dragging ---
+function layoutDesktopIcons(force = false) {
+    if (!isDesktop()) return;
+    const icons = [...document.querySelectorAll('#desktop-icons-container .desktop-shortcut')];
+    const top0 = 40, colW = 96, rowH = 104, right0 = 16;
+    const bottomLimit = window.innerHeight - 112; // keep clear of the Dock
+    const perCol = Math.max(1, Math.floor((bottomLimit - top0) / rowH));
+    icons.forEach((icon, i) => {
+        if (icon.dataset.userPlaced && !force) return;
+        if (force) delete icon.dataset.userPlaced;
+        const col = Math.floor(i / perCol);
+        const row = i % perCol;
+        icon.style.right = 'auto';
+        icon.style.left = `${window.innerWidth - right0 - colW * (col + 1) + (colW - 88) / 2}px`;
+        icon.style.top = `${top0 + row * rowH}px`;
+    });
+}
+
+function clearDesktopSelection() {
+    document.querySelectorAll('.desktop-shortcut.selected').forEach(el => el.classList.remove('selected'));
+}
+
 function setupDesktopIconDragging() {
     const shortcuts = document.querySelectorAll('.desktop-shortcut');
+    let active = null; // { icon, startX, startY, initialLeft, initialTop, moved }
+
     shortcuts.forEach(icon => {
-        let isDragging = false;
-        let startX = 0;
-        let startY = 0;
-        let initialLeft = 0;
-        let initialTop = 0;
-        let hasMoved = false;
-
         icon.addEventListener('mousedown', (e) => {
-            if (window.innerWidth < 768) return;
-            if (e.button !== 0) return; // Only left click
-
+            if (!isDesktop() || e.button !== 0) return;
+            clearDesktopSelection();
+            icon.classList.add('selected');
             const rect = icon.getBoundingClientRect();
-            // Convert to explicit left/top coordinates
             icon.style.left = `${rect.left}px`;
             icon.style.top = `${rect.top}px`;
             icon.style.right = 'auto';
-
-            isDragging = true;
-            hasMoved = false;
             delete icon.dataset.dragged;
-
-            startX = e.clientX;
-            startY = e.clientY;
-            initialLeft = rect.left;
-            initialTop = rect.top;
-
-            icon.classList.add('dragging');
+            active = { icon, startX: e.clientX, startY: e.clientY, initialLeft: rect.left, initialTop: rect.top, moved: false };
             e.preventDefault();
         });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-
-            if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
-                hasMoved = true;
-                icon.dataset.dragged = "true";
-            }
-
-            const newLeft = Math.max(10, Math.min(window.innerWidth - 90, initialLeft + dx));
-            const newTop = Math.max(35, Math.min(window.innerHeight - 100, initialTop + dy));
-
-            icon.style.left = `${newLeft}px`;
-            icon.style.top = `${newTop}px`;
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                icon.classList.remove('dragging');
-                if (hasMoved) {
-                    setTimeout(() => {
-                        delete icon.dataset.dragged;
-                    }, 120);
-                }
-            }
-        });
     });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!active) return;
+        const dx = e.clientX - active.startX;
+        const dy = e.clientY - active.startY;
+        if (!active.moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+            active.moved = true;
+            active.icon.dataset.dragged = 'true';
+            active.icon.classList.add('dragging');
+        }
+        if (!active.moved) return;
+        active.icon.style.left = `${Math.max(6, Math.min(window.innerWidth - 94, active.initialLeft + dx))}px`;
+        active.icon.style.top = `${Math.max(34, Math.min(window.innerHeight - 120, active.initialTop + dy))}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (!active) return;
+        const { icon, moved } = active;
+        icon.classList.remove('dragging');
+        if (moved) {
+            icon.dataset.userPlaced = '1';
+            setTimeout(() => { delete icon.dataset.dragged; }, 120);
+        }
+        active = null;
+    });
+
+    // Clicking empty desktop clears the selection
+    const container = document.getElementById('desktop-icons-container');
+    if (container) {
+        container.addEventListener('mousedown', (e) => {
+            if (!e.target.closest('.desktop-shortcut')) clearDesktopSelection();
+        });
+    }
+
+    layoutDesktopIcons();
+    window.addEventListener('resize', () => layoutDesktopIcons(), { passive: true });
 }
 
 
 // --- Spotlight Search System (macOS Tahoe & iOS) ---
 const searchIndex = [
-    { title: "About Ranveer Jaiswal", category: "Application", desc: "Full Stack & MERN Developer profile, bio, skills and experience", action: () => openApp('about'), icon: "fas fa-user-astronaut text-blue-400", badge: "APP", tech: ["Profile", "Bio", "Gurgaon"] },
-    { title: "Calculator", category: "Application", desc: "Interactive macOS Tahoe precision math & arithmetic calculator", action: () => openApp('calculator'), icon: "fas fa-calculator text-amber-400", badge: "APP", tech: ["Math", "Arithmetic", "Keypad"] },
-    { title: "Calendar", category: "Application", desc: "macOS Tahoe monthly schedule, sprint deadlines & developer agenda", action: () => openApp('calendar'), icon: "far fa-calendar-alt text-red-500", badge: "APP", tech: ["Calendar", "Schedule", "Sprint", "Agenda"] },
-    { title: "Notes — Ranveer's DevPad", category: "Application", desc: "Engineering journals, full-stack architecture notes & local scratchpad", action: () => openApp('notes'), icon: "fas fa-note-sticky text-yellow-400", badge: "APP", tech: ["Notes", "Scratchpad", "Local Storage"] },
-    { title: "Projects Folder", category: "Folder", desc: "Interactive iOS folder containing all 12 projects and apps", action: () => openFolderModal(), icon: "fas fa-folder text-amber-400", badge: "FOLDER", tech: ["12 Projects", "Interactive", "Directory"] },
-    { title: "Projects Showcase", category: "Application", desc: "Interactive devOS Terminal and live project architecture cards", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-terminal text-green-400", badge: "APP", tech: ["Terminal", "zsh", "React Cards"] },
-    { title: "fullstack-code-visualiser (npm)", category: "Package", desc: "MERN Stack Visualizer & AST Architecture Tracer", action: () => openReadmeModal('fullstack-code-visualiser'), icon: "fab fa-npm text-red-500", badge: "NPM", tech: ["React", "Node.js", "Babel AST", "MongoDB"] },
-    { title: "Veer Music — Nothing OS App", category: "Project", desc: "Expo music client + yt-dlp proxy, 33 RPM vinyl disc, LRCLIB lyrics", action: () => openReadmeModal('nothing-veer'), icon: "fas fa-music text-red-400", badge: "MOBILE", tech: ["React Native", "Expo 54", "yt-dlp", "LRU Cache"] },
-    { title: "HR-Buddy (Live App)", category: "Project", desc: "AI onboarding quiz with anti-cheat mechanism (React, Node.js)", action: () => window.open('https://hr-buddy-beta.vercel.app/', '_blank'), icon: "fas fa-user-check text-amber-400", badge: "LIVE DEMO", tech: ["React", "Node.js", "AI Quiz"] },
-    { title: "SRChess (Live App)", category: "Project", desc: "Full-stack interactive chess platform (React, WebSockets)", action: () => window.open('https://srchess.vercel.app/', '_blank'), icon: "fas fa-chess-knight text-purple-400", badge: "LIVE DEMO", tech: ["React", "WebSockets", "Board Logic"] },
-    { title: "RANVEER H.U.D. Assistant", category: "Project", desc: "Tauri Rust Jarvis, voice + face + autonomous computer control", action: () => openReadmeModal('ranveer-echo'), icon: "fas fa-robot text-cyan-400", badge: "DESKTOP", tech: ["Tauri", "Rust", "Whisper AI"] },
-    { title: "WebRip Scraper", category: "Project", desc: "BFS website to ZIP, Playwright + SSE real-time download progress", action: () => openReadmeModal('web-ripper'), icon: "fas fa-globe text-teal-400", badge: "TOOL", tech: ["Playwright", "Node.js", "BFS Crawler"] },
-    { title: "PioneerOS", category: "Project", desc: "Multi-module internal platform with project management & queue system", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-desktop text-blue-400", badge: "PLATFORM", tech: ["Next.js", "Prisma", "PostgreSQL"] },
-    { title: "Rain CRM", category: "Project", desc: "CRM with AI WhatsApp bots, Twilio calling & automated email client", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-users-cog text-emerald-400", badge: "CRM", tech: ["React", "Twilio", "WhatsApp Bot"] },
-    { title: "TextLens OCR Sheet", category: "Project", desc: "Image/PDF to text, PaddleOCR handwriting + invoice table parser", action: () => openReadmeModal('textlens'), icon: "fas fa-file-alt text-indigo-400", badge: "AI TOOL", tech: ["PaddleOCR", "Python", "Table Extraction"] },
-    { title: "AICRMZ WhatsApp CRM", category: "Project", desc: "Baileys QR CRM, AI auto-replies, automated campaigns & voice notes", action: () => openReadmeModal('aicrmz'), icon: "fab fa-whatsapp text-green-400", badge: "WHATSAPP", tech: ["Baileys", "Node.js", "Campaigns"] },
-    { title: "Skills Folder (All Skills)", category: "Folder", desc: "Interactive folder listing Docker, AWS, React, Node.js, TypeScript & MongoDB", action: () => openSkillsFolderModal(), icon: "fas fa-layer-group text-blue-400", badge: "FOLDER", tech: ["Docker", "AWS", "React", "Node"] },
-    { title: "System Settings (Skills)", category: "Application", desc: "Full-stack languages, frameworks, databases & tooling preferences", action: () => openApp('skills'), icon: "fas fa-gear text-gray-400", badge: "APP", tech: ["DevOps", "Databases", "Frontend"] },
-    { title: "Photos & Videos (Gallery)", category: "Application", desc: "Personal media gallery, photos & video uploads", action: () => openApp('gallery'), icon: "fas fa-images text-pink-400", badge: "APP", tech: ["Photos", "Videos", "Uploads"] },
-    { title: "Mail Composer (Contact)", category: "Application", desc: "Send an email or message directly to Ranveer", action: () => openApp('contact'), icon: "fas fa-envelope text-blue-400", badge: "APP", tech: ["Email", "Messages", "Gurgaon"] },
-    { title: "Resume (PDF)", category: "Document", desc: "Official resume of Ranveer Jaiswal (ranveer_jaiswal.pdf)", action: () => window.open('ranveer_jaiswal.pdf', '_blank'), icon: "fas fa-file-pdf text-red-500", badge: "PDF", tech: ["Full Stack", "MERN", "Resume"] },
-    { title: "GitHub Profile (Rvjais)", category: "Link", desc: "Explore open-source repositories and contributions on GitHub", action: () => window.open('https://github.com/Rvjais', '_blank'), icon: "fab fa-github text-white", badge: "GITHUB", tech: ["Open Source", "Repos"] }
+    { title: "About Ranveer Jaiswal", category: "Application", desc: "Full Stack & MERN Developer profile, bio, experience and education", action: () => openApp('about'), icon: "fas fa-user-astronaut text-blue-400", badge: "APP", tech: ["Profile", "Bio", "Gurgaon", "Experience", "Education"] },
+    { title: "Resume (PDF)", category: "Document", desc: "Official resume of Ranveer Jaiswal (ranveer_jaiswal.pdf)", action: () => openResume(), icon: "fas fa-file-pdf text-red-500", badge: "PDF", tech: ["Full Stack", "MERN", "Resume", "CV"] },
+    { title: "Contact — New Message", category: "Application", desc: "Email Ranveer directly — opens your mail app with the message ready", action: () => openApp('contact'), icon: "fas fa-envelope text-blue-400", badge: "MAIL", tech: ["Email", "Hire", "Message", "Phone"] },
+    { title: "Finder — All Projects", category: "Folder", desc: "Browse all 12 projects with previews, tags and links", action: () => openFinder('projects'), icon: "fas fa-folder text-sky-400", badge: "FINDER", tech: ["12 Projects", "Tags", "Preview"] },
+    { title: "Projects Showcase (Cards)", category: "Application", desc: "Project cards with live demos, READMEs and repositories", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-table-cells-large text-blue-400", badge: "APP", tech: ["Cards", "Live Demo", "GitHub"] },
+    { title: "devOS Terminal", category: "Application", desc: "Explore the portfolio with ls, cd, cat, open and neofetch", action: () => { openApp('projects'); switchProjectsView('terminal', null); }, icon: "fas fa-terminal text-green-400", badge: "APP", tech: ["Terminal", "zsh", "CLI"] },
+    { title: "fullstack-code-visualiser (npm)", category: "Package", desc: "MERN stack visualiser & AST architecture tracer published on npm", action: () => openReadmeModal('fullstack-code-visualiser'), icon: "fab fa-npm text-red-500", badge: "NPM", tech: ["React", "Node.js", "Babel AST", "MongoDB"] },
+    { title: "Veer Music — Nothing OS App", category: "Project", desc: "Expo music client + yt-dlp proxy, vinyl player, synced LRC lyrics", action: () => openReadmeModal('nothing-veer'), icon: "fas fa-music text-red-400", badge: "MOBILE", tech: ["React Native", "Expo 54", "yt-dlp", "LRU Cache"] },
+    { title: "HR-Buddy — AI Onboarding", category: "Project", desc: "AI onboarding quiz with anti-cheat mechanism (React, Node.js)", action: () => openReadmeModal('hr-buddy'), icon: "fas fa-user-check text-amber-400", badge: "LIVE", tech: ["React", "Node.js", "AI Quiz"] },
+    { title: "SRChess — Chess Platform", category: "Project", desc: "Interactive chess web app with board logic & move validation", action: () => openReadmeModal('srchess-platform'), icon: "fas fa-chess-knight text-purple-400", badge: "LIVE", tech: ["React", "Tailwind", "Board Logic"] },
+    { title: "RANVEER H.U.D. Assistant", category: "Project", desc: "Tauri + Rust desktop assistant: voice, face & hand gestures, PC control", action: () => openReadmeModal('ranveer-echo'), icon: "fas fa-robot text-cyan-400", badge: "DESKTOP", tech: ["Tauri", "Rust", "AI", "OpenCV"] },
+    { title: "WebRip Scraper", category: "Project", desc: "BFS website → offline ZIP with Playwright and live SSE progress", action: () => openReadmeModal('web-ripper'), icon: "fas fa-spider text-teal-400", badge: "TOOL", tech: ["Python", "Playwright", "Flask", "BFS Crawler"] },
+    { title: "SR Chess Academy — 3D", category: "Project", desc: "25-page academy rebuild with a Three.js 3D hero, shop & quiz", action: () => openReadmeModal('srchess'), icon: "fas fa-chess-board text-amber-400", badge: "WEB", tech: ["Vite", "Three.js", "Vanilla JS"] },
+    { title: "PioneerOS", category: "Project", desc: "Multi-module internal platform with project management & queue system", action: () => openReadmeModal('pioneeros'), icon: "fas fa-desktop text-blue-400", badge: "PLATFORM", tech: ["Next.js", "Prisma", "PostgreSQL"] },
+    { title: "Rain CRM", category: "Project", desc: "CRM with AI WhatsApp bots, Twilio calling & AI email client", action: () => openReadmeModal('rain-crm'), icon: "fas fa-users-gear text-emerald-400", badge: "CRM", tech: ["React", "Twilio", "WhatsApp", "MongoDB"] },
+    { title: "TextLens OCR Sheet", category: "Project", desc: "Image/PDF to text, PaddleOCR handwriting + invoice table parser", action: () => openReadmeModal('textlens'), icon: "fas fa-file-lines text-indigo-400", badge: "AI TOOL", tech: ["PaddleOCR", "Python", "FastAPI", "AI"] },
+    { title: "AICRMZ WhatsApp CRM", category: "Project", desc: "Baileys QR CRM, AI auto-replies, campaigns & voice follow-ups", action: () => openReadmeModal('aicrmz'), icon: "fab fa-whatsapp text-green-400", badge: "WHATSAPP", tech: ["Baileys", "Node.js", "AI", "Campaigns"] },
+    { title: "Stock Management System", category: "Project", desc: "Qt / C++ GUI app focused on OOP, file handling and data structures", action: () => openReadmeModal('stock-mgmt'), icon: "fas fa-boxes-stacked text-cyan-400", badge: "C++", tech: ["C++", "Qt", "OOP"] },
+    { title: "Skills — Finder", category: "Folder", desc: "Languages, frameworks, databases, DevOps & tools with levels", action: () => openFinder('skills'), icon: "fas fa-layer-group text-blue-400", badge: "SKILLS", tech: ["Docker", "AWS", "React", "Node", "TypeScript", "MongoDB"] },
+    { title: "System Settings — Skill Levels", category: "Application", desc: "Full-stack languages, frameworks, databases & tooling with levels", action: () => openApp('skills'), icon: "fas fa-gear text-gray-400", badge: "APP", tech: ["DevOps", "Databases", "Frontend"] },
+    { title: "Photos", category: "Application", desc: "Project screenshots and media gallery", action: () => openApp('gallery'), icon: "fas fa-images text-pink-400", badge: "APP", tech: ["Photos", "Screenshots", "Uploads"] },
+    { title: "Notes — DevPad", category: "Application", desc: "Engineering notes & an auto-saved scratchpad", action: () => openApp('notes'), icon: "fas fa-note-sticky text-yellow-400", badge: "APP", tech: ["Notes", "Scratchpad"] },
+    { title: "Calendar", category: "Application", desc: "Monthly calendar with a sample developer agenda", action: () => openApp('calendar'), icon: "far fa-calendar text-red-500", badge: "APP", tech: ["Calendar", "Schedule", "Agenda"] },
+    { title: "Calculator", category: "Application", desc: "Keyboard-friendly calculator", action: () => openApp('calculator'), icon: "fas fa-calculator text-amber-400", badge: "APP", tech: ["Math", "Keypad"] },
+    { title: "Launchpad", category: "Application", desc: "Every app and project on one screen", action: () => openLaunchpad(), icon: "fas fa-rocket text-gray-300", badge: "F4", tech: ["Apps", "Grid"] },
+    { title: "GitHub Profile (Rvjais)", category: "Link", desc: "Explore open-source repositories and contributions on GitHub", action: () => window.open('https://github.com/Rvjais', '_blank', 'noopener'), icon: "fab fa-github text-white", badge: "GITHUB", tech: ["Open Source", "Repos"] },
+    { title: "Keyboard Shortcuts", category: "Help", desc: "⌘K Spotlight • F3 Mission Control • F4 Launchpad • Esc closes", action: () => openReadmeModal('shortcuts'), icon: "fas fa-keyboard text-gray-300", badge: "HELP", tech: ["Shortcuts", "Help"] }
 ];
 
 let selectedSpotlightIndex = 0;
 
+function getSpotlightMatches(query) {
+    const q = String(query || '').toLowerCase().trim();
+    if (!q) return searchIndex.slice(0, 9);
+    const scored = searchIndex.map(item => {
+        const title = item.title.toLowerCase();
+        let score = 0;
+        if (title.startsWith(q)) score += 6;
+        else if (title.includes(q)) score += 4;
+        if (item.desc.toLowerCase().includes(q)) score += 2;
+        if (item.category.toLowerCase().includes(q)) score += 1;
+        if (item.tech && item.tech.some(t => t.toLowerCase().includes(q))) score += 3;
+        return { item, score };
+    }).filter(r => r.score > 0);
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, 9).map(r => r.item);
+}
+
 function toggleSpotlight() {
     const overlay = document.getElementById('spotlight-overlay');
     if (!overlay) return;
-
-    if (overlay.classList.contains('is-active')) {
-        closeSpotlight();
-    } else {
-        openSpotlight();
-    }
+    if (overlay.classList.contains('is-active')) closeSpotlight();
+    else openSpotlight();
 }
 
 function openSpotlight() {
     const overlay = document.getElementById('spotlight-overlay');
     const input = document.getElementById('spotlight-input');
     if (!overlay) return;
-
+    closeAllMenus();
     overlay.classList.add('is-active');
     selectedSpotlightIndex = 0;
     if (input) {
         input.value = '';
-        input.focus();
+        setTimeout(() => input.focus(), 30);
     }
     renderSpotlightResults('');
 }
 
 function closeSpotlight() {
     const overlay = document.getElementById('spotlight-overlay');
-    if (overlay) {
-        overlay.classList.remove('is-active');
-    }
+    if (overlay) overlay.classList.remove('is-active');
 }
 
 function clearSpotlightInput() {
@@ -664,48 +767,45 @@ function renderSpotlightResults(query) {
     const resultsContainer = document.getElementById('spotlight-results');
     const clearBtn = document.getElementById('spotlight-clear-btn');
     if (!resultsContainer) return;
+    if (clearBtn) clearBtn.classList.toggle('hidden', !query);
 
-    if (clearBtn) {
-        clearBtn.classList.toggle('hidden', !query);
-    }
-
-    const trimmed = query.toLowerCase().trim();
-    const filtered = searchIndex.filter(item => {
-        if (!trimmed) return true;
-        return item.title.toLowerCase().includes(trimmed) || 
-               item.desc.toLowerCase().includes(trimmed) || 
-               item.category.toLowerCase().includes(trimmed) ||
-               (item.tech && item.tech.some(t => t.toLowerCase().includes(trimmed)));
-    }).slice(0, 8);
-
+    const filtered = getSpotlightMatches(query);
     if (filtered.length === 0) {
-        resultsContainer.innerHTML = `<div class="p-6 text-center text-gray-400 text-xs">No matching results for "<span class="text-white">${query}</span>"</div>`;
+        resultsContainer.innerHTML = `<div class="p-6 text-center text-gray-400 text-xs">No results for “<span class="text-white">${escapeHtml(query)}</span>”. Try “react”, “ai”, “python” or “resume”.</div>`;
         renderSpotlightPreview(null);
         return;
     }
+    if (selectedSpotlightIndex >= filtered.length) selectedSpotlightIndex = 0;
 
-    if (selectedSpotlightIndex >= filtered.length) {
-        selectedSpotlightIndex = 0;
-    }
-
-    resultsContainer.innerHTML = filtered.map((item, index) => `
-        <div class="spotlight-result-item ${index === selectedSpotlightIndex ? 'selected' : ''}" data-index="${index}" onclick="executeSpotlightAction(${index})" onmouseenter="selectedSpotlightIndex = ${index}; updateSpotlightSelection();">
-            <div class="flex items-center space-x-3 truncate">
+    const header = query.trim() ? '' : `<div class="px-3 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500">Suggestions</div>`;
+    resultsContainer.innerHTML = header + filtered.map((item, index) => `
+        <div class="spotlight-result-item ${index === selectedSpotlightIndex ? 'selected' : ''}" data-index="${index}" onclick="executeSpotlightAction(${index})" onmouseenter="selectedSpotlightIndex = ${index}; updateSpotlightSelection(false);">
+            <div class="flex items-center space-x-3 min-w-0">
                 <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-sm shrink-0">
                     <i class="${item.icon}"></i>
                 </div>
-                <div class="text-left truncate">
-                    <div class="text-xs font-semibold text-white truncate">${item.title}</div>
-                    <div class="text-[11px] text-gray-400 truncate">${item.desc}</div>
+                <div class="text-left min-w-0">
+                    <div class="text-[13px] font-semibold text-white truncate">${escapeHtml(item.title)}</div>
+                    <div class="text-[11px] text-gray-400 truncate">${escapeHtml(item.desc)}</div>
                 </div>
             </div>
-            <div class="flex items-center space-x-1.5 shrink-0 ml-2">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-white/10 text-gray-300 border border-white/15 uppercase">${item.badge || item.category}</span>
-            </div>
+            <span class="hidden sm:inline px-2 py-0.5 rounded text-[10px] font-bold bg-white/10 text-gray-300 border border-white/15 uppercase shrink-0 ml-2">${escapeHtml(item.badge || item.category)}</span>
         </div>
     `).join('');
 
     renderSpotlightPreview(filtered[selectedSpotlightIndex]);
+}
+
+function updateSpotlightSelection(scroll = true) {
+    const items = document.querySelectorAll('.spotlight-result-item');
+    items.forEach((item, idx) => {
+        const on = idx === selectedSpotlightIndex;
+        item.classList.toggle('selected', on);
+        if (on && scroll) item.scrollIntoView({ block: 'nearest' });
+    });
+    const input = document.getElementById('spotlight-input');
+    const filtered = getSpotlightMatches(input ? input.value : '');
+    if (filtered[selectedSpotlightIndex]) renderSpotlightPreview(filtered[selectedSpotlightIndex]);
 }
 
 function renderSpotlightPreview(item) {
@@ -715,10 +815,9 @@ function renderSpotlightPreview(item) {
     if (!item) {
         previewEl.innerHTML = `
             <div class="h-full flex flex-col items-center justify-center text-center text-gray-500 py-8">
-                <i class="fas fa-search text-3xl mb-2 opacity-40"></i>
-                <p class="text-xs">Type above to search applications, code and projects</p>
-            </div>
-        `;
+                <i class="fas fa-magnifying-glass text-3xl mb-2 opacity-40"></i>
+                <p class="text-xs">Search apps, projects, skills and documents</p>
+            </div>`;
         return;
     }
 
@@ -728,42 +827,32 @@ function renderSpotlightPreview(item) {
                 <i class="${item.icon}"></i>
             </div>
             <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-blue-400 px-2 py-0.5 rounded bg-blue-500/15 border border-blue-400/25">${item.badge || item.category}</span>
-                <h3 class="text-base font-bold text-white mt-2 leading-snug">${item.title}</h3>
-                <p class="text-xs text-gray-300 mt-2 leading-relaxed">${item.desc}</p>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-blue-300 px-2 py-0.5 rounded bg-blue-500/15 border border-blue-400/25">${escapeHtml(item.badge || item.category)}</span>
+                <h3 class="text-base font-bold text-white mt-2 leading-snug">${escapeHtml(item.title)}</h3>
+                <p class="text-xs text-gray-300 mt-2 leading-relaxed">${escapeHtml(item.desc)}</p>
             </div>
-            ${item.tech && item.tech.length > 0 ? `
+            ${item.tech && item.tech.length ? `
                 <div class="pt-2 border-t border-white/10">
-                    <span class="text-[10px] uppercase font-semibold text-gray-400 tracking-wider">Tech & Environment</span>
+                    <span class="text-[10px] uppercase font-semibold text-gray-400 tracking-wider">Keywords</span>
                     <div class="flex flex-wrap gap-1 mt-1.5">
-                        ${item.tech.map(t => `<span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-200 border border-white/10">${t}</span>`).join('')}
+                        ${item.tech.map(t => `<span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-200 border border-white/10">${escapeHtml(t)}</span>`).join('')}
                     </div>
-                </div>
-            ` : ''}
+                </div>` : ''}
         </div>
         <div class="pt-4 border-t border-white/10">
-            <button onclick="executeSpotlightAction(${selectedSpotlightIndex})" class="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center justify-center space-x-1.5 shadow-md transition active:scale-95">
-                <span>Launch</span>
+            <button onclick="executeSpotlightAction(${selectedSpotlightIndex})" class="w-full py-2 px-3 rounded-xl bg-[#0a84ff] hover:bg-[#3b9bff] text-white font-semibold text-xs flex items-center justify-center space-x-1.5 shadow-md transition active:scale-95">
+                <span>Open</span>
                 <i class="fas fa-arrow-right text-[10px]"></i>
             </button>
-        </div>
-    `;
+        </div>`;
 }
 
 function executeSpotlightAction(index) {
     const input = document.getElementById('spotlight-input');
-    const query = input ? input.value.toLowerCase().trim() : '';
-    const filtered = searchIndex.filter(item => {
-        if (!query) return true;
-        return item.title.toLowerCase().includes(query) || 
-               item.desc.toLowerCase().includes(query) || 
-               item.category.toLowerCase().includes(query) ||
-               (item.tech && item.tech.some(t => t.toLowerCase().includes(query)));
-    }).slice(0, 8);
-
+    const filtered = getSpotlightMatches(input ? input.value : '');
     if (filtered[index]) {
-        filtered[index].action();
         closeSpotlight();
+        filtered[index].action();
     }
 }
 
@@ -1034,8 +1123,28 @@ const DEFAULT_NOTES = [
 let currentSelectedNoteId = 'arch';
 
 function initNotesApp() {
+    const win = document.getElementById('app-notes');
+    if (win) win.classList.remove('notes-detail');
+    updateNotesBackLabel();
     renderNotesList();
-    selectNote('arch');
+    selectNote(currentSelectedNoteId || 'arch');
+}
+
+function updateNotesBackLabel() {
+    const label = document.getElementById('notes-back-label');
+    const win = document.getElementById('app-notes');
+    if (label && win) label.textContent = win.classList.contains('notes-detail') ? 'Notes' : 'Back';
+}
+
+// iOS: "‹ Notes" returns to the list; from the list it goes Home
+function notesBack() {
+    const win = document.getElementById('app-notes');
+    if (win && !isDesktop() && win.classList.contains('notes-detail')) {
+        win.classList.remove('notes-detail');
+        updateNotesBackLabel();
+        return;
+    }
+    closeApp('notes');
 }
 
 function renderNotesList(filter = '') {
@@ -1047,8 +1156,13 @@ function renderNotesList(filter = '') {
         return n.title.toLowerCase().includes(filter.toLowerCase()) || n.preview.toLowerCase().includes(filter.toLowerCase());
     });
 
+    if (!filtered.length) {
+        listEl.innerHTML = `<div class="text-center text-xs text-gray-500 py-8">No notes match “${escapeHtml(filter)}”</div>`;
+        return;
+    }
+
     listEl.innerHTML = filtered.map(note => `
-        <div class="notes-item ${note.id === currentSelectedNoteId ? 'active' : ''}" onclick="selectNote('${note.id}')">
+        <div class="notes-item ${note.id === currentSelectedNoteId ? 'active' : ''}" onclick="selectNote('${note.id}', true)">
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-white truncate">${note.pinned ? '<i class="fas fa-thumbtack text-[9px] text-amber-400 mr-1"></i>' : ''}${note.title}</span>
                 <span class="text-[10px] text-gray-400 shrink-0 ml-1">${note.date}</span>
@@ -1058,10 +1172,16 @@ function renderNotesList(filter = '') {
     `).join('');
 }
 
-function selectNote(noteId) {
+function selectNote(noteId, fromUser = false) {
     currentSelectedNoteId = noteId;
     const pane = document.getElementById('note-view-pane');
     if (!pane) return;
+
+    if (fromUser && !isDesktop()) {
+        const win = document.getElementById('app-notes');
+        if (win) win.classList.add('notes-detail');
+        updateNotesBackLabel();
+    }
 
     renderNotesList(document.getElementById('notes-search-input') ? document.getElementById('notes-search-input').value : '');
 
@@ -1069,7 +1189,8 @@ function selectNote(noteId) {
     if (!note) return;
 
     if (note.isScratchpad) {
-        const savedText = localStorage.getItem('ranveer_notes_scratchpad') || 'Type your notes, ideas, or feedback for Ranveer here... (Auto-saved)';
+        let savedText = '';
+        try { savedText = localStorage.getItem('ranveer_notes_scratchpad') || ''; } catch (e) { /* storage blocked */ }
         pane.innerHTML = `
             <div class="h-full flex flex-col justify-between">
                 <div class="flex items-center justify-between pb-3 border-b border-white/10">
@@ -1087,7 +1208,7 @@ function selectNote(noteId) {
                         </button>
                     </div>
                 </div>
-                <textarea id="scratchpad-textarea" class="flex-1 w-full bg-transparent p-3 text-sm text-gray-100 font-mono focus:outline-none resize-none mt-2 leading-relaxed" placeholder="Type notes here..." oninput="localStorage.setItem('ranveer_notes_scratchpad', this.value)">${savedText}</textarea>
+                <textarea id="scratchpad-textarea" class="flex-1 w-full bg-transparent p-3 text-sm text-gray-100 font-mono focus:outline-none resize-none mt-2 leading-relaxed" placeholder="Type your notes, ideas or feedback for Ranveer here… (auto-saved in this browser)" oninput="try { localStorage.setItem('ranveer_notes_scratchpad', this.value) } catch (e) {}">${escapeHtml(savedText)}</textarea>
             </div>
         `;
     } else {
@@ -1100,7 +1221,7 @@ function filterNotes(val) {
 }
 
 function createNewNote() {
-    selectNote('scratchpad');
+    selectNote('scratchpad', true);
     const ta = document.getElementById('scratchpad-textarea');
     if (ta) {
         ta.focus();
@@ -1121,7 +1242,7 @@ function clearScratchpad() {
     const ta = document.getElementById('scratchpad-textarea');
     if (ta) {
         ta.value = '';
-        localStorage.removeItem('ranveer_notes_scratchpad');
+        try { localStorage.removeItem('ranveer_notes_scratchpad'); } catch (e) { /* storage blocked */ }
         showToast('Scratchpad cleared', 'fas fa-trash');
     }
 }
@@ -1177,6 +1298,14 @@ function updateCalendarDatesDisplay(now = new Date()) {
 
     const iosCalDateEl = document.getElementById('ios-home-cal-date');
     if (iosCalDateEl) iosCalDateEl.innerText = dateNum;
+
+    // Dock / Launchpad / Finder calendar icons and the desktop calendar widget
+    document.querySelectorAll('.js-cal-day').forEach(el => { if (el.textContent !== dayShort) el.textContent = dayShort; });
+    document.querySelectorAll('.js-cal-date').forEach(el => { if (el.textContent !== String(dateNum)) el.textContent = dateNum; });
+    const wDay = document.getElementById('wcal-day');
+    if (wDay && wDay.textContent !== dayName) wDay.textContent = dayName;
+    const wDate = document.getElementById('wcal-date');
+    if (wDate && wDate.textContent !== String(dateNum)) wDate.textContent = dateNum;
 }
 
 function renderCalendarGrid() {
@@ -1336,6 +1465,25 @@ const fileSystem = {
 
 let currentDir = fileSystem;
 let currentPath = "~";
+const termHistory = [];
+let termHistoryIdx = -1;
+
+const TERMINAL_COMMANDS = ['help', 'ls', 'cd', 'cat', 'open', 'clear', 'whoami', 'neofetch', 'pwd', 'date', 'echo', 'history', 'resume', 'exit'];
+const OPEN_TARGETS = {
+    about: () => openApp('about'), projects: () => { openApp('projects'); switchProjectsView('cards', null); },
+    skills: () => openApp('skills'), contact: () => openApp('contact'), mail: () => openApp('contact'),
+    gallery: () => openApp('gallery'), photos: () => openApp('gallery'), notes: () => openApp('notes'),
+    calendar: () => openApp('calendar'), calculator: () => openApp('calculator'),
+    finder: () => openFinder('projects'), launchpad: () => openLaunchpad(), resume: () => openResume(),
+    github: () => window.open('https://github.com/Rvjais', '_blank', 'noopener'),
+    readme: () => openReadmeModal('fullstack-code-visualiser'), visualizer: () => openReadmeModal('fullstack-code-visualiser'),
+    'fullstack-code-visualiser': () => openReadmeModal('fullstack-code-visualiser'), folder: () => openFolderModal()
+};
+
+function termPrint(html, cls = 'text-gray-300 ml-3 my-1') {
+    const termOutput = document.getElementById('term-output');
+    if (termOutput) termOutput.insertAdjacentHTML('beforeend', `<div class="${cls}">${html}</div>`);
+}
 
 function executeTerminalCommand(cmdLine) {
     const termOutput = document.getElementById('term-output');
@@ -1343,9 +1491,11 @@ function executeTerminalCommand(cmdLine) {
     if (!termOutput) return;
 
     const trimmed = cmdLine.trim();
-    termOutput.innerHTML += `<div class="mt-1"><span class="text-blue-400 font-bold">guest@dev:${currentPath}$</span> <span class="text-white">${trimmed}</span></div>`;
+    termOutput.insertAdjacentHTML('beforeend', `<div class="mt-1"><span class="text-blue-400 font-bold">guest@dev:${escapeHtml(currentPath)}$</span> <span class="text-white">${escapeHtml(trimmed)}</span></div>`);
 
     if (trimmed) {
+        if (termHistory[termHistory.length - 1] !== trimmed) termHistory.push(trimmed);
+        termHistoryIdx = termHistory.length;
         processCommand(trimmed);
     }
 
@@ -1360,20 +1510,26 @@ function processCommand(cmdStr) {
     const cmd = args[0].toLowerCase();
     const arg = args[1];
 
-    switch(cmd) {
+    switch (cmd) {
         case 'help':
-            termOutput.innerHTML += `<div class="text-gray-300 ml-3 my-2 space-y-1 text-xs md:text-sm">
-                <div><span class="text-green-400 font-semibold w-20 inline-block">ls</span>- List files & directories</div>
-                <div><span class="text-green-400 font-semibold w-20 inline-block">cd</span>- Navigate directory (e.g. cd projects, cd ..)</div>
-                <div><span class="text-green-400 font-semibold w-20 inline-block">cat</span>- Read file content (e.g. cat skills.txt)</div>
-                <div><span class="text-green-400 font-semibold w-20 inline-block">open</span>- Open GUI app (e.g. open about, open contact)</div>
-                <div><span class="text-green-400 font-semibold w-20 inline-block">clear</span>- Clear terminal screen</div>
-                <div><span class="text-green-400 font-semibold w-20 inline-block">whoami</span>- Display current active user</div>
-            </div>`;
+            termPrint(`<div class="space-y-1 text-xs md:text-sm">
+                ${[
+                    ['ls', 'List files & directories'],
+                    ['cd', 'Change directory (cd projects, cd ..)'],
+                    ['cat', 'Read a file (cat skills.txt)'],
+                    ['open', 'Open an app (open finder | about | contact | resume | github)'],
+                    ['neofetch', 'System summary'],
+                    ['whoami', 'Who is Ranveer?'],
+                    ['history', 'Previously run commands'],
+                    ['clear', 'Clear the screen'],
+                    ['exit', 'Close the terminal']
+                ].map(([c, d]) => `<div><span class="text-green-400 font-semibold w-24 inline-block">${c}</span>${d}</div>`).join('')}
+                <div class="text-gray-500 pt-1">Tip: ↑/↓ recall history • Tab autocompletes</div>
+            </div>`, 'text-gray-300 ml-3 my-2');
             break;
 
-        case 'ls':
-            let output = '<div class="flex flex-wrap gap-4 ml-3 my-1">';
+        case 'ls': {
+            let output = '<div class="flex flex-wrap gap-x-4 gap-y-1">';
             for (const key in currentDir) {
                 if (typeof currentDir[key] === 'object') {
                     output += `<span class="text-blue-400 font-semibold flex items-center cursor-pointer hover:underline" onclick="runQuickCommand('cd ${key}')"><i class="fas fa-folder mr-1.5"></i>${key}/</span>`;
@@ -1381,54 +1537,99 @@ function processCommand(cmdStr) {
                     output += `<span class="text-gray-300 flex items-center cursor-pointer hover:text-white" onclick="runQuickCommand('cat ${key}')"><i class="fas fa-file-code mr-1.5 text-gray-500"></i>${key}</span>`;
                 }
             }
-            output += '</div>';
-            termOutput.innerHTML += output;
+            termPrint(output + '</div>');
             break;
+        }
 
         case 'cd':
-            if (!arg || arg === '~' || arg === '/') {
+            if (!arg || arg === '~' || arg === '/' || arg === '..') {
                 currentDir = fileSystem;
                 currentPath = "~";
                 updatePrompt();
-            } else if (arg === '..') {
-                currentDir = fileSystem;
-                currentPath = "~";
-                updatePrompt();
-            } else if (currentDir[arg] && typeof currentDir[arg] === 'object') {
-                currentDir = currentDir[arg];
-                currentPath = `~/${arg}`;
+            } else if (currentDir[arg.replace(/\/$/, '')] && typeof currentDir[arg.replace(/\/$/, '')] === 'object') {
+                const dir = arg.replace(/\/$/, '');
+                currentDir = currentDir[dir];
+                currentPath = `~/${dir}`;
                 updatePrompt();
             } else {
-                termOutput.innerHTML += `<div class="text-red-400 ml-3 my-1">cd: no such file or directory: ${arg}</div>`;
+                termPrint(`cd: no such file or directory: ${escapeHtml(arg)}`, 'text-red-400 ml-3 my-1');
             }
             break;
 
         case 'cat':
             if (!arg) {
-                termOutput.innerHTML += `<div class="text-red-400 ml-3 my-1">cat: specify a filename to view</div>`;
+                termPrint('cat: specify a filename — try <span class="text-white">ls</span> first', 'text-red-400 ml-3 my-1');
             } else if (currentDir[arg] && typeof currentDir[arg] === 'string') {
-                const formatted = currentDir[arg].replace(/\n/g, '<br>');
-                termOutput.innerHTML += `<div class="text-green-300 ml-3 my-1 border-l-2 border-emerald-500/60 pl-3 py-1 bg-white/5 rounded-r">${formatted}</div>`;
+                const formatted = escapeHtml(currentDir[arg])
+                    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" class="underline decoration-dotted hover:text-white">$1</a>')
+                    .replace(/\n/g, '<br>');
+                termPrint(formatted, 'text-green-300 ml-3 my-1 border-l-2 border-emerald-500/60 pl-3 py-1 bg-white/5 rounded-r');
             } else if (currentDir[arg] && typeof currentDir[arg] === 'object') {
-                termOutput.innerHTML += `<div class="text-yellow-400 ml-3 my-1">cat: ${arg}: Is a directory. Use 'cd ${arg}' instead.</div>`;
+                termPrint(`cat: ${escapeHtml(arg)}: Is a directory. Use 'cd ${escapeHtml(arg)}' instead.`, 'text-yellow-400 ml-3 my-1');
             } else {
-                termOutput.innerHTML += `<div class="text-red-400 ml-3 my-1">cat: ${arg}: No such file</div>`;
+                termPrint(`cat: ${escapeHtml(arg)}: No such file`, 'text-red-400 ml-3 my-1');
             }
             break;
 
-        case 'open':
-            if (['about', 'projects', 'skills', 'contact', 'gallery'].includes(arg)) {
-                openApp(arg);
-                termOutput.innerHTML += `<div class="text-blue-300 ml-3 my-1">Launching application: ${arg}...</div>`;
-            } else if (['readme', 'visualizer', 'fullstack-code-visualiser'].includes(arg)) {
-                openReadmeModal('fullstack-code-visualiser');
-                termOutput.innerHTML += `<div class="text-emerald-300 ml-3 my-1">Opening fullstack-code-visualiser README...</div>`;
-            } else if (['folder', 'projects-folder'].includes(arg)) {
-                openFolderModal();
-                termOutput.innerHTML += `<div class="text-amber-300 ml-3 my-1">Opening Projects Folder...</div>`;
+        case 'open': {
+            const target = (arg || '').toLowerCase();
+            if (OPEN_TARGETS[target]) {
+                OPEN_TARGETS[target]();
+                termPrint(`Opening ${escapeHtml(target)}…`, 'text-blue-300 ml-3 my-1');
             } else {
-                termOutput.innerHTML += `<div class="text-red-400 ml-3 my-1">open: available targets: about, projects, skills, contact, gallery, readme, folder</div>`;
+                termPrint(`open: try one of — ${Object.keys(OPEN_TARGETS).filter(k => !['mail', 'photos', 'readme', 'visualizer', 'folder'].includes(k)).join(', ')}`, 'text-red-400 ml-3 my-1');
             }
+            break;
+        }
+
+        case 'neofetch':
+            termPrint(`<div class="flex flex-col sm:flex-row gap-4 items-start">
+                <pre class="text-emerald-400 font-bold leading-tight text-[11px] m-0">   ____    _
+  |  _ \\  | |
+  | |_) |_| |
+  |  _ &lt;|_  |
+  |_| \\_\\ |_|</pre>
+                <div class="text-xs md:text-sm space-y-0.5">
+                    <div><span class="text-emerald-400 font-bold">ranveer</span>@<span class="text-emerald-400 font-bold">portfolio</span></div>
+                    <div class="text-gray-600">-------------------</div>
+                    <div><span class="text-blue-400">Role</span>: Full Stack / MERN Developer</div>
+                    <div><span class="text-blue-400">Company</span>: Branding Pioneers (Gurgaon)</div>
+                    <div><span class="text-blue-400">Stack</span>: React, Next.js, Node.js, Express, MongoDB, PostgreSQL</div>
+                    <div><span class="text-blue-400">Also</span>: React Native, Docker, AWS, Python, C++</div>
+                    <div><span class="text-blue-400">Projects</span>: 12 (1 published npm package)</div>
+                    <div><span class="text-blue-400">Contact</span>: ranveerjais9984@gmail.com</div>
+                    <div class="pt-1 flex gap-1">${['#ff5f57', '#febc2e', '#28c840', '#0a84ff', '#bf5af2', '#64d2ff'].map(c => `<span style="background:${c}" class="inline-block w-4 h-3 rounded-sm"></span>`).join('')}</div>
+                </div>
+            </div>`, 'text-gray-300 ml-3 my-2');
+            break;
+
+        case 'pwd':
+            termPrint(currentPath.replace('~', '/Users/guest'));
+            break;
+
+        case 'date':
+            termPrint(escapeHtml(new Date().toString()));
+            break;
+
+        case 'echo':
+            termPrint(escapeHtml(args.slice(1).join(' ')));
+            break;
+
+        case 'history':
+            termPrint(termHistory.map((h, i) => `<div><span class="text-gray-500 inline-block w-8">${i + 1}</span>${escapeHtml(h)}</div>`).join(''));
+            break;
+
+        case 'resume':
+            openResume();
+            termPrint('Opening ranveer_jaiswal.pdf…', 'text-blue-300 ml-3 my-1');
+            break;
+
+        case 'sudo':
+            termPrint('guest is not in the sudoers file. This incident will be reported. 😄', 'text-yellow-300 ml-3 my-1');
+            break;
+
+        case 'exit':
+            closeApp('projects');
             break;
 
         case 'clear':
@@ -1436,19 +1637,37 @@ function processCommand(cmdStr) {
             break;
 
         case 'whoami':
-            termOutput.innerHTML += `<div class="text-yellow-300 ml-3 my-1">ranveer_jaiswal (Full Stack / MERN Developer — Branding Pioneers, Gurgaon)</div>`;
+            termPrint('ranveer_jaiswal — Full Stack / MERN Developer at Branding Pioneers, Gurgaon', 'text-yellow-300 ml-3 my-1');
             break;
 
         default:
-            termOutput.innerHTML += `<div class="text-red-400 ml-3 my-1">zsh: command not found: ${cmd}. Type 'help' for available commands.</div>`;
+            termPrint(`zsh: command not found: ${escapeHtml(cmd)}. Type 'help' for available commands.`, 'text-red-400 ml-3 my-1');
+    }
+}
+
+function terminalAutocomplete(input) {
+    const value = input.value;
+    const parts = value.split(' ');
+    if (parts.length === 1) {
+        const matches = TERMINAL_COMMANDS.filter(c => c.startsWith(parts[0].toLowerCase()));
+        if (matches.length === 1) input.value = matches[0] + ' ';
+        else if (matches.length > 1) termPrint(matches.join('   '), 'text-gray-400 ml-3 my-1');
+        return;
+    }
+    const partial = parts[parts.length - 1];
+    const pool = parts[0] === 'open' ? Object.keys(OPEN_TARGETS) : Object.keys(currentDir);
+    const matches = pool.filter(k => k.startsWith(partial));
+    if (matches.length === 1) {
+        parts[parts.length - 1] = matches[0];
+        input.value = parts.join(' ');
+    } else if (matches.length > 1) {
+        termPrint(matches.join('   '), 'text-gray-400 ml-3 my-1');
     }
 }
 
 function updatePrompt() {
     const promptEl = document.getElementById('term-prompt');
-    if (promptEl) {
-        promptEl.innerHTML = `guest@dev:${currentPath}$`;
-    }
+    if (promptEl) promptEl.textContent = `guest@dev:${currentPath}$`;
 }
 
 // --- README Viewer System ---
@@ -1804,7 +2023,8 @@ python app.py
     "srchess": {
         title: "Srchess — Academy 3D Rebuild",
         subtitle: "Vite + Three.js static site",
-        npmUrl: "https://github.com/Rvjais/Srchess",
+        npmUrl: "",
+        liveUrl: "https://srchess.vercel.app/",
         githubUrl: "https://github.com/Rvjais/Srchess",
         content: `
             <h1>SR Chess Academy — 3D Rebuild</h1>
@@ -1826,7 +2046,8 @@ python app.py
     "textlens": {
         title: "TextLens — OCR-SHEET",
         subtitle: "FastAPI + PaddleOCRv5 privacy OCR",
-        npmUrl: "https://github.com/Rvjais/OCR-SHEET",
+        npmUrl: "",
+        liveUrl: "https://ocr-sheet-topaz.vercel.app",
         githubUrl: "https://github.com/Rvjais/OCR-SHEET",
         content: `
             <h1>TextLens — Privacy Image/PDF to Text</h1>
@@ -1848,7 +2069,8 @@ python app.py
     "aicrmz": {
         title: "AICRMZ — WhatsApp AI CRM",
         subtitle: "MERN + Baileys multi-tenant",
-        npmUrl: "https://github.com/Rvjais/AI-CRM",
+        npmUrl: "",
+        liveUrl: "https://in.aicrmz.com",
         githubUrl: "https://github.com/Rvjais/AI-CRM",
         content: `
             <h1>AICRMZ — AI WhatsApp Business CRM</h1>
@@ -1866,6 +2088,137 @@ python app.py
             <pre>cd AI-CRM/server\nnpm install\nnpm run dev\ncd ../client\nnpm run dev</pre>
             <p>• <strong>GitHub:</strong> <a href="https://github.com/Rvjais/AI-CRM" target="_blank" class="text-blue-400 hover:underline">Rvjais/AI-CRM</a> • Live in.aicrmz.com</p>
         `
+    },
+    "hr-buddy": {
+        title: "HR-Buddy — AI Onboarding System",
+        subtitle: "Live demo • React + Node.js",
+        npmUrl: "",
+        liveUrl: "https://hr-buddy-beta.vercel.app/",
+        githubUrl: "https://github.com/Rvjais",
+        content: `
+            <h1>HR-Buddy — AI Onboarding System</h1>
+            <p><strong>AI-driven employee onboarding quiz with an integrated anti-cheat mechanism.</strong></p>
+            <blockquote>Runs structured initial assessments of candidates before onboarding, so HR teams can screen faster and trust the results.</blockquote>
+            <h2>✨ What it does</h2>
+            <ul>
+                <li><strong>AI onboarding quiz:</strong> Structured pre-assessment of candidates prior to onboarding.</li>
+                <li><strong>Anti-cheat mechanism:</strong> Keeps the screening honest and cheat-resistant.</li>
+                <li><strong>Live and deployed:</strong> Try it at <a href="https://hr-buddy-beta.vercel.app/" target="_blank" rel="noopener" class="text-blue-400 hover:underline">hr-buddy-beta.vercel.app</a>.</li>
+            </ul>
+            <h2>🛠️ Stack</h2>
+            <p><code>React</code> <code>Node.js</code></p>
+        `
+    },
+    "srchess-platform": {
+        title: "SRChess — Interactive Chess Platform",
+        subtitle: "Live demo • React + Tailwind CSS",
+        npmUrl: "",
+        liveUrl: "https://srchess.vercel.app/",
+        githubUrl: "https://github.com/Rvjais",
+        content: `
+            <h1>SRChess — Interactive Chess Platform</h1>
+            <p><strong>Responsive, interactive chess web application built with modern React.</strong></p>
+            <h2>✨ What it does</h2>
+            <ul>
+                <li><strong>Custom piece logic:</strong> Every piece's movement rules implemented from scratch.</li>
+                <li><strong>Real-time board rendering:</strong> Smooth, responsive board that works on mobile.</li>
+                <li><strong>Move validation:</strong> Illegal moves are rejected before they reach the board.</li>
+            </ul>
+            <h2>🛠️ Stack</h2>
+            <p><code>React</code> <code>Tailwind CSS</code> <code>Game logic</code></p>
+            <p>• <strong>Live:</strong> <a href="https://srchess.vercel.app/" target="_blank" rel="noopener" class="text-blue-400 hover:underline">srchess.vercel.app</a></p>
+        `
+    },
+    "pioneeros": {
+        title: "PioneerOS — Internal Platform",
+        subtitle: "React • Next.js • Node.js • Prisma • PostgreSQL",
+        npmUrl: "",
+        githubUrl: "https://github.com/Rvjais",
+        content: `
+            <h1>PioneerOS</h1>
+            <p><strong>Multi-module internal platform for project management, messaging and dashboards.</strong></p>
+            <h2>✨ What it does</h2>
+            <ul>
+                <li><strong>Project management:</strong> One place for teams to plan and track work.</li>
+                <li><strong>Real-time messaging:</strong> Built-in team communication.</li>
+                <li><strong>Responsive dashboards:</strong> Usable on desktop and mobile.</li>
+                <li><strong>Asynchronous queue system:</strong> Keeps the platform fast with many concurrent users.</li>
+            </ul>
+            <h2>🛠️ Stack</h2>
+            <p><code>React</code> <code>Next.js</code> <code>Node.js</code> <code>Prisma</code> <code>PostgreSQL</code></p>
+        `
+    },
+    "rain-crm": {
+        title: "Rain CRM — AI WhatsApp & Calling CRM",
+        subtitle: "React • Node.js • Express • MongoDB",
+        npmUrl: "",
+        githubUrl: "https://github.com/Rvjais",
+        content: `
+            <h1>Rain CRM</h1>
+            <p><strong>Full-featured CRM with AI WhatsApp bots, in-app calling and an AI email client.</strong></p>
+            <h2>✨ What it does</h2>
+            <ul>
+                <li><strong>AI WhatsApp bots:</strong> Extract numbers from conversations straight into spreadsheets.</li>
+                <li><strong>In-app Twilio calling:</strong> Call leads without leaving the CRM.</li>
+                <li><strong>Web-form automation:</strong> Form submissions flow straight to WhatsApp.</li>
+                <li><strong>AI email client:</strong> Prioritises important messages and forwards them to WhatsApp, so leads are never missed.</li>
+            </ul>
+            <h2>🛠️ Stack</h2>
+            <p><code>React</code> <code>Node.js</code> <code>Express</code> <code>MongoDB</code> <code>Twilio</code></p>
+        `
+    },
+    "stock-mgmt": {
+        title: "Stock Management System",
+        subtitle: "C++ • Qt GUI",
+        npmUrl: "",
+        githubUrl: "https://github.com/Rvjais",
+        content: `
+            <h1>Stock Management System</h1>
+            <p><strong>A GUI-based hobby project built with the Qt library.</strong></p>
+            <h2>✨ Focus areas</h2>
+            <ul>
+                <li><strong>Object-oriented design:</strong> Clean class structure for products and inventory.</li>
+                <li><strong>Custom file handling:</strong> Stock persists between sessions without a database.</li>
+                <li><strong>Efficient data structuring:</strong> Fast lookups and updates for shop stock.</li>
+            </ul>
+            <h2>🛠️ Stack</h2>
+            <p><code>C++</code> <code>Qt</code> <code>OOP</code> <code>File I/O</code></p>
+        `
+    },
+    "shortcuts": {
+        title: "Keyboard Shortcuts",
+        subtitle: "Help • Ranveer's Mac",
+        npmUrl: "",
+        githubUrl: "",
+        content: `
+            <h1>Keyboard Shortcuts & Tips</h1>
+            <h2>⌨️ Everywhere</h2>
+            <ul>
+                <li><code>⌘ K</code> or <code>Ctrl Space</code> — Spotlight search (apps, projects, skills, resume)</li>
+                <li><code>F3</code> or <code>Ctrl ↑</code> — Mission Control</li>
+                <li><code>F4</code> — Launchpad</li>
+                <li><code>Esc</code> — Close menus, sheets and overlays</li>
+            </ul>
+            <h2>🪟 Windows</h2>
+            <ul>
+                <li>Drag the title bar to move • double-click it to zoom</li>
+                <li>Drag the bottom-right corner to resize</li>
+                <li>Yellow light minimizes to the Dock • red closes</li>
+                <li>Right-click the desktop for wallpaper, widgets and Clean Up</li>
+            </ul>
+            <h2>💻 Terminal</h2>
+            <ul>
+                <li><code>help</code>, <code>ls</code>, <code>cd projects</code>, <code>cat aicrmz.txt</code>, <code>neofetch</code>, <code>open finder</code></li>
+                <li><code>↑</code> / <code>↓</code> recall history • <code>Tab</code> autocompletes</li>
+            </ul>
+            <h2>📱 On a phone</h2>
+            <ul>
+                <li>Tap the bottom bar (or swipe up) to go Home • swipe up and hold for recent apps</li>
+                <li>Tap the status icons (top-right) for Control Center • tap the Dynamic Island</li>
+            </ul>
+            <h2>🔗 Shareable links</h2>
+            <p>Every app has its own link — e.g. <code>#about</code>, <code>#projects</code>, <code>#contact</code>, <code>#finder/skills</code> or <code>#readme/nothing-veer</code>.</p>
+        `
     }
 };
 
@@ -1876,29 +2229,38 @@ function openReadmeModal(projectId = 'fullstack-code-visualiser') {
     const bodyEl = document.getElementById('readme-body');
     const npmBtn = document.getElementById('readme-npm-btn');
     const githubBtn = document.getElementById('readme-github-btn');
+    const iconEl = document.getElementById('readme-icon');
 
-    const data = projectReadmes[projectId] || projectReadmes['fullstack-code-visualiser'];
+    if (!projectReadmes[projectId]) projectId = 'fullstack-code-visualiser';
+    const data = projectReadmes[projectId];
 
-    if (titleEl) titleEl.innerText = data.title;
-    if (subtitleEl) subtitleEl.innerText = data.subtitle;
-    if (bodyEl) bodyEl.innerHTML = data.content;
-    
+    if (titleEl) titleEl.textContent = data.title;
+    if (subtitleEl) subtitleEl.textContent = data.subtitle;
+    if (bodyEl) {
+        bodyEl.innerHTML = data.content;
+        bodyEl.scrollTop = 0;
+    }
+
+    // Header icon matches the project's app icon
+    if (iconEl) {
+        const proj = (typeof PORTFOLIO_PROJECTS !== 'undefined') && PORTFOLIO_PROJECTS.find(p => p.readme === projectId);
+        iconEl.style.background = proj ? proj.bg : 'linear-gradient(180deg,#636366,#2c2c2e)';
+        iconEl.innerHTML = `<i class="${proj ? proj.icon : (projectId === 'shortcuts' ? 'fas fa-keyboard' : 'fas fa-book-open')}"></i>`;
+    }
+
+    // Primary action: npm package, otherwise a live demo
     if (npmBtn) {
-        if (data.npmUrl) {
+        const isNpm = !!data.npmUrl && data.npmUrl.includes('npmjs');
+        const href = isNpm ? data.npmUrl : (data.liveUrl || '');
+        if (href) {
             npmBtn.style.display = 'inline-flex';
-            npmBtn.href = data.npmUrl;
-            if (data.npmLabel) {
-                npmBtn.innerHTML = data.npmLabel;
-            } else if (data.npmUrl.includes('npmjs')) {
-                npmBtn.innerHTML = '<i class="fab fa-npm mr-1.5"></i> npm';
-            } else {
-                npmBtn.innerHTML = '<i class="fas fa-external-link-alt mr-1.5"></i> Live Demo';
-            }
+            npmBtn.href = href;
+            npmBtn.innerHTML = isNpm ? '<i class="fab fa-npm"></i> <span>npm</span>' : '<i class="fas fa-arrow-up-right-from-square"></i> <span>Live Demo</span>';
         } else {
             npmBtn.style.display = 'none';
         }
     }
-    
+
     if (githubBtn) {
         if (data.githubUrl) {
             githubBtn.style.display = 'inline-flex';
@@ -1909,44 +2271,42 @@ function openReadmeModal(projectId = 'fullstack-code-visualiser') {
     }
 
     if (overlay) {
+        closeAllMenus();
         overlay.classList.add('is-active');
     }
+    setHash(`readme/${projectId}`);
+    if (typeof trackRecent === 'function' && projectId !== 'shortcuts') trackRecent(`readme:${projectId}`);
 }
 
 function closeReadmeModal() {
     const overlay = document.getElementById('readme-modal-overlay');
-    if (overlay) {
+    if (overlay && overlay.classList.contains('is-active')) {
         overlay.classList.remove('is-active');
+        setHash(focusedAppId && focusedAppId !== 'finder' ? focusedAppId : '');
     }
 }
 
-// --- iOS Folder Modal System ---
+// --- Folders: Finder windows on macOS, springboard folders on iOS ---
 function openFolderModal() {
+    if (isDesktop()) { openFinder('projects'); return; }
     const overlay = document.getElementById('folder-modal-overlay');
-    if (overlay) {
-        overlay.classList.add('is-active');
-    }
+    if (overlay) overlay.classList.add('is-active');
 }
 
 function closeFolderModal() {
     const overlay = document.getElementById('folder-modal-overlay');
-    if (overlay) {
-        overlay.classList.remove('is-active');
-    }
+    if (overlay) overlay.classList.remove('is-active');
 }
 
 function openSkillsFolderModal() {
+    if (isDesktop()) { openFinder('skills'); return; }
     const overlay = document.getElementById('skills-folder-modal-overlay');
-    if (overlay) {
-        overlay.classList.add('is-active');
-    }
+    if (overlay) overlay.classList.add('is-active');
 }
 
 function closeSkillsFolderModal() {
     const overlay = document.getElementById('skills-folder-modal-overlay');
-    if (overlay) {
-        overlay.classList.remove('is-active');
-    }
+    if (overlay) overlay.classList.remove('is-active');
 }
 
 // --- macOS & iOS Photos / Gallery System ---
@@ -2098,7 +2458,7 @@ function renderGallery() {
     }
 
     grid.innerHTML = filtered.map(item => `
-        <div class="gallery-card group" onclick="openGalleryLightbox('${item.id}')">
+        <div class="gallery-card group" onclick="openGalleryLightbox('${item.id}', 'gallery')">
             ${item.type === 'video' ? `
                 <video src="${item.src}" muted playsinline class="pointer-events-none"></video>
                 <div class="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/10 transition">
@@ -2107,10 +2467,10 @@ function renderGallery() {
                     </div>
                 </div>
             ` : `
-                <img src="${item.src}" alt="${item.title}" loading="lazy">
+                <img src="${item.src}" alt="${escapeHtml(item.title)}" loading="lazy">
             `}
             <div class="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-90 group-hover:opacity-100 transition">
-                <span class="text-xs font-semibold text-white block truncate leading-tight">${item.title}</span>
+                <span class="text-xs font-semibold text-white block truncate leading-tight">${escapeHtml(item.title)}</span>
                 <span class="text-[10px] text-gray-300 block truncate mt-0.5">${item.date || 'Uploaded'}</span>
             </div>
             ${item.isCustom ? `
@@ -2184,7 +2544,7 @@ function deleteGalleryItem(id) {
 
 function clearCustomUploads() {
     if (confirm("Reset gallery to default showcase items?")) {
-        localStorage.removeItem('ranveer_gallery_uploads');
+        try { localStorage.removeItem('ranveer_gallery_uploads'); } catch (e) { /* storage blocked */ }
         galleryItems = [...initialGalleryItems];
         renderGallery();
         showToast("Gallery reset to default.", "fas fa-undo");
@@ -2218,33 +2578,58 @@ function setupGalleryDragDrop() {
     });
 }
 
-function openGalleryLightbox(itemId) {
+let lightboxList = [];
+let lightboxIndex = 0;
+
+// context 'gallery' = current Photos filter; otherwise siblings sharing the id prefix (e.g. proj-veer-*)
+function openGalleryLightbox(itemId, context) {
     const item = galleryItems.find(i => i.id === itemId);
     if (!item) return;
 
-    const overlay = document.getElementById('gallery-lightbox');
-    const container = document.getElementById('lightbox-container');
-    if (!overlay || !container) return;
-
-    if (item.type === 'video') {
-        container.innerHTML = `
-            <video src="${item.src}" controls autoplay class="max-h-[75vh] max-w-full rounded-t-xl bg-black"></video>
-            <div class="p-4 bg-[#181920] w-full text-left border-t border-white/10">
-                <h3 class="text-sm font-bold text-white">${item.title}</h3>
-                <p class="text-xs text-gray-400 mt-1">${item.desc}</p>
-            </div>
-        `;
+    if (context === 'gallery') {
+        lightboxList = galleryItems.filter(i => currentGalleryFilter === 'all' || (currentGalleryFilter === 'photos' ? i.type === 'photo' : i.type === 'video'));
     } else {
-        container.innerHTML = `
-            <img src="${item.src}" alt="${item.title}" class="max-h-[75vh] max-w-full object-contain rounded-t-xl bg-black">
-            <div class="p-4 bg-[#181920] w-full text-left border-t border-white/10">
-                <h3 class="text-sm font-bold text-white">${item.title}</h3>
-                <p class="text-xs text-gray-400 mt-1">${item.desc}</p>
-            </div>
-        `;
+        const prefix = itemId.replace(/-\d+$/, '-');
+        lightboxList = galleryItems.filter(i => i.id.startsWith(prefix));
+        if (!lightboxList.length) lightboxList = [item];
     }
+    lightboxIndex = Math.max(0, lightboxList.findIndex(i => i.id === itemId));
+    renderLightboxItem();
 
-    overlay.classList.add('is-active');
+    const overlay = document.getElementById('gallery-lightbox');
+    if (overlay) overlay.classList.add('is-active');
+}
+
+function renderLightboxItem() {
+    const container = document.getElementById('lightbox-container');
+    const counter = document.getElementById('lightbox-counter');
+    const item = lightboxList[lightboxIndex];
+    if (!container || !item) return;
+
+    const media = item.type === 'video'
+        ? `<video src="${item.src}" controls autoplay playsinline class="max-h-[72vh] max-w-full rounded-t-xl bg-black"></video>`
+        : `<img src="${item.src}" alt="${escapeHtml(item.title)}" class="max-h-[72vh] max-w-full object-contain rounded-t-xl bg-black">`;
+    container.innerHTML = `
+        ${media}
+        <div class="p-4 bg-[#1c1c1f] w-full text-left border-t border-white/10">
+            <h3 class="text-sm font-bold text-white">${escapeHtml(item.title)}</h3>
+            <p class="text-xs text-gray-400 mt-1">${escapeHtml(item.desc)}</p>
+        </div>`;
+
+    const multi = lightboxList.length > 1;
+    document.querySelectorAll('#gallery-lightbox .lightbox-nav').forEach(b => { b.style.display = multi ? '' : 'none'; });
+    if (counter) {
+        counter.textContent = multi ? `${lightboxIndex + 1} of ${lightboxList.length}` : '';
+        counter.style.display = multi ? '' : 'none';
+    }
+}
+
+function stepLightbox(delta) {
+    if (lightboxList.length < 2) return;
+    const vid = document.querySelector('#lightbox-container video');
+    if (vid) vid.pause();
+    lightboxIndex = (lightboxIndex + delta + lightboxList.length) % lightboxList.length;
+    renderLightboxItem();
 }
 
 function closeGalleryLightbox() {
@@ -2262,38 +2647,80 @@ function closeGalleryLightbox() {
 
 
 // --- Initialize Event Listeners on DOM Load ---
+function handleCalculatorKey(e) {
+    const k = e.key;
+    if (k >= '0' && k <= '9') handleCalcDigit(k);
+    else if (k === '.' || k === ',') handleCalcDigit('.');
+    else if (k === '+' || k === '-' || k === '/') handleCalcOp(k);
+    else if (k === '*' || k === 'x' || k === 'X') handleCalcOp('*');
+    else if (k === 'Enter' || k === '=') handleCalcEqual();
+    else if (k === '%') handleCalcPercent();
+    else if (k === 'Backspace') {
+        calcCurrent = (calcCurrent.length > 1 && calcCurrent !== 'Error') ? calcCurrent.slice(0, -1) : '0';
+        updateCalcDisplay();
+    } else if (k === 'c' || k === 'C' || k === 'Delete') handleCalcClear();
+    else return false;
+    return true;
+}
+
+// Escape closes the top-most transient layer (never app windows)
+function handleEscape() {
+    const lightbox = document.getElementById('gallery-lightbox');
+    if (lightbox && lightbox.classList.contains('is-active')) { closeGalleryLightbox(); return; }
+    const menuOpen = document.querySelector('#mb-dropdown.is-open, #ctx-menu.is-open');
+    if (menuOpen) { closeAllMenus(); return; }
+    closeSpotlight();
+    closeReadmeModal();
+    closeFolderModal();
+    closeSkillsFolderModal();
+    closeMissionControl();
+    closeLaunchpad();
+    closeIosAppSwitcher();
+    closeControlCenter();
+    closeAboutThisMac();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Setup desktop window dragging & resizing
     setupWindowDragging();
     setupWindowResizing();
     setupDesktopIconDragging();
     initGallery();
 
-    // Setup terminal keyboard listener
+    // Terminal: Enter runs • ↑/↓ history • Tab completes
     const termInput = document.getElementById('term-input');
     if (termInput) {
-        termInput.addEventListener('keydown', function(e) {
+        termInput.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 const cmd = this.value;
                 this.value = '';
                 executeTerminalCommand(cmd);
+            } else if (e.key === 'ArrowUp' && termHistory.length) {
+                e.preventDefault();
+                termHistoryIdx = Math.max(0, termHistoryIdx - 1);
+                this.value = termHistory[termHistoryIdx] || '';
+            } else if (e.key === 'ArrowDown' && termHistory.length) {
+                e.preventDefault();
+                termHistoryIdx = Math.min(termHistory.length, termHistoryIdx + 1);
+                this.value = termHistory[termHistoryIdx] || '';
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                terminalAutocomplete(this);
             }
         });
     }
 
-    // Spotlight Input listener
+    // Spotlight input
     const spotlightInput = document.getElementById('spotlight-input');
     if (spotlightInput) {
-        spotlightInput.addEventListener('input', function() {
+        spotlightInput.addEventListener('input', function () {
             selectedSpotlightIndex = 0;
             renderSpotlightResults(this.value);
         });
-
-        spotlightInput.addEventListener('keydown', function(e) {
-            const results = document.querySelectorAll('.spotlight-result-item');
+        spotlightInput.addEventListener('keydown', function (e) {
+            const count = getSpotlightMatches(this.value).length;
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                selectedSpotlightIndex = Math.min(results.length - 1, selectedSpotlightIndex + 1);
+                selectedSpotlightIndex = Math.min(count - 1, selectedSpotlightIndex + 1);
                 updateSpotlightSelection();
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
@@ -2303,140 +2730,93 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 executeSpotlightAction(selectedSpotlightIndex);
             } else if (e.key === 'Escape') {
+                e.stopPropagation();
                 closeSpotlight();
             }
         });
     }
 
-    function updateSpotlightSelection() {
-        const items = document.querySelectorAll('.spotlight-result-item');
-        items.forEach((item, idx) => {
-            if (idx === selectedSpotlightIndex) {
-                item.classList.add('selected');
-                item.scrollIntoView({ block: 'nearest' });
-            } else {
-                item.classList.remove('selected');
-            }
-        });
-        const input = document.getElementById('spotlight-input');
-        const query = input ? input.value.toLowerCase().trim() : '';
-        const filtered = searchIndex.filter(item => {
-            if (!query) return true;
-            return item.title.toLowerCase().includes(query) || 
-                   item.desc.toLowerCase().includes(query) || 
-                   item.category.toLowerCase().includes(query) ||
-                   (item.tech && item.tech.some(t => t.toLowerCase().includes(query)));
-        }).slice(0, 8);
-        if (filtered[selectedSpotlightIndex]) {
-            renderSpotlightPreview(filtered[selectedSpotlightIndex]);
-        }
-    }
-
-    // Global keyboard shortcut for Spotlight, Calculator, and Escape for modals
+    // Global keyboard shortcuts
     document.addEventListener('keydown', (e) => {
-        // Calculator keyboard handler
-        const calcApp = document.getElementById('app-calculator');
-        if (calcApp && calcApp.classList.contains('is-open')) {
-            if (e.key >= '0' && e.key <= '9') {
-                e.preventDefault();
-                handleCalcDigit(e.key);
-                return;
-            } else if (e.key === '.') {
-                e.preventDefault();
-                handleCalcDigit('.');
-                return;
-            } else if (e.key === '+') {
-                e.preventDefault();
-                handleCalcOp('+');
-                return;
-            } else if (e.key === '-') {
-                e.preventDefault();
-                handleCalcOp('-');
-                return;
-            } else if (e.key === '*' || e.key === 'x' || e.key === 'X') {
-                e.preventDefault();
-                handleCalcOp('*');
-                return;
-            } else if (e.key === '/') {
-                e.preventDefault();
-                handleCalcOp('/');
-                return;
-            } else if (e.key === 'Enter' || e.key === '=') {
-                e.preventDefault();
-                handleCalcEqual();
-                return;
-            } else if (e.key === 'Backspace') {
-                e.preventDefault();
-                if (calcCurrent.length > 1 && calcCurrent !== 'Error') {
-                    calcCurrent = calcCurrent.slice(0, -1);
-                } else {
-                    calcCurrent = '0';
-                }
-                updateCalcDisplay();
-                return;
-            } else if (e.key === 'c' || e.key === 'C') {
-                handleCalcClear();
-                return;
-            }
+        const typing = e.target && e.target.closest && e.target.closest('input, textarea, select, [contenteditable="true"]');
+
+        const lock = document.getElementById('lock-screen');
+        if (lock && lock.classList.contains('is-active')) {
+            e.preventDefault();
+            unlockScreen();
+            return;
+        }
+
+        const lightbox = document.getElementById('gallery-lightbox');
+        if (lightbox && lightbox.classList.contains('is-active') && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+            e.preventDefault();
+            stepLightbox(e.key === 'ArrowLeft' ? -1 : 1);
+            return;
         }
 
         if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K' || e.code === 'Space')) {
             e.preventDefault();
             toggleSpotlight();
-        } else if (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27) {
-            closeSpotlight();
-            closeReadmeModal();
-            closeFolderModal();
-            closeSkillsFolderModal();
-            closeGalleryLightbox();
-            closeMissionControl();
-            closeIosAppSwitcher();
-            closeAppleMenu();
-            closeControlCenter();
-            closeAboutThisMac();
-            closeApp('calculator');
-            closeApp('notes');
-            closeApp('calendar');
+            return;
+        }
+
+        if (e.key === 'F4') {
+            e.preventDefault();
+            toggleLaunchpad();
+            return;
+        }
+
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            handleEscape();
+            return;
+        }
+
+        // Calculator keys only when Calculator is the focused window and nothing else has focus
+        const calcApp = document.getElementById('app-calculator');
+        if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey && focusedAppId === 'calculator' && calcApp && calcApp.classList.contains('is-open')) {
+            if (handleCalculatorKey(e)) e.preventDefault();
+            return;
+        }
+
+        // Finder: Enter opens the selected item
+        if (!typing && focusedAppId === 'finder' && e.key === 'Enter' && finderState.selected) {
+            e.preventDefault();
+            finderOpen(finderState.selected);
         }
     });
 
-    // Outside click to close macOS 26 Tahoe Apple Menu and Control Center
-    document.addEventListener('click', (e) => {
-        const appleMenu = document.getElementById('macos-apple-menu');
-        if (appleMenu && appleMenu.classList.contains('is-open')) {
-            if (!e.target.closest('#macos-apple-menu') && !e.target.closest('.fa-apple')) {
-                closeAppleMenu();
-            }
-        }
+    // Outside click closes menus and Control Center
+    document.addEventListener('mousedown', (e) => {
+        if (!e.target.closest('#mb-dropdown, #ctx-menu, #mac-menubar .mb-item')) closeAllMenus();
         const cc = document.getElementById('macos-control-center');
-        if (cc && cc.classList.contains('is-open')) {
-            if (!e.target.closest('#macos-control-center') && !e.target.closest('#mac-control-center-btn') && !e.target.closest('#mac-clock')) {
-                closeControlCenter();
-            }
+        if (cc && cc.classList.contains('is-open') && !e.target.closest('#macos-control-center, #mac-control-center-btn, #mac-menubar .mb-status')) {
+            closeControlCenter();
         }
     });
 
-    // Initialize authentic gestures
     initIosHomeGestures();
     initDesktopMissionControlGestures();
-
-    // Initialize macOS 26 Tahoe Physics Dock
     initMacOSDock();
-
-    // Initialize iOS 18 Control Center Vertical Sliders
     initIosControlCenterSliders();
+    initMenubar();
+    initWidgets();
+    initFinder();
+    renderWallpaperThumbs();
+    restoreWallpaper();
 
-    // Initialize Tahoe Calendar dates & monthly grid
     if (typeof updateCalendarDatesDisplay === 'function') updateCalendarDatesDisplay();
     if (typeof renderCalendarGrid === 'function') renderCalendarGrid();
 
-    // Ensure all overlays and dropdowns are strictly closed on initial page load
+    // Ensure every overlay starts closed
     closeMissionControl();
     closeIosAppSwitcher();
     closeSkillsFolderModal();
-    closeAppleMenu();
+    closeAllMenus();
     closeControlCenter();
     closeAboutThisMac();
+
+    window.addEventListener('hashchange', handleDeepLink);
+    runBootSequence();
 });
 
 // ==========================================================================
@@ -2499,6 +2879,13 @@ const APP_METADATA = {
         icon: 'far fa-calendar-alt',
         iconColor: 'bg-gradient-to-b from-red-500 to-rose-600 text-white',
         badge: 'Tahoe Calendar'
+    },
+    'finder': {
+        title: 'Finder',
+        subtitle: 'Projects, Skills & Documents',
+        icon: 'fas fa-folder-open',
+        iconColor: 'bg-gradient-to-b from-sky-400 to-blue-600 text-white',
+        badge: 'Files'
     }
 };
 
@@ -3056,6 +3443,19 @@ function renderIosSwitcherCards() {
                     </div>
                 </div>
             `;
+        } else if (appId === 'finder') {
+            previewHtml = `
+                <div class="h-full flex flex-col bg-[#f5f5f7] text-gray-900 pt-8 px-3.5 pb-3 select-none text-left">
+                    <div class="text-lg font-bold px-1">Projects</div>
+                    <div class="grid grid-cols-3 gap-3 mt-3">
+                        ${(typeof PORTFOLIO_PROJECTS !== 'undefined' ? PORTFOLIO_PROJECTS.slice(0, 9) : []).map(p => `
+                            <div class="flex flex-col items-center gap-1">
+                                <div class="app-icon" style="width:44px;height:44px;background:${p.bg}"><i class="${p.icon}"></i></div>
+                                <span class="text-[9px] text-gray-700 truncate max-w-full">${escapeHtml(p.name)}</span>
+                            </div>`).join('')}
+                    </div>
+                </div>
+            `;
         } else {
             // Apple Photos Gallery
             previewHtml = `
@@ -3369,6 +3769,13 @@ function renderMissionControlTiles() {
                 <p class="text-xs text-gray-300/80 max-w-md mt-1">No applications are open in this space. Click any app below to launch into your workspace:</p>
                 
                 <div class="tahoe-mc-app-grid">
+                    <div class="tahoe-mc-app-item" onclick="event.stopPropagation(); toggleMissionControl(false); openFinder('projects')">
+                        <div class="tahoe-mc-app-icon bg-gradient-to-b from-sky-400 to-blue-600">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <span class="tahoe-mc-app-label">Finder</span>
+                        <span class="tahoe-mc-app-sub">Projects</span>
+                    </div>
                     <div class="tahoe-mc-app-item" onclick="event.stopPropagation(); toggleMissionControl(false); openApp('about')">
                         <div class="tahoe-mc-app-icon bg-gradient-to-tr from-sky-400 to-blue-600">
                             <i class="fab fa-safari"></i>
@@ -3705,6 +4112,21 @@ function renderMissionControlTiles() {
                     <span class="text-red-400 font-semibold">Click to focus &rarr;</span>
                 </div>
             `;
+        } else if (appId === 'finder') {
+            body.className += ' bg-[#f5f5f7] text-gray-900';
+            bodyHtml = `
+                <div class="grid grid-cols-6 gap-3">
+                    ${(typeof PORTFOLIO_PROJECTS !== 'undefined' ? PORTFOLIO_PROJECTS : []).map(p => `
+                        <div class="flex flex-col items-center gap-1 min-w-0">
+                            <div class="app-icon" style="width:46px;height:46px;background:${p.bg}"><i class="${p.icon}"></i></div>
+                            <span class="text-[10px] text-gray-700 truncate max-w-full">${escapeHtml(p.name)}</span>
+                        </div>`).join('')}
+                </div>
+                <div class="flex items-center justify-between pt-2 border-t border-black/10 text-xs text-gray-500">
+                    <span>${typeof PORTFOLIO_PROJECTS !== 'undefined' ? PORTFOLIO_PROJECTS.length : 12} items</span>
+                    <span class="text-blue-600 font-semibold">Click to focus &rarr;</span>
+                </div>
+            `;
         } else {
             body.className += ' bg-gradient-to-b from-[#181a24] to-[#0f1118] text-white';
             bodyHtml = `
@@ -3763,22 +4185,12 @@ function initDesktopMissionControlGestures() {
         }
     }, { passive: true });
 
-    // Keyboard shortcuts: F3 or Ctrl+ArrowUp or Cmd+ArrowUp, and unconditional Escape
+    // Keyboard shortcuts: F3 or Ctrl/Cmd+ArrowUp toggles; ArrowDown exits (Escape is handled globally)
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'F3' || ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp')) {
+        const typing = e.target && e.target.closest && e.target.closest('input, textarea');
+        if (e.key === 'F3' || ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp' && !typing)) {
             e.preventDefault();
             toggleMissionControl();
-        } else if (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27) {
-            closeMissionControl();
-            closeIosAppSwitcher();
-            closeSkillsFolderModal();
-            closeFolderModal();
-            closeReadmeModal();
-            closeGalleryLightbox();
-            closeSpotlight();
-            closeAppleMenu();
-            closeControlCenter();
-            closeAboutThisMac();
         } else if (isMissionControlOpen && (e.key === 'ArrowDown' || ((e.ctrlKey || e.metaKey) && e.key === 'ArrowDown'))) {
             e.preventDefault();
             closeMissionControl();
@@ -3787,357 +4199,562 @@ function initDesktopMissionControlGestures() {
 }
 
 // ==========================================================================
-// macOS 26 Tahoe Interactive Physics Dock (React-ported Cosine Magnification)
+// macOS Dock • Menu bar • Finder • Launchpad • Widgets • System chrome
 // ==========================================================================
 
-const macDockApps = [
-    {
-        id: "about",
-        name: "Finder",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/finder-2021-09-10.png?rf=1024",
-        action: () => openApp('about')
-    },
-    {
-        id: "projects",
-        name: "Terminal",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/terminal-2021-06-03.png?rf=1024",
-        action: () => openApp('projects')
-    },
-    {
-        id: "nothing-veer",
-        name: "Veer Music",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/music-2021-05-25.png?rf=1024",
-        action: () => openReadmeModal('nothing-veer')
-    },
-    {
-        id: "skills",
-        name: "System Settings",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/system-preferences-2021-05-25.png?rf=1024",
-        action: () => openSkillsFolderModal()
-    },
-    {
-        id: "calculator",
-        name: "Calculator",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/calculator-2021-04-29.png?rf=1024",
-        action: () => openApp('calculator')
-    },
-    {
-        id: "contact",
-        name: "Mail",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/mail-2021-05-25.png?rf=1024",
-        action: () => openApp('contact')
-    },
-    {
-        id: "gallery",
-        name: "Photos",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/photos-2021-05-28.png?rf=1024",
-        action: () => openApp('gallery')
-    },
-    {
-        id: "srchess",
-        name: "Safari",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/safari-2021-06-02.png?rf=1024",
-        action: () => window.open('https://srchess.vercel.app/', '_blank')
-    },
-    {
-        id: "notes",
-        name: "Notes",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/notes-2021-05-25.png?rf=1024",
-        action: () => openApp('notes')
-    },
-    {
-        id: "calendar",
-        name: "Calendar",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/calendar-2021-04-29.png?rf=1024",
-        action: () => openApp('calendar')
-    },
-    {
-        id: "folder",
-        name: "Projects",
-        icon: "https://cdn.jim-nielsen.com/macos/1024/launchpad-2021-05-25.png?rf=1024",
-        action: () => openFolderModal()
-    }
+// ---------- Portfolio data (single source for Finder, Launchpad, menus, widgets) ----------
+const PORTFOLIO_PROJECTS = [
+    { id: 'fullstack-code-visualiser', name: 'Code Visualiser', kind: 'npm package • CLI', icon: 'fab fa-npm', bg: 'linear-gradient(180deg,#f87171,#be123c)', tags: ['npm', 'React', 'Node.js', 'Express', 'MongoDB'], desc: 'Published npm CLI that parses ASTs and live traffic to map UI → API → database as an interactive graph.', readme: 'fullstack-code-visualiser', npm: 'https://www.npmjs.com/package/fullstack-code-visualiser', repo: 'https://github.com/Rvjais/fullstack-code-visualiser', featured: true },
+    { id: 'hr-buddy', name: 'HR-Buddy', kind: 'Web app • Live', icon: 'fas fa-user-check', bg: 'linear-gradient(180deg,#fbbf24,#ea580c)', tags: ['React', 'Node.js', 'AI'], desc: 'AI-driven onboarding quiz with an anti-cheat mechanism for structured candidate pre-assessment.', readme: 'hr-buddy', live: 'https://hr-buddy-beta.vercel.app/', repo: 'https://github.com/Rvjais' },
+    { id: 'nothing-veer', name: 'Veer Music', kind: 'Mobile app • Expo', icon: 'fas fa-record-vinyl', bg: 'linear-gradient(180deg,#3f3f46,#991b1b)', tags: ['React Native', 'Mobile', 'Node.js'], desc: 'Nothing OS-style YouTube Music client with a vinyl player, synced LRC lyrics and a smart offline cache.', readme: 'nothing-veer', repo: 'https://github.com/Rvjais/Nothing-Veer', featured: true },
+    { id: 'aicrmz', name: 'AICRMZ', kind: 'SaaS • WhatsApp CRM', icon: 'fab fa-whatsapp', bg: 'linear-gradient(180deg,#4ade80,#047857)', tags: ['React', 'Node.js', 'Express', 'MongoDB', 'AI', 'Mobile'], desc: 'Multi-tenant WhatsApp CRM via QR with AI auto-replies, sentiment, campaigns and voice follow-ups.', readme: 'aicrmz', live: 'https://in.aicrmz.com', repo: 'https://github.com/Rvjais/AI-CRM', featured: true },
+    { id: 'ranveer-echo', name: 'Ranveer H.U.D.', kind: 'Desktop app • Tauri', icon: 'fas fa-robot', bg: 'linear-gradient(180deg,#22d3ee,#1e40af)', tags: ['Tauri', 'Rust', 'Python', 'AI'], desc: 'Jarvis-style desktop assistant: voice wake-word, face & hand gestures, SQLite memory and PC control.', readme: 'ranveer-echo', repo: 'https://github.com/Rvjais/Ranveer_Echo' },
+    { id: 'web-ripper', name: 'WebRip', kind: 'Web tool • Python', icon: 'fas fa-spider', bg: 'linear-gradient(180deg,#2dd4bf,#047857)', tags: ['Python', 'Playwright', 'Flask'], desc: 'BFS crawler that clones websites — including SPAs — into offline ZIP archives with live SSE progress.', readme: 'web-ripper', repo: 'https://github.com/Rvjais/Web-Scrapper' },
+    { id: 'textlens', name: 'TextLens', kind: 'Web app • OCR', icon: 'fas fa-file-lines', bg: 'linear-gradient(180deg,#818cf8,#6d28d9)', tags: ['Python', 'FastAPI', 'Docker', 'AI'], desc: 'Privacy-first batch OCR for images and PDFs with handwriting support and invoice-to-table extraction.', readme: 'textlens', live: 'https://ocr-sheet-topaz.vercel.app', repo: 'https://github.com/Rvjais/OCR-SHEET' },
+    { id: 'srchess-platform', name: 'SRChess', kind: 'Web app • Live', icon: 'fas fa-chess-knight', bg: 'linear-gradient(180deg,#a855f7,#4338ca)', tags: ['React', 'Tailwind'], desc: 'Responsive chess web app with custom piece logic, real-time board rendering and move validation.', readme: 'srchess-platform', live: 'https://srchess.vercel.app/', repo: 'https://github.com/Rvjais' },
+    { id: 'srchess', name: 'SR Chess 3D', kind: 'Website • Three.js', icon: 'fas fa-chess-board', bg: 'linear-gradient(180deg,#f59e0b,#6b21a8)', tags: ['Vite', 'Three.js'], desc: '25-page chess academy rebuild with a Three.js 3D hero, coach slider, shop cart and quiz.', readme: 'srchess', live: 'https://srchess.vercel.app/', repo: 'https://github.com/Rvjais/Srchess' },
+    { id: 'pioneeros', name: 'PioneerOS', kind: 'Internal platform', icon: 'fas fa-desktop', bg: 'linear-gradient(180deg,#38bdf8,#1d4ed8)', tags: ['React', 'Next.js', 'Node.js', 'Prisma', 'PostgreSQL'], desc: 'Multi-module internal platform with project management, real-time messaging, dashboards and a queue system.', readme: 'pioneeros', repo: 'https://github.com/Rvjais' },
+    { id: 'rain-crm', name: 'Rain CRM', kind: 'CRM suite', icon: 'fas fa-users-gear', bg: 'linear-gradient(180deg,#34d399,#0f766e)', tags: ['React', 'Node.js', 'Express', 'MongoDB', 'AI'], desc: 'CRM with AI WhatsApp bots, in-app Twilio calling, web-form automation and an AI email client.', readme: 'rain-crm', repo: 'https://github.com/Rvjais' },
+    { id: 'stock-mgmt', name: 'Stock Manager', kind: 'Desktop app • Qt', icon: 'fas fa-boxes-stacked', bg: 'linear-gradient(180deg,#0891b2,#1e3a8a)', tags: ['C++', 'Qt'], desc: 'Qt GUI stock management app focused on OOP, file handling and efficient data structures.', readme: 'stock-mgmt', repo: 'https://github.com/Rvjais' }
 ];
 
-let dockMouseX = null;
-let dockCurrentScales = macDockApps.map(() => 1);
-let dockCurrentPositions = [];
-let dockAnimFrame = null;
-let dockLastMouseMoveTime = 0;
-let dockLastAppliedWidth = 0;
-let dockConfig = { baseIconSize: 64, maxScale: 1.8, effectWidth: 300 };
+const SKILLS_LIST = [
+    { name: 'JavaScript', icon: 'devicon-javascript-plain colored', group: 'Language', level: 'Advanced', desc: 'Modern ES6+, async/await and the event loop — behind every project here.', match: ['React', 'Node.js'] },
+    { name: 'TypeScript', icon: 'devicon-typescript-plain colored', group: 'Language', level: '', desc: 'Type safety, interfaces and generics.' },
+    { name: 'Python', icon: 'devicon-python-plain colored', group: 'Language', level: 'Intermediate', desc: 'Scripting, automation and AI tooling.', match: ['Python'] },
+    { name: 'C++', icon: 'devicon-cplusplus-plain colored', group: 'Language', level: 'Proficient', desc: 'OOP, data structures and Qt desktop GUIs.', match: ['C++'] },
+    { name: 'Java', icon: 'devicon-java-plain colored', group: 'Language', level: 'Proficient', desc: 'OOP and software architecture.' },
+    { name: 'PHP', icon: 'devicon-php-plain colored', group: 'Language', level: 'Proficient', desc: 'Backend development for client websites.' },
+    { name: 'React', icon: 'devicon-react-original colored', group: 'Framework', level: 'Advanced', desc: 'Components, hooks and state management.', match: ['React'] },
+    { name: 'Next.js', icon: 'devicon-nextjs-plain', group: 'Framework', level: 'Advanced', desc: 'SSR, SSG, the App Router and full-stack apps.', match: ['Next.js'] },
+    { name: 'Node.js', icon: 'devicon-nodejs-plain colored', group: 'Runtime', level: 'Advanced', desc: 'REST APIs, microservices and authentication.', match: ['Node.js'] },
+    { name: 'Express', icon: 'devicon-express-original', group: 'Framework', level: 'Advanced', desc: 'REST APIs and middleware.', match: ['Express'] },
+    { name: 'React Native', icon: 'devicon-react-original colored', group: 'Mobile', level: 'Proficient', desc: 'Cross-platform iOS & Android apps — plus Ionic.', match: ['React Native', 'Mobile'] },
+    { name: 'Tailwind CSS', icon: 'devicon-tailwindcss-original colored', group: 'Styling', level: 'Advanced', desc: 'Responsive UI systems (and Bootstrap).', match: ['Tailwind'] },
+    { name: 'Astro', icon: 'devicon-astro-plain', group: 'Framework', level: 'Proficient', desc: 'Content-driven client websites.' },
+    { name: 'MongoDB', icon: 'devicon-mongodb-plain colored', group: 'Database', level: 'Advanced', desc: 'NoSQL documents, aggregations and Mongoose schemas.', match: ['MongoDB'] },
+    { name: 'PostgreSQL', icon: 'devicon-postgresql-plain colored', group: 'Database', level: 'Advanced', desc: 'Relational modelling, complex queries and joins.', match: ['PostgreSQL'] },
+    { name: 'Prisma', icon: 'devicon-prisma-original', group: 'ORM', level: 'Advanced', desc: 'Type-safe ORM and schema migrations.', match: ['Prisma'] },
+    { name: 'Docker', icon: 'devicon-docker-plain colored', group: 'DevOps', level: 'Advanced', desc: 'Containerization, Dockerfiles and Compose.', match: ['Docker'] },
+    { name: 'AWS', icon: 'devicon-amazonwebservices-plain-wordmark colored', bg: 'linear-gradient(180deg,#ffffff,#e5e5ea)', group: 'Cloud', level: 'Proficient', desc: 'EC2, S3, Lambda and CloudFront.' },
+    { name: 'Git & GitHub', icon: 'devicon-git-plain colored', group: 'Tools', level: 'Advanced', desc: 'Version control, CI/CD and code reviews — plus Postman for APIs.' },
+    { name: 'Twilio & WhatsApp', icon: 'devicon-twilio-original colored', bg: 'linear-gradient(180deg,#ffffff,#e5e5ea)', group: 'Automation', level: 'Advanced', desc: 'Calling, WhatsApp bots and Google Apps Script automation.' },
+    { name: 'AST Tooling', icon: 'devicon-babel-plain colored', group: 'Tools', level: '', desc: 'Babel parser for codebase mapping.', match: ['npm'] }
+];
 
-function getDockResponsiveConfig() {
-    const smallerDimension = Math.min(window.innerWidth, window.innerHeight);
-    if (smallerDimension < 480) {
-        return {
-            baseIconSize: Math.max(40, smallerDimension * 0.08),
-            maxScale: 1.4,
-            effectWidth: smallerDimension * 0.4
-        };
-    }
-    if (smallerDimension < 768) {
-        return {
-            baseIconSize: Math.max(48, smallerDimension * 0.07),
-            maxScale: 1.5,
-            effectWidth: smallerDimension * 0.35
-        };
-    }
-    if (smallerDimension < 1024) {
-        return {
-            baseIconSize: Math.max(56, smallerDimension * 0.06),
-            maxScale: 1.6,
-            effectWidth: smallerDimension * 0.3
-        };
-    }
-    return {
-        baseIconSize: Math.max(60, Math.min(76, smallerDimension * 0.05)),
-        maxScale: 1.75,
-        effectWidth: 280
-    };
+const PORTFOLIO_APPS = [
+    { id: 'finder', name: 'Finder', icon: 'finder', desc: 'Browse projects, skills and documents.', open: () => openFinder('projects') },
+    { id: 'about', name: 'About Me', icon: 'safari', desc: 'Profile, experience and education.', open: () => openApp('about') },
+    { id: 'projects', name: 'Terminal', icon: 'terminal', desc: 'devOS shell — try help, ls, neofetch.', open: () => { openApp('projects'); switchProjectsView('terminal', null); } },
+    { id: 'cards', name: 'Project Cards', icon: 'cards', desc: 'Every project with demos and repos.', open: () => { openApp('projects'); switchProjectsView('cards', null); } },
+    { id: 'contact', name: 'Mail', icon: 'mail', desc: 'Send Ranveer a message.', open: () => openApp('contact') },
+    { id: 'notes', name: 'Notes', icon: 'notes', desc: 'Engineering notes and a scratchpad.', open: () => openApp('notes') },
+    { id: 'calendar', name: 'Calendar', icon: 'calendar', desc: 'Month view with a sample dev agenda.', open: () => openApp('calendar') },
+    { id: 'gallery', name: 'Photos', icon: 'photos', desc: 'Project screenshots and media.', open: () => openApp('gallery') },
+    { id: 'music', name: 'Veer Music', icon: 'music', desc: 'The Nothing OS-style music app.', open: () => openReadmeModal('nothing-veer') },
+    { id: 'calculator', name: 'Calculator', icon: 'calculator', desc: 'Keyboard-friendly calculator.', open: () => openApp('calculator') },
+    { id: 'skills', name: 'System Settings', icon: 'settings', desc: 'Skill levels by category.', open: () => openApp('skills') }
+];
+
+// ---------- Helpers ----------
+function openResume() {
+    window.open('ranveer_jaiswal.pdf', '_blank', 'noopener');
+    trackRecent('doc:resume');
 }
 
-function calculateTargetMagnification(mousePosition, appsCount, baseIconSize, baseSpacing, effectWidth, maxScale, minScale) {
-    if (mousePosition === null) {
-        return Array(appsCount).fill(minScale);
+function copyText(text, okMsg) {
+    const done = () => notify({ title: 'Copied', body: okMsg || text, icon: 'fas fa-check' });
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done).catch(() => notify({ title: 'Copy this', body: text, icon: 'fas fa-copy', duration: 8000 }));
+    } else {
+        notify({ title: 'Copy this', body: text, icon: 'fas fa-copy', duration: 8000 });
     }
-    return Array.from({ length: appsCount }, (_, index) => {
-        const normalIconCenter = index * (baseIconSize + baseSpacing) + baseIconSize / 2;
-        const minX = mousePosition - effectWidth / 2;
-        const maxX = mousePosition + effectWidth / 2;
+}
 
-        if (normalIconCenter < minX || normalIconCenter > maxX) {
-            return minScale;
-        }
+function copyPortfolioLink(hash) {
+    copyText(window.location.origin + window.location.pathname + (hash ? `#${hash}` : ''), 'Link copied to clipboard');
+}
 
-        const theta = ((normalIconCenter - minX) / effectWidth) * 2 * Math.PI;
-        const cappedTheta = Math.min(Math.max(theta, 0), 2 * Math.PI);
-        const scaleFactor = (1 - Math.cos(cappedTheta)) / 2;
-
-        return minScale + scaleFactor * (maxScale - minScale);
+function showDesktop() {
+    [...runningApps].forEach(id => {
+        const el = document.getElementById(`app-${id}`);
+        if (el && el.classList.contains('is-open')) minimizeApp(id);
     });
 }
 
-function calculateDockPositions(scales, baseIconSize, baseSpacing) {
-    let currentX = 0;
-    return scales.map(scale => {
-        const scaledWidth = baseIconSize * scale;
-        const centerX = currentX + scaledWidth / 2;
-        currentX += scaledWidth + baseSpacing;
-        return centerX;
+let recentKeys = [];
+try { recentKeys = JSON.parse(localStorage.getItem('rj_recents') || '[]').filter(k => typeof k === 'string').slice(0, 12); } catch (e) { recentKeys = []; }
+
+function trackRecent(key) {
+    recentKeys = [key, ...recentKeys.filter(k => k !== key)].slice(0, 12);
+    try { localStorage.setItem('rj_recents', JSON.stringify(recentKeys)); } catch (e) { /* storage blocked */ }
+    if (finderState.loc === 'recents' && document.getElementById('app-finder')?.classList.contains('is-open')) renderFinder();
+}
+
+function openProject(p) {
+    trackRecent(`p:${p.id}`);
+    if (p.readme) openReadmeModal(p.readme);
+    else if (p.live) window.open(p.live, '_blank', 'noopener');
+}
+
+const todayParts = () => {
+    const now = new Date();
+    return { day: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][now.getDay()], date: now.getDate() };
+};
+
+// Self-contained icons (no external images that can 404)
+function appIconHTML(kind) {
+    const t = todayParts();
+    switch (kind) {
+        case 'finder': return '<div class="app-icon icon-finder"><i class="fas fa-folder-open"></i></div>';
+        case 'launchpad': return `<div class="app-icon icon-launchpad"><span class="lp-dots">${['#ff453a', '#ff9f0a', '#ffd60a', '#30d158', '#64d2ff', '#0a84ff', '#5e5ce6', '#bf5af2', '#ff375f'].map(c => `<span style="background:${c}"></span>`).join('')}</span></div>`;
+        case 'safari': return '<div class="app-icon icon-safari"><i class="fas fa-compass"></i></div>';
+        case 'terminal': return '<div class="app-icon icon-terminal"><span class="term-glyph"><b>&gt;</b>_</span></div>';
+        case 'cards': return '<div class="app-icon" style="background:linear-gradient(180deg,#5e5ce6,#3634a3)"><i class="fas fa-table-cells-large"></i></div>';
+        case 'notes': return '<div class="app-icon icon-notes"></div>';
+        case 'calendar': return `<div class="app-icon icon-calendar"><span class="ic-cal-day js-cal-day">${t.day}</span><span class="ic-cal-date js-cal-date">${t.date}</span></div>`;
+        case 'photos': return '<div class="app-icon icon-photos"><span class="ic-petals"></span></div>';
+        case 'mail': return '<div class="app-icon icon-mail"><i class="fas fa-envelope"></i></div>';
+        case 'music': return '<div class="app-icon icon-music"><i class="fas fa-music"></i></div>';
+        case 'calculator': return '<div class="app-icon icon-calculator"><i class="fas fa-calculator"></i></div>';
+        case 'settings': return '<div class="app-icon icon-settings"><i class="fas fa-gear"></i></div>';
+        case 'github': return '<div class="app-icon icon-github"><i class="fab fa-github"></i></div>';
+        case 'resume': return '<div class="app-icon icon-doc"><svg viewBox="0 0 48 60"><use href="#ico-pdf"/></svg></div>';
+        case 'trash': return '<div class="app-icon icon-trash"><svg viewBox="0 0 48 56"><use href="#ico-trash"/></svg></div>';
+        case 'markdown': return '<div class="app-icon" style="background:linear-gradient(180deg,#fafafa,#d1d1d6);color:#3a3a3c"><i class="fab fa-markdown"></i></div>';
+        default: return '<div class="app-icon icon-finder"><i class="fas fa-cube"></i></div>';
+    }
+}
+const projectIconHTML = (p) => `<div class="app-icon" style="background:${p.bg}"><i class="${p.icon}"></i></div>`;
+const skillIconHTML = (s) => `<div class="app-icon icon-skill"${s.bg ? ` style="background:${s.bg}"` : ''}><i class="${s.icon}"></i></div>`;
+
+// ---------- Dock ----------
+const macDockApps = [
+    { id: 'finder', name: 'Finder', icon: 'finder', appId: 'finder', action: () => openFinder() },
+    { id: 'launchpad', name: 'Launchpad', icon: 'launchpad', action: () => toggleLaunchpad() },
+    { id: 'about', name: 'About Me', icon: 'safari', appId: 'about', action: () => openApp('about') },
+    { id: 'projects', name: 'Projects — Terminal', icon: 'terminal', appId: 'projects', action: () => openApp('projects') },
+    { id: 'notes', name: 'Notes', icon: 'notes', appId: 'notes', action: () => openApp('notes') },
+    { id: 'calendar', name: 'Calendar', icon: 'calendar', appId: 'calendar', action: () => openApp('calendar') },
+    { id: 'gallery', name: 'Photos', icon: 'photos', appId: 'gallery', action: () => openApp('gallery') },
+    { id: 'contact', name: 'Contact — Mail', icon: 'mail', appId: 'contact', action: () => openApp('contact') },
+    { id: 'music', name: 'Veer Music', icon: 'music', action: () => openReadmeModal('nothing-veer') },
+    { id: 'calculator', name: 'Calculator', icon: 'calculator', appId: 'calculator', action: () => openApp('calculator') },
+    { id: 'skills', name: 'Skills — System Settings', icon: 'settings', appId: 'skills', action: () => openApp('skills') },
+    { id: 'sep', type: 'sep' },
+    { id: 'resume', name: 'Resume.pdf', icon: 'resume', action: () => openResume() },
+    { id: 'trash', name: 'Trash', icon: 'trash', action: () => notify({ title: 'Trash', body: 'Empty — every project here shipped. 🚀', icon: 'fas fa-trash-can', iconBg: 'linear-gradient(180deg,#8e8e93,#48484a)' }) }
+];
+
+let dockConfig = { base: 56, maxScale: 1.55, effect: 280 };
+let dockMouseX = null;
+let dockScales = macDockApps.map(() => 1);
+let dockLefts = [];
+let dockAnimFrame = null;
+let dockLastWidth = 0;
+let dockHoverIdx = -1;
+
+function getDockResponsiveConfig() {
+    const h = window.innerHeight, w = window.innerWidth;
+    const appCount = macDockApps.filter(a => a.type !== 'sep').length;
+    let base = h < 700 ? 44 : h < 820 ? 50 : 56;
+    const fitBase = Math.floor((w - 80) / (appCount * 1.12 + 0.6));
+    base = Math.max(34, Math.min(base, fitBase));
+    return { base, maxScale: base < 44 ? 1.4 : 1.55, effect: base * 5.2 };
+}
+const dockSpacing = () => Math.max(4, Math.round(dockConfig.base * 0.1));
+const dockPadding = () => Math.max(6, Math.round(dockConfig.base * 0.13));
+const dockItemWidth = (item) => (item.type === 'sep' ? Math.round(dockConfig.base * 0.32) : dockConfig.base);
+function dockStaticWidth() {
+    return macDockApps.reduce((sum, item) => sum + dockItemWidth(item), 0) + dockSpacing() * (macDockApps.length - 1);
+}
+
+function dockTargetScales() {
+    if (dockMouseX === null) return macDockApps.map(() => 1);
+    const sp = dockSpacing();
+    const half = dockConfig.effect / 2;
+    let x = 0;
+    return macDockApps.map(item => {
+        const w = dockItemWidth(item);
+        const centre = x + w / 2;
+        x += w + sp;
+        if (item.type === 'sep') return 1;
+        const d = Math.abs(centre - dockMouseX);
+        if (d >= half) return 1;
+        const f = (1 - Math.cos((1 - d / half) * Math.PI)) / 2;
+        return 1 + f * (dockConfig.maxScale - 1);
     });
 }
 
 function initMacOSDock() {
-    const dockContainer = document.getElementById('macos-dock');
-    const dockInner = document.getElementById('macos-dock-inner');
-    if (!dockContainer || !dockInner) return;
+    const dock = document.getElementById('macos-dock');
+    const inner = document.getElementById('macos-dock-inner');
+    if (!dock || !inner) return;
 
-    dockConfig = getDockResponsiveConfig();
-    const { baseIconSize, effectWidth, maxScale } = dockConfig;
-    const minScale = 1.0;
-    const baseSpacing = Math.max(4, baseIconSize * 0.08);
+    inner.innerHTML = macDockApps.map((item, i) => item.type === 'sep'
+        ? `<div class="dock-sep" id="dock-item-${item.id}" data-idx="${i}"></div>`
+        : `<div class="dock-item" id="dock-item-${item.id}" data-idx="${i}" role="button" tabindex="0" aria-label="${escapeHtml(item.name)}">
+                <div class="dock-bounce">${appIconHTML(item.icon)}</div>
+                <span class="dock-dot"></span>
+           </div>`).join('');
 
-    dockCurrentScales = macDockApps.map(() => minScale);
-    dockCurrentPositions = calculateDockPositions(dockCurrentScales, baseIconSize, baseSpacing);
+    inner.addEventListener('click', (e) => {
+        const el = e.target.closest('.dock-item');
+        if (el) handleMacDockAppClick(+el.dataset.idx);
+    });
+    inner.addEventListener('keydown', (e) => {
+        const el = e.target.closest('.dock-item');
+        if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); handleMacDockAppClick(+el.dataset.idx); }
+    });
 
-    // Render DOM elements for each app
-    dockInner.innerHTML = macDockApps.map((app, index) => {
-        const initialPos = dockCurrentPositions[index] || 0;
-        const initialX = initialPos - baseIconSize / 2;
-        return `
-            <div id="dock-item-${app.id}" class="absolute cursor-pointer flex flex-col items-center justify-end"
-                 onclick="handleMacDockAppClick('${app.id}', ${index})"
-                 style="width: ${baseIconSize}px; height: ${baseIconSize}px; left: 0; bottom: 0; transform: translate3d(${initialX}px, 0, 0) scale(1); transform-origin: bottom center; will-change: transform;"
-                 title="${app.name}">
-                <img id="dock-img-${app.id}" src="${app.icon}" alt="${app.name}" class="object-contain"
-                     loading="eager" decoding="async" width="${baseIconSize}" height="${baseIconSize}"
-                     style="width: 100%; height: 100%; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35)); transform: translateZ(0);"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="hidden w-full h-full rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 items-center justify-center text-white text-xl font-bold shadow-md">
-                    ${app.name.charAt(0)}
-                </div>
-                <div id="dock-dot-${app.id}" class="absolute w-1.5 h-1.5 rounded-full bg-white/90 shadow-sm"
-                     style="bottom: -5px; left: 50%; transform: translateX(-50%); display: ${runningApps.includes(app.id) ? 'block' : 'none'};"></div>
-            </div>
-        `;
-    }).join('');
-
-    // Dock container styles matching user's React component
-    const padding = Math.max(8, baseIconSize * 0.12);
-    dockContainer.style.background = "rgba(45, 45, 45, 0.75)";
-    dockContainer.style.borderRadius = `${Math.max(14, baseIconSize * 0.4)}px`;
-    dockContainer.style.border = "1px solid rgba(255, 255, 255, 0.18)";
-    dockContainer.style.boxShadow = `
-        0 ${Math.max(4, baseIconSize * 0.1)}px ${Math.max(16, baseIconSize * 0.4)}px rgba(0, 0, 0, 0.4),
-        0 ${Math.max(2, baseIconSize * 0.05)}px ${Math.max(8, baseIconSize * 0.2)}px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.2)
-    `;
-    dockContainer.style.padding = `${padding}px`;
-    dockInner.style.height = `${baseIconSize}px`;
-
-    // Mouse Listeners
-    dockContainer.addEventListener('mousemove', (e) => {
-        const now = performance.now();
-        if (now - dockLastMouseMoveTime < 16) return;
-        dockLastMouseMoveTime = now;
-        const rect = dockContainer.getBoundingClientRect();
-        dockMouseX = e.clientX - rect.left - padding;
-        if (!dockAnimFrame) {
-            dockAnimFrame = requestAnimationFrame(animateDockToTarget);
-        }
+    dock.addEventListener('mousemove', (e) => {
+        const staticLeft = window.innerWidth / 2 - dockStaticWidth() / 2;
+        dockMouseX = e.clientX - staticLeft;
+        const el = e.target.closest('.dock-item');
+        dockHoverIdx = el ? +el.dataset.idx : -1;
+        if (!dockAnimFrame) dockAnimFrame = requestAnimationFrame(animateDock);
     }, { passive: true });
 
-    dockContainer.addEventListener('mouseleave', () => {
+    dock.addEventListener('mouseleave', () => {
         dockMouseX = null;
-        if (!dockAnimFrame) {
-            dockAnimFrame = requestAnimationFrame(animateDockToTarget);
-        }
+        dockHoverIdx = -1;
+        const tip = document.getElementById('dock-tooltip');
+        if (tip) tip.classList.remove('visible');
+        if (!dockAnimFrame) dockAnimFrame = requestAnimationFrame(animateDock);
     }, { passive: true });
 
     window.addEventListener('resize', () => {
-        dockConfig = getDockResponsiveConfig();
-        if (!dockAnimFrame) {
-            dockAnimFrame = requestAnimationFrame(animateDockToTarget);
-        }
+        applyDockConfig();
     }, { passive: true });
 
-    // Start initial frame
-    dockAnimFrame = requestAnimationFrame(animateDockToTarget);
+    applyDockConfig();
+    updateMacOSDockOpenApps();
 }
 
-function animateDockToTarget() {
+function applyDockConfig() {
+    dockConfig = getDockResponsiveConfig();
+    const dock = document.getElementById('macos-dock');
+    const inner = document.getElementById('macos-dock-inner');
+    if (!dock || !inner) return;
+    const pad = dockPadding();
+    dock.style.padding = `${pad}px ${pad}px ${pad + 2}px`;
+    dock.style.borderRadius = `${Math.round(dockConfig.base * 0.42)}px`;
+    inner.style.height = `${dockConfig.base}px`;
+    macDockApps.forEach(item => {
+        const el = document.getElementById(`dock-item-${item.id}`);
+        if (!el) return;
+        el.style.width = `${dockItemWidth(item)}px`;
+        el.style.height = `${dockConfig.base}px`;
+    });
+    dockScales = macDockApps.map(() => 1);
+    dockLefts = [];
+    if (!dockAnimFrame) dockAnimFrame = requestAnimationFrame(animateDock);
+}
+
+function animateDock() {
     dockAnimFrame = null;
-    const dockContainer = document.getElementById('macos-dock');
-    if (!dockContainer) return;
+    const dock = document.getElementById('macos-dock');
+    if (!dock) return;
+    const targets = dockTargetScales();
+    const lerp = dockMouseX !== null ? 0.24 : 0.16;
+    const sp = dockSpacing();
+    let x = 0;
+    let settled = true;
 
-    const { baseIconSize, effectWidth, maxScale } = dockConfig;
-    const minScale = 1.0;
-    const baseSpacing = Math.max(4, baseIconSize * 0.08);
-    const padding = Math.max(8, baseIconSize * 0.12);
-
-    const targetScales = calculateTargetMagnification(dockMouseX, macDockApps.length, baseIconSize, baseSpacing, effectWidth, maxScale, minScale);
-    const targetPositions = calculateDockPositions(targetScales, baseIconSize, baseSpacing);
-    const lerpFactor = dockMouseX !== null ? 0.2 : 0.12;
-
-    let maxRight = 0;
-
-    for (let index = 0; index < macDockApps.length; index++) {
-        const app = macDockApps[index];
-        // Interpolate scale & position
-        const scaleDiff = targetScales[index] - dockCurrentScales[index];
-        dockCurrentScales[index] += scaleDiff * lerpFactor;
-
-        const posDiff = targetPositions[index] - dockCurrentPositions[index];
-        dockCurrentPositions[index] += posDiff * lerpFactor;
-
-        const scale = dockCurrentScales[index];
-        const position = dockCurrentPositions[index];
-        const xOffset = position - baseIconSize / 2;
-
-        const el = document.getElementById(`dock-item-${app.id}`);
+    macDockApps.forEach((item, i) => {
+        dockScales[i] += (targets[i] - dockScales[i]) * lerp;
+        if (Math.abs(targets[i] - dockScales[i]) > 0.002) settled = false;
+        else dockScales[i] = targets[i];
+        const w = dockItemWidth(item);
+        const s = dockScales[i];
+        // Visual left edge = x; compensate for scaling around the bottom-centre origin
+        const translate = x - w / 2 + (w * s) / 2;
+        dockLefts[i] = x;
+        x += w * s + sp;
+        const el = document.getElementById(`dock-item-${item.id}`);
         if (el) {
-            el.style.transform = `translate3d(${xOffset}px, 0, 0) scale(${scale})`;
-            el.style.zIndex = Math.round(scale * 10);
+            el.style.transform = `translate3d(${translate.toFixed(2)}px,0,0) scale(${s.toFixed(4)})`;
+            el.style.zIndex = String(Math.round(s * 10));
         }
+    });
 
-        const iconRight = position + (baseIconSize * scale) / 2;
-        if (iconRight > maxRight) maxRight = iconRight;
+    const width = Math.round(x - sp);
+    if (Math.abs(width - dockLastWidth) >= 1) {
+        dockLastWidth = width;
+        document.getElementById('macos-dock-inner').style.width = `${width}px`;
     }
 
-    // Update dynamic dock container width only when needed (avoids layout thrashing)
-    const contentWidth = maxRight > 0 ? maxRight : (macDockApps.length * (baseIconSize + baseSpacing) - baseSpacing);
-    const targetWidth = Math.round(contentWidth + padding * 2);
-    if (Math.abs(dockLastAppliedWidth - targetWidth) >= 1) {
-        dockLastAppliedWidth = targetWidth;
-        dockContainer.style.width = `${targetWidth}px`;
+    // Tooltip follows the hovered (magnified) icon
+    const tip = document.getElementById('dock-tooltip');
+    if (tip) {
+        const item = macDockApps[dockHoverIdx];
+        const el = item && item.type !== 'sep' ? document.getElementById(`dock-item-${item.id}`) : null;
+        if (el && dockMouseX !== null) {
+            const r = el.getBoundingClientRect();
+            tip.textContent = item.name;
+            tip.style.left = `${r.left + r.width / 2}px`;
+            tip.style.top = `${r.top - 38}px`;
+            tip.classList.add('visible');
+        } else {
+            tip.classList.remove('visible');
+        }
     }
 
-    // Check if still needing animation
-    const scalesNeedUpdate = dockCurrentScales.some((scale, index) => Math.abs(scale - targetScales[index]) > 0.002);
-    const positionsNeedUpdate = dockCurrentPositions.some((pos, index) => Math.abs(pos - targetPositions[index]) > 0.1);
-
-    if (scalesNeedUpdate || positionsNeedUpdate || dockMouseX !== null) {
-        dockAnimFrame = requestAnimationFrame(animateDockToTarget);
-    }
+    if (!settled || dockMouseX !== null) dockAnimFrame = requestAnimationFrame(animateDock);
 }
 
-function handleMacDockAppClick(appId, index) {
-    const el = document.getElementById(`dock-item-${appId}`);
-    if (el) {
-        const bounceHeight = Math.max(-12, -dockConfig.baseIconSize * 0.22);
-        el.style.transition = "transform 0.18s cubic-bezier(0.28, 0.84, 0.42, 1)";
-        el.style.transform = `translateY(${bounceHeight}px)`;
-        setTimeout(() => {
-            el.style.transform = "translateY(0px)";
-        }, 180);
-    }
-
-    const app = macDockApps[index];
-    if (app && typeof app.action === 'function') {
-        app.action();
+function handleMacDockAppClick(index) {
+    const item = macDockApps[index];
+    if (!item || item.type === 'sep') return;
+    const alreadyRunning = item.appId && runningApps.includes(item.appId);
+    if (!item.appId && item.id !== 'trash' && item.id !== 'launchpad') bounceDockIcon(item.id, true);
+    if (typeof item.action === 'function') item.action();
+    if (alreadyRunning) {
+        const win = document.getElementById(`app-${item.appId}`);
+        if (win) bringToFront(win);
     }
     updateMacOSDockOpenApps();
 }
 
+function bounceDockIcon(id, byItemId = false) {
+    const item = byItemId ? macDockApps.find(a => a.id === id) : macDockApps.find(a => a.appId === id);
+    if (!item) return;
+    const el = document.querySelector(`#dock-item-${item.id} .dock-bounce`);
+    if (!el || el.classList.contains('bouncing')) return;
+    el.classList.add('bouncing');
+    el.addEventListener('animationend', () => el.classList.remove('bouncing'), { once: true });
+}
+
 function updateMacOSDockOpenApps() {
-    macDockApps.forEach(app => {
-        const dot = document.getElementById(`dock-dot-${app.id}`);
-        if (dot) {
-            dot.style.display = runningApps.includes(app.id) ? 'block' : 'none';
-        }
+    macDockApps.forEach(item => {
+        const el = document.getElementById(`dock-item-${item.id}`);
+        if (el && item.appId) el.classList.toggle('is-running', runningApps.includes(item.appId));
     });
 }
 
-// --- macOS 26 Tahoe Apple Menu, Control Center & System Profiler ---
+// ---------- Menu bar & menus ----------
+let openMenuName = null;
+let currentMenuItems = [];
+let currentCtxItems = [];
+
+function currentAppName() {
+    return focusedAppId ? (APP_DISPLAY_NAMES[focusedAppId] || 'Finder') : 'Finder';
+}
+
+function updateMenubarAppName() {
+    const el = document.getElementById('mb-app-name');
+    if (el) el.textContent = currentAppName();
+}
+
+const ALL_PROJECTS_MENU = () => PORTFOLIO_PROJECTS.map(p => ({ label: p.name, icon: p.icon, action: () => openProject(p) }));
+
+const MENUS = {
+    apple: () => [
+        { label: 'About This Mac', action: openAboutThisMac },
+        { sep: true },
+        { label: 'System Settings…', action: () => openApp('skills') },
+        { label: 'Launchpad', shortcut: 'F4', action: openLaunchpad },
+        { sep: true },
+        { label: 'Mission Control', shortcut: 'F3', action: () => toggleMissionControl(true) },
+        { label: 'Spotlight', shortcut: '⌘K', action: openSpotlight },
+        { label: 'Next Wallpaper', action: cycleTahoeWallpaper },
+        { sep: true },
+        { label: 'Lock Screen', shortcut: '⌃⌘Q', action: lockScreen },
+        { label: 'Restart…', action: () => window.location.reload() }
+    ],
+    app: () => {
+        const name = currentAppName();
+        const id = focusedAppId;
+        const meta = id && APP_METADATA[id];
+        return [
+            { label: `About ${name}`, action: () => (!id || id === 'finder') ? openAboutThisMac() : notify({ title: name, body: meta ? meta.subtitle : name, icon: meta ? meta.icon : 'fas fa-circle-info' }) },
+            { sep: true },
+            { label: `Hide ${name}`, shortcut: '⌘H', disabled: !id, action: () => minimizeApp(id) },
+            { label: 'Hide Others', shortcut: '⌥⌘H', disabled: runningApps.length < 2, action: () => runningApps.filter(a => a !== id).forEach(minimizeApp) },
+            { sep: true },
+            { label: `Quit ${name}`, shortcut: '⌘Q', disabled: !id, action: () => closeApp(id) }
+        ];
+    },
+    about: () => [
+        { label: 'Overview', icon: 'fas fa-id-card', action: () => { openApp('about'); switchAboutTab('intro', null); } },
+        { label: 'Experience', icon: 'fas fa-briefcase', action: () => { openApp('about'); switchAboutTab('exp', null); } },
+        { label: 'Education', icon: 'fas fa-graduation-cap', action: () => { openApp('about'); switchAboutTab('edu', null); } },
+        { sep: true },
+        { label: 'Resume (PDF)', icon: 'fas fa-file-pdf', action: openResume },
+        { label: 'GitHub Profile', icon: 'fab fa-github', action: () => window.open('https://github.com/Rvjais', '_blank', 'noopener') },
+        { label: 'Copy Link to Portfolio', icon: 'fas fa-link', action: () => copyPortfolioLink('') }
+    ],
+    projects: () => [
+        { label: 'Open in Finder', icon: 'fas fa-folder-open', action: () => openFinder('projects') },
+        { label: 'Project Cards', icon: 'fas fa-table-cells-large', action: () => { openApp('projects'); switchProjectsView('cards', null); } },
+        { label: 'Terminal', icon: 'fas fa-terminal', action: () => { openApp('projects'); switchProjectsView('terminal', null); } },
+        { sep: true },
+        { header: 'All Projects' },
+        ...ALL_PROJECTS_MENU()
+    ],
+    skills: () => [
+        { label: 'Skill Levels', icon: 'fas fa-gear', action: () => openApp('skills') },
+        { label: 'Browse Skills in Finder', icon: 'fas fa-layer-group', action: () => openFinder('skills') },
+        { sep: true },
+        { header: 'Core Stack' },
+        ...['React', 'Next.js', 'Node.js', 'MongoDB', 'PostgreSQL', 'Docker', 'AWS'].map(n => {
+            const s = SKILLS_LIST.find(x => x.name === n);
+            return { label: n, shortcut: s && s.level ? s.level : '', icon: 'fas fa-circle-check', action: () => { openFinder('skills'); setTimeout(() => finderSelect(`s:${n}`), 60); } };
+        })
+    ],
+    contact: () => [
+        { label: 'New Message…', icon: 'fas fa-pen-to-square', action: () => openApp('contact') },
+        { sep: true },
+        { label: 'Copy Email Address', icon: 'fas fa-at', action: () => copyText('ranveerjais9984@gmail.com', 'ranveerjais9984@gmail.com') },
+        { label: 'Call +91 96481 65493', icon: 'fas fa-phone', action: () => { window.location.href = 'tel:+919648165493'; } },
+        { label: 'GitHub', icon: 'fab fa-github', action: () => window.open('https://github.com/Rvjais', '_blank', 'noopener') },
+        { label: 'LinkedIn', icon: 'fab fa-linkedin', action: () => window.open('https://linkedin.com', '_blank', 'noopener') }
+    ],
+    window: () => {
+        const items = [
+            { label: 'Minimize', disabled: !focusedAppId, action: () => minimizeApp(focusedAppId) },
+            { label: 'Zoom', disabled: !focusedAppId, action: () => maximizeApp(focusedAppId) },
+            { sep: true },
+            { label: 'Mission Control', shortcut: 'F3', action: () => toggleMissionControl(true) },
+            { label: 'Show Desktop', disabled: !runningApps.length, action: showDesktop },
+            { label: 'Bring All to Front', disabled: !runningApps.length, action: () => [...runningApps].forEach(id => openApp(id)) }
+        ];
+        if (runningApps.length) {
+            items.push({ sep: true });
+            runningApps.forEach(id => items.push({ label: APP_DISPLAY_NAMES[id] || id, checked: id === focusedAppId, action: () => openApp(id) }));
+        }
+        return items;
+    },
+    help: () => [
+        { label: 'Keyboard Shortcuts', icon: 'fas fa-keyboard', action: () => openReadmeModal('shortcuts') },
+        { label: 'Terminal Commands', icon: 'fas fa-terminal', action: () => { openApp('projects'); switchProjectsView('terminal', null); runQuickCommand('help'); } },
+        { sep: true },
+        { label: 'View Portfolio Source', icon: 'fab fa-github', action: () => window.open('https://github.com/Rvjais/Ranveer-Portfolio', '_blank', 'noopener') }
+    ]
+};
+
+function renderMenuHTML(items) {
+    return items.map((it, i) => {
+        if (it.sep) return '<div class="macos-dropdown-divider"></div>';
+        if (it.header) return `<div class="macos-dropdown-header">${escapeHtml(it.header)}</div>`;
+        return `<div class="macos-dropdown-item${it.disabled ? ' is-disabled' : ''}" role="menuitem" data-mi="${i}" aria-disabled="${it.disabled ? 'true' : 'false'}">
+            <span class="mi-check">${it.checked ? '<i class="fas fa-check"></i>' : ''}</span>
+            ${it.icon ? `<i class="mi-icon ${it.icon}"></i>` : ''}
+            <span class="mi-label">${escapeHtml(it.label)}</span>
+            ${it.shortcut ? `<span class="mi-shortcut">${escapeHtml(it.shortcut)}</span>` : ''}
+        </div>`;
+    }).join('');
+}
+
+function openMenu(name, anchor) {
+    const dd = document.getElementById('mb-dropdown');
+    if (!dd || !MENUS[name]) return;
+    document.getElementById('ctx-menu')?.classList.remove('is-open');
+    closeControlCenter();
+    currentMenuItems = MENUS[name]();
+    dd.innerHTML = renderMenuHTML(currentMenuItems);
+    dd.classList.add('is-open');
+    const r = anchor.getBoundingClientRect();
+    dd.style.left = `${Math.max(6, Math.min(r.left, window.innerWidth - dd.offsetWidth - 6))}px`;
+    document.querySelectorAll('#mac-menubar .mb-item.is-active').forEach(b => b.classList.remove('is-active'));
+    anchor.classList.add('is-active');
+    openMenuName = name;
+}
+
+function closeAllMenus() {
+    document.getElementById('mb-dropdown')?.classList.remove('is-open');
+    document.getElementById('ctx-menu')?.classList.remove('is-open');
+    document.querySelectorAll('#mac-menubar .mb-item.is-active').forEach(b => b.classList.remove('is-active'));
+    openMenuName = null;
+}
+
+// Back-compat names used elsewhere
+function closeAppleMenu() { closeAllMenus(); }
 function toggleAppleMenu(e) {
     if (e) e.stopPropagation();
-    const menu = document.getElementById('macos-apple-menu');
+    const btn = document.querySelector('#mac-menubar [data-menu="apple"]');
+    if (openMenuName === 'apple') closeAllMenus();
+    else if (btn) openMenu('apple', btn);
+}
+
+function initMenubar() {
+    document.querySelectorAll('#mac-menubar .mb-item[data-menu]').forEach(btn => {
+        btn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (openMenuName === btn.dataset.menu) closeAllMenus();
+            else openMenu(btn.dataset.menu, btn);
+        });
+        btn.addEventListener('mouseenter', () => {
+            if (openMenuName && openMenuName !== btn.dataset.menu) openMenu(btn.dataset.menu, btn);
+        });
+    });
+
+    const bindMenu = (el, getItems) => el && el.addEventListener('click', (e) => {
+        const row = e.target.closest('[data-mi]');
+        if (!row) return;
+        const it = getItems()[+row.dataset.mi];
+        if (!it || it.disabled) return;
+        closeAllMenus();
+        if (typeof it.action === 'function') it.action();
+    });
+    bindMenu(document.getElementById('mb-dropdown'), () => currentMenuItems);
+    bindMenu(document.getElementById('ctx-menu'), () => currentCtxItems);
+
+    updateMenubarAppName();
+}
+
+// ---------- Desktop right-click menu ----------
+function openDesktopContextMenu(e) {
+    if (!isDesktop()) return;
+    const target = e.target instanceof Element ? e.target : document.body;
+    if (target.closest('.app-window, #desktop-widgets')) return;
+    e.preventDefault();
+    closeAllMenus();
+    const icon = target.closest('.desktop-shortcut');
+    const widgetsHidden = document.body.classList.contains('widgets-hidden');
+    currentCtxItems = [
+        ...(icon ? [{ label: 'Open', action: () => icon.click() }, { sep: true }] : []),
+        { label: 'New Message to Ranveer…', icon: 'fas fa-pen-to-square', action: () => openApp('contact') },
+        { label: 'Open Projects in Finder', icon: 'fas fa-folder-open', action: () => openFinder('projects') },
+        { sep: true },
+        { label: 'Get Info', icon: 'fas fa-circle-info', action: openAboutThisMac },
+        { label: 'Change Wallpaper', icon: 'fas fa-image', action: cycleTahoeWallpaper },
+        { label: widgetsHidden ? 'Show Widgets' : 'Hide Widgets', icon: 'fas fa-table-cells', action: toggleWidgets },
+        { sep: true },
+        { label: 'Clean Up', icon: 'fas fa-broom', action: () => layoutDesktopIcons(true) },
+        { label: 'Keyboard Shortcuts', icon: 'fas fa-keyboard', action: () => openReadmeModal('shortcuts') }
+    ];
+    const menu = document.getElementById('ctx-menu');
     if (!menu) return;
-    const isOpen = menu.classList.contains('is-open');
-    closeControlCenter();
-    if (isOpen) {
-        menu.classList.remove('is-open');
-    } else {
-        menu.classList.add('is-open');
-    }
+    menu.innerHTML = renderMenuHTML(currentCtxItems);
+    menu.classList.add('is-open');
+    menu.style.left = `${Math.min(e.clientX, window.innerWidth - menu.offsetWidth - 6)}px`;
+    menu.style.top = `${Math.min(e.clientY, window.innerHeight - menu.offsetHeight - 6)}px`;
 }
 
-function closeAppleMenu() {
-    const menu = document.getElementById('macos-apple-menu');
-    if (menu) menu.classList.remove('is-open');
-}
-
+// ---------- Control Center, About This Mac ----------
 function toggleControlCenter(e) {
     if (e) e.stopPropagation();
     const cc = document.getElementById('macos-control-center');
     const btn = document.getElementById('mac-control-center-btn');
     if (!cc) return;
     const isOpen = cc.classList.contains('is-open');
-    closeAppleMenu();
-    if (isOpen) {
-        cc.classList.remove('is-open');
-        if (btn) btn.classList.remove('active');
-    } else {
-        cc.classList.add('is-open');
-        if (btn) btn.classList.add('active');
-    }
+    closeAllMenus();
+    cc.classList.toggle('is-open', !isOpen);
+    if (btn) btn.classList.toggle('is-active', !isOpen);
 }
 
 function closeControlCenter() {
-    const cc = document.getElementById('macos-control-center');
-    const iosCc = document.getElementById('ios-control-center');
-    const btn = document.getElementById('mac-control-center-btn');
-    if (cc) cc.classList.remove('is-open');
-    if (iosCc) iosCc.classList.remove('is-open');
-    if (btn) btn.classList.remove('active');
+    document.getElementById('macos-control-center')?.classList.remove('is-open');
+    document.getElementById('ios-control-center')?.classList.remove('is-open');
+    document.getElementById('mac-control-center-btn')?.classList.remove('is-active');
 }
 
 function openAboutThisMac() {
     closeMissionControl();
     closeControlCenter();
-    closeAppleMenu();
+    closeAllMenus();
     const modal = document.getElementById('macos-about-mac-modal');
     if (modal) {
         modal.style.display = 'flex';
@@ -4151,40 +4768,33 @@ function closeAboutThisMac() {
         modal.classList.remove('is-active');
         modal.style.display = 'none';
     }
-    closeAppleMenu();
-    closeControlCenter();
 }
 
 function returnToDesktop() {
     closeAboutThisMac();
     closeMissionControl();
     closeControlCenter();
-    closeAppleMenu();
+    closeAllMenus();
     closeSpotlight();
     closeReadmeModal();
     closeFolderModal();
     closeSkillsFolderModal();
     closeGalleryLightbox();
-    showToast('Desktop', 'fas fa-desktop');
 }
 
-// Control Center Toggles
+// Control Center toggles
 let ccWifiActive = true;
 function toggleCcWifi() {
     ccWifiActive = !ccWifiActive;
     const icon = document.getElementById('cc-wifi-icon');
     const label = document.getElementById('cc-wifi-label');
     const iosBtn = document.getElementById('ios-cc-wifi-btn');
-    if (icon) {
-        icon.className = ccWifiActive ? 'cc-toggle-icon bg-[#007aff] text-white' : 'cc-toggle-icon bg-white/10 text-gray-400';
-    }
+    if (icon) icon.className = ccWifiActive ? 'cc-toggle-icon bg-[#007aff] text-white' : 'cc-toggle-icon bg-white/10 text-gray-400';
     if (label) {
         label.innerText = ccWifiActive ? 'Home_Fiber_5G' : 'Off';
         label.className = ccWifiActive ? 'text-[10px] text-blue-300' : 'text-[10px] text-gray-500';
     }
-    if (iosBtn) {
-        iosBtn.classList.toggle('is-active-blue', ccWifiActive);
-    }
+    if (iosBtn) iosBtn.classList.toggle('is-active-blue', ccWifiActive);
     showToast(ccWifiActive ? 'Wi-Fi: Connected to Home_Fiber_5G' : 'Wi-Fi: Disconnected', 'fas fa-wifi');
 }
 
@@ -4194,16 +4804,12 @@ function toggleCcBluetooth() {
     const icon = document.getElementById('cc-bt-icon');
     const label = document.getElementById('cc-bt-label');
     const iosBtn = document.getElementById('ios-cc-bt-btn');
-    if (icon) {
-        icon.className = ccBtActive ? 'cc-toggle-icon bg-[#007aff] text-white' : 'cc-toggle-icon bg-white/10 text-gray-400';
-    }
+    if (icon) icon.className = ccBtActive ? 'cc-toggle-icon bg-[#007aff] text-white' : 'cc-toggle-icon bg-white/10 text-gray-400';
     if (label) {
         label.innerText = ccBtActive ? 'AirPods Pro' : 'Off';
         label.className = ccBtActive ? 'text-[10px] text-blue-300' : 'text-[10px] text-gray-500';
     }
-    if (iosBtn) {
-        iosBtn.classList.toggle('is-active-blue', ccBtActive);
-    }
+    if (iosBtn) iosBtn.classList.toggle('is-active-blue', ccBtActive);
     showToast(ccBtActive ? 'Bluetooth: Connected to AirPods Pro' : 'Bluetooth: Off', 'fab fa-bluetooth-b');
 }
 
@@ -4213,29 +4819,31 @@ function toggleCcFocus() {
     const icon = document.getElementById('cc-focus-icon');
     const label = document.getElementById('cc-focus-label');
     const iosBtn = document.getElementById('ios-cc-focus-btn');
-    if (icon) {
-        icon.className = ccFocusActive ? 'cc-toggle-icon bg-indigo-600 text-white' : 'cc-toggle-icon bg-white/10 text-gray-400';
-    }
+    if (icon) icon.className = ccFocusActive ? 'cc-toggle-icon bg-indigo-600 text-white' : 'cc-toggle-icon bg-white/10 text-gray-400';
     if (label) {
         label.innerText = ccFocusActive ? 'Developer' : 'Off';
         label.className = ccFocusActive ? 'text-[10px] text-indigo-300' : 'text-[10px] text-gray-500';
     }
-    if (iosBtn) {
-        iosBtn.classList.toggle('is-active-indigo', ccFocusActive);
-    }
-    showToast(ccFocusActive ? 'Focus: Developer Focus Enabled' : 'Focus: Disabled', 'fas fa-moon');
+    if (iosBtn) iosBtn.classList.toggle('is-active-indigo', ccFocusActive);
+    showToast(ccFocusActive ? 'Focus: Developer focus on' : 'Focus: Off', 'fas fa-moon');
 }
 
+// Brightness dims an overlay (filtering <body> broke backdrop blur and fixed positioning)
 function handleBrightnessSlider(val) {
-    document.body.style.filter = `brightness(${Math.max(60, val)}%)`;
+    const v = Math.max(30, Math.min(100, Number(val)));
+    const overlay = document.getElementById('brightness-overlay');
+    if (overlay) overlay.style.opacity = ((100 - v) / 100 * 0.75).toFixed(3);
     const iosFill = document.getElementById('ios-cc-bright-fill');
-    if (iosFill) iosFill.style.height = `${val}%`;
+    if (iosFill) iosFill.style.height = `${v}%`;
 }
 
+let volumeToastTimer = null;
 function handleVolumeSlider(val) {
+    const v = Math.round(Number(val));
     const iosFill = document.getElementById('ios-cc-vol-fill');
-    if (iosFill) iosFill.style.height = `${val}%`;
-    showToast(`Volume: ${Math.round(val)}%`, val == 0 ? 'fas fa-volume-mute' : 'fas fa-volume-up');
+    if (iosFill) iosFill.style.height = `${v}%`;
+    clearTimeout(volumeToastTimer);
+    volumeToastTimer = setTimeout(() => showToast(`Volume: ${v}%`, v === 0 ? 'fas fa-volume-xmark' : 'fas fa-volume-high'), 350);
 }
 
 let isPlayingMusic = true;
@@ -4243,83 +4851,507 @@ function togglePlayState() {
     isPlayingMusic = !isPlayingMusic;
     const btn = document.getElementById('cc-play-btn');
     const iosPlayBtn = document.getElementById('ios-cc-play-btn');
-    if (btn) {
-        btn.className = isPlayingMusic ? 'fas fa-pause text-[10px]' : 'fas fa-play text-[10px] ml-0.5';
-    }
-    if (iosPlayBtn) {
-        iosPlayBtn.innerHTML = isPlayingMusic ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
-    }
+    if (btn) btn.className = isPlayingMusic ? 'fas fa-pause text-[10px]' : 'fas fa-play text-[10px] ml-0.5';
+    if (iosPlayBtn) iosPlayBtn.innerHTML = isPlayingMusic ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
     showToast(isPlayingMusic ? 'Veer Music: Playing' : 'Veer Music: Paused', 'fas fa-music');
 }
 
 function initIosControlCenterSliders() {
-    const brightCapsule = document.getElementById('ios-cc-bright-capsule');
-    const brightFill = document.getElementById('ios-cc-bright-fill');
-    const volCapsule = document.getElementById('ios-cc-vol-capsule');
-    const volFill = document.getElementById('ios-cc-vol-fill');
-
-    function attachSlider(capsule, fill, onUpdate) {
+    const attachSlider = (capsule, fill, onUpdate) => {
         if (!capsule || !fill) return;
-
-        let isDragging = false;
-
+        let dragging = false;
         const updateFromY = (clientY) => {
             const rect = capsule.getBoundingClientRect();
-            let fraction = (rect.bottom - clientY) / rect.height;
-            fraction = Math.max(0.05, Math.min(1, fraction));
+            const fraction = Math.max(0.05, Math.min(1, (rect.bottom - clientY) / rect.height));
             fill.style.height = `${fraction * 100}%`;
             onUpdate(fraction * 100);
         };
-
         capsule.addEventListener('pointerdown', (e) => {
-            isDragging = true;
-            try { capsule.setPointerCapture(e.pointerId); } catch(err) {}
+            dragging = true;
+            try { capsule.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
             updateFromY(e.clientY);
         });
-
-        capsule.addEventListener('pointermove', (e) => {
-            if (isDragging) {
-                updateFromY(e.clientY);
-            }
-        });
-
-        const stopDrag = (e) => {
-            if (isDragging) {
-                isDragging = false;
-                try { capsule.releasePointerCapture(e.pointerId); } catch(err) {}
-            }
+        capsule.addEventListener('pointermove', (e) => { if (dragging) updateFromY(e.clientY); });
+        const stop = (e) => {
+            if (!dragging) return;
+            dragging = false;
+            try { capsule.releasePointerCapture(e.pointerId); } catch (err) { /* noop */ }
         };
-
-        capsule.addEventListener('pointerup', stopDrag);
-        capsule.addEventListener('pointercancel', stopDrag);
-    }
-
-    attachSlider(brightCapsule, brightFill, (val) => {
-        handleBrightnessSlider(val);
-    });
-
-    attachSlider(volCapsule, volFill, (val) => {
-        handleVolumeSlider(val);
-    });
+        capsule.addEventListener('pointerup', stop);
+        capsule.addEventListener('pointercancel', stop);
+    };
+    attachSlider(document.getElementById('ios-cc-bright-capsule'), document.getElementById('ios-cc-bright-fill'), handleBrightnessSlider);
+    attachSlider(document.getElementById('ios-cc-vol-capsule'), document.getElementById('ios-cc-vol-fill'), handleVolumeSlider);
 }
 
+// ---------- Wallpapers ----------
 const TAHOE_WALLPAPERS = [
     'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=85&w=2800&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=85&w=2800&auto=format&fit=crop',
     'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=85&w=2800&auto=format&fit=crop'
 ];
+const WALLPAPER_NAMES = ['Valley', 'Midnight', 'Alpine'];
 let currentWallpaperIdx = 0;
 
-function setTahoeWallpaper(idx) {
-    currentWallpaperIdx = idx % TAHOE_WALLPAPERS.length;
-    document.body.style.backgroundImage = `url('${TAHOE_WALLPAPERS[currentWallpaperIdx]}')`;
+function setTahoeWallpaper(idx, silent = false) {
+    currentWallpaperIdx = ((idx % TAHOE_WALLPAPERS.length) + TAHOE_WALLPAPERS.length) % TAHOE_WALLPAPERS.length;
+    document.body.style.backgroundImage = `url('${TAHOE_WALLPAPERS[currentWallpaperIdx]}'), var(--wallpaper-fallback)`;
+    try { localStorage.setItem('rj_wallpaper', String(currentWallpaperIdx)); } catch (e) { /* storage blocked */ }
+    document.querySelectorAll('.cc-wall').forEach((el, i) => el.classList.toggle('active', i === currentWallpaperIdx));
     if (isMissionControlOpen) renderMissionControlSpaces();
-    showToast('Applied macOS Tahoe Wallpaper', 'fas fa-image');
+    if (!silent) showToast(`Wallpaper: ${WALLPAPER_NAMES[currentWallpaperIdx]}`, 'fas fa-image');
 }
 
 function cycleTahoeWallpaper() {
-    setTahoeWallpaper((currentWallpaperIdx + 1) % TAHOE_WALLPAPERS.length);
+    setTahoeWallpaper(currentWallpaperIdx + 1);
 }
 
+function renderWallpaperThumbs() {
+    const wrap = document.getElementById('cc-wallpapers');
+    if (!wrap) return;
+    wrap.innerHTML = TAHOE_WALLPAPERS.map((url, i) => `
+        <button type="button" onclick="setTahoeWallpaper(${i})" aria-label="${WALLPAPER_NAMES[i]} wallpaper">
+            <span class="cc-wall${i === currentWallpaperIdx ? ' active' : ''}" style="display:block;background-image:url('${url.replace('w=2800', 'w=320')}')"></span>
+            <span class="cc-wall-name">${WALLPAPER_NAMES[i]}</span>
+        </button>`).join('');
+}
 
+function restoreWallpaper() {
+    let idx = 0;
+    try { idx = parseInt(localStorage.getItem('rj_wallpaper') || '0', 10) || 0; } catch (e) { idx = 0; }
+    if (idx && isDesktop()) setTahoeWallpaper(idx, true);
+    try { if (localStorage.getItem('rj_widgets_hidden') === '1') document.body.classList.add('widgets-hidden'); } catch (e) { /* noop */ }
+}
 
+// ---------- Finder ----------
+const finderState = { loc: 'projects', tag: null, selected: null, view: 'icons', history: [], future: [] };
+let finderItemsCache = [];
+
+const FINDER_LOCATIONS = {
+    recents: { title: 'Recents', icon: 'fas fa-clock-rotate-left' },
+    projects: { title: 'Projects', icon: 'fas fa-folder' },
+    skills: { title: 'Skills', icon: 'fas fa-layer-group' },
+    applications: { title: 'Applications', icon: 'fas fa-rocket' },
+    documents: { title: 'Documents', icon: 'fas fa-file-lines' }
+};
+
+const FINDER_TAGS = [
+    { name: 'Live demo', color: '#ff453a', test: p => !!p.live },
+    { name: 'React', color: '#0a84ff', test: p => p.tags.includes('React') },
+    { name: 'Node.js', color: '#30d158', test: p => p.tags.includes('Node.js') },
+    { name: 'Python', color: '#ffd60a', test: p => p.tags.includes('Python') },
+    { name: 'AI', color: '#bf5af2', test: p => p.tags.includes('AI') },
+    { name: 'Mobile', color: '#ff9f0a', test: p => p.tags.includes('Mobile') }
+];
+
+function projectFinderItem(p) {
+    const actions = [];
+    if (p.readme) actions.push({ label: 'Open README', icon: 'fas fa-book-open', primary: true, run: () => openProject(p) });
+    if (p.live) actions.push({ label: 'Live Demo', icon: 'fas fa-arrow-up-right-from-square', primary: !p.readme, run: () => window.open(p.live, '_blank', 'noopener') });
+    if (p.npm) actions.push({ label: 'npm Package', icon: 'fab fa-npm', run: () => window.open(p.npm, '_blank', 'noopener') });
+    if (p.repo) actions.push({ label: 'GitHub', icon: 'fab fa-github', run: () => window.open(p.repo, '_blank', 'noopener') });
+    return { id: `p:${p.id}`, name: p.name, kind: p.kind, iconHTML: projectIconHTML(p), desc: p.desc, tags: p.tags, actions, open: () => openProject(p) };
+}
+
+function skillFinderItem(s) {
+    const used = s.match ? PORTFOLIO_PROJECTS.filter(p => p.tags.some(t => s.match.includes(t))).map(p => p.name) : [];
+    return {
+        id: `s:${s.name}`,
+        name: s.name,
+        kind: s.level ? `${s.group} • ${s.level}` : s.group,
+        iconHTML: skillIconHTML(s),
+        desc: s.desc + (used.length ? ` Used in: ${used.slice(0, 5).join(', ')}.` : ''),
+        tags: s.level ? [s.level] : [],
+        actions: [{ label: 'Show Skill Levels', icon: 'fas fa-gear', primary: true, run: () => openApp('skills') }],
+        open: () => openApp('skills')
+    };
+}
+
+function appFinderItem(a) {
+    return { id: `a:${a.id}`, name: a.name, kind: 'Application', iconHTML: appIconHTML(a.icon), desc: a.desc, tags: [], actions: [{ label: 'Open', icon: 'fas fa-arrow-right', primary: true, run: a.open }], open: a.open };
+}
+
+const RESUME_ITEM = () => ({
+    id: 'doc:resume', name: 'Resume.pdf', kind: 'PDF Document', iconHTML: appIconHTML('resume'),
+    desc: 'Ranveer Jaiswal — Full Stack / MERN Developer. Experience, projects, skills and education.',
+    tags: [], actions: [{ label: 'Open PDF', icon: 'fas fa-file-pdf', primary: true, run: openResume }], open: openResume
+});
+
+function readmeDocItem(p) {
+    return {
+        id: `d:${p.readme}`, name: `${p.name} — README.md`, kind: 'Markdown Document', iconHTML: appIconHTML('markdown'),
+        desc: p.desc, tags: [], actions: [{ label: 'Open README', icon: 'fas fa-book-open', primary: true, run: () => openReadmeModal(p.readme) }],
+        open: () => openReadmeModal(p.readme)
+    };
+}
+
+function resolveRecent(key) {
+    const [type, id] = key.split(/:(.+)/);
+    if (type === 'app') { const a = PORTFOLIO_APPS.find(x => x.id === id); return a ? appFinderItem(a) : null; }
+    if (type === 'p') { const p = PORTFOLIO_PROJECTS.find(x => x.id === id); return p ? projectFinderItem(p) : null; }
+    if (type === 'readme') { const p = PORTFOLIO_PROJECTS.find(x => x.readme === id); return p ? projectFinderItem(p) : null; }
+    if (type === 'doc' && id === 'resume') return RESUME_ITEM();
+    return null;
+}
+
+function getFinderItems() {
+    const { loc, tag } = finderState;
+    let items = [];
+    if (loc === 'projects') items = PORTFOLIO_PROJECTS.filter(p => tag === null || FINDER_TAGS[tag].test(p)).map(projectFinderItem);
+    else if (loc === 'skills') items = SKILLS_LIST.map(skillFinderItem);
+    else if (loc === 'applications') items = PORTFOLIO_APPS.map(appFinderItem);
+    else if (loc === 'documents') items = [RESUME_ITEM(), ...PORTFOLIO_PROJECTS.filter(p => p.readme).map(readmeDocItem)];
+    else if (loc === 'recents') {
+        const seen = new Set();
+        items = recentKeys.map(resolveRecent).filter(it => it && !seen.has(it.id) && seen.add(it.id));
+    }
+    const q = (document.getElementById('finder-search')?.value || '').trim().toLowerCase();
+    if (q) items = items.filter(it => `${it.name} ${it.kind} ${(it.tags || []).join(' ')} ${it.desc || ''}`.toLowerCase().includes(q));
+    return items;
+}
+
+function initFinder() {
+    const tagsEl = document.getElementById('finder-tags');
+    if (tagsEl) {
+        tagsEl.innerHTML = FINDER_TAGS.map((t, i) => `<div class="finder-side-item" data-tag="${i}" onclick="openFinderTag(${i})"><span class="finder-tag-dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</div>`).join('');
+        // On phones the sidebar becomes one horizontal chip row
+        if (!isDesktop()) tagsEl.style.display = 'contents';
+    }
+    const grid = document.getElementById('finder-grid');
+    if (grid) {
+        grid.addEventListener('click', (e) => {
+            const el = e.target.closest('.finder-item');
+            if (!el) return;
+            if (!isDesktop()) finderOpen(el.dataset.id);
+            else finderSelect(el.dataset.id);
+        });
+        grid.addEventListener('dblclick', (e) => {
+            const el = e.target.closest('.finder-item');
+            if (el && isDesktop()) finderOpen(el.dataset.id);
+        });
+    }
+}
+
+function openFinder(loc) {
+    const win = document.getElementById('app-finder');
+    if (!win) return;
+    if (!loc) {
+        if (win.classList.contains('is-open')) { bringToFront(win); return; }
+        loc = finderState.loc || 'projects';
+    }
+    if (!FINDER_LOCATIONS[loc]) loc = 'projects';
+    navigateFinder(loc, null, win.classList.contains('is-open'));
+    openApp('finder');
+    setHash(`finder/${loc}`);
+}
+
+function openFinderTag(i) {
+    navigateFinder('projects', i, true);
+    const win = document.getElementById('app-finder');
+    if (win && !win.classList.contains('is-open')) openApp('finder');
+}
+
+function navigateFinder(loc, tag = null, push = true) {
+    if (push && (finderState.loc !== loc || finderState.tag !== tag)) {
+        finderState.history.push({ loc: finderState.loc, tag: finderState.tag });
+        finderState.future = [];
+    }
+    finderState.loc = loc;
+    finderState.tag = tag;
+    finderState.selected = null;
+    const search = document.getElementById('finder-search');
+    if (search) search.value = '';
+    renderFinder();
+    if (document.getElementById('app-finder')?.classList.contains('is-open')) setHash(`finder/${loc}`);
+}
+
+function finderGoBack() {
+    const prev = finderState.history.pop();
+    if (!prev) return;
+    finderState.future.push({ loc: finderState.loc, tag: finderState.tag });
+    Object.assign(finderState, { loc: prev.loc, tag: prev.tag, selected: null });
+    renderFinder();
+}
+
+function finderGoForward() {
+    const next = finderState.future.pop();
+    if (!next) return;
+    finderState.history.push({ loc: finderState.loc, tag: finderState.tag });
+    Object.assign(finderState, { loc: next.loc, tag: next.tag, selected: null });
+    renderFinder();
+}
+
+function setFinderView(view) {
+    finderState.view = view;
+    document.getElementById('finder-view-icons')?.classList.toggle('active', view === 'icons');
+    document.getElementById('finder-view-list')?.classList.toggle('active', view === 'list');
+    renderFinder();
+}
+
+function renderFinder() {
+    const grid = document.getElementById('finder-grid');
+    if (!grid) return;
+    const { loc, tag } = finderState;
+    const titleText = tag !== null ? FINDER_TAGS[tag].name : FINDER_LOCATIONS[loc].title;
+    const titleEl = document.getElementById('finder-title');
+    if (titleEl) titleEl.textContent = titleText;
+    const titleIcon = document.getElementById('finder-title-icon');
+    if (titleIcon) titleIcon.className = `${tag !== null ? 'fas fa-tag' : FINDER_LOCATIONS[loc].icon} text-[#0a84ff] hidden md:inline`;
+
+    document.querySelectorAll('#finder-sidebar .finder-side-item[data-loc]').forEach(el => el.classList.toggle('active', tag === null && el.dataset.loc === loc));
+    document.querySelectorAll('#finder-sidebar .finder-side-item[data-tag]').forEach(el => el.classList.toggle('active', tag !== null && +el.dataset.tag === tag));
+    const back = document.getElementById('finder-back-btn');
+    const fwd = document.getElementById('finder-fwd-btn');
+    if (back) back.disabled = !finderState.history.length;
+    if (fwd) fwd.disabled = !finderState.future.length;
+
+    finderItemsCache = getFinderItems();
+    if (finderState.selected && !finderItemsCache.some(i => i.id === finderState.selected)) finderState.selected = null;
+    grid.classList.toggle('list-view', finderState.view === 'list');
+
+    const q = (document.getElementById('finder-search')?.value || '').trim();
+    grid.innerHTML = finderItemsCache.length
+        ? finderItemsCache.map(it => `
+            <div class="finder-item${it.id === finderState.selected ? ' selected' : ''}" data-id="${escapeHtml(it.id)}" role="option" aria-selected="${it.id === finderState.selected}" title="${escapeHtml(it.name)}">
+                <div class="fi-icon">${it.iconHTML}</div>
+                <div class="fi-name">${escapeHtml(it.name)}</div>
+                <div class="fi-kind">${escapeHtml(it.kind)}</div>
+            </div>`).join('')
+        : `<div class="finder-empty">${q ? `No items match “${escapeHtml(q)}”` : (loc === 'recents' ? 'Projects and apps you open will appear here.' : 'This folder is empty.')}</div>`;
+
+    updateFinderStatus();
+    renderFinderPreview();
+}
+
+function updateFinderStatus() {
+    const status = document.getElementById('finder-status');
+    if (!status) return;
+    const n = finderItemsCache.length;
+    status.textContent = `${n} item${n === 1 ? '' : 's'}${finderState.selected ? ', 1 selected — double-click to open' : ''}`;
+}
+
+function finderSelect(id) {
+    finderState.selected = id;
+    document.querySelectorAll('#finder-grid .finder-item').forEach(el => {
+        const on = el.dataset.id === id;
+        el.classList.toggle('selected', on);
+        el.setAttribute('aria-selected', on);
+        if (on) el.scrollIntoView({ block: 'nearest' });
+    });
+    updateFinderStatus();
+    renderFinderPreview();
+}
+
+function finderOpen(id) {
+    const it = finderItemsCache.find(i => i.id === id);
+    if (it && typeof it.open === 'function') it.open();
+}
+
+function renderFinderPreview() {
+    const pane = document.getElementById('finder-preview');
+    if (!pane) return;
+    const it = finderItemsCache.find(i => i.id === finderState.selected);
+    if (!it) {
+        pane.innerHTML = `<div class="fp-empty"><i class="far fa-hand-pointer text-2xl mb-3 block opacity-40"></i>Select an item to preview it.<br>Double-click to open.</div>`;
+        return;
+    }
+    pane.innerHTML = `
+        <div class="fp-icon">${it.iconHTML}</div>
+        <div class="fp-name">${escapeHtml(it.name)}</div>
+        <div class="fp-kind">${escapeHtml(it.kind)}</div>
+        ${it.desc ? `<p class="fp-desc">${escapeHtml(it.desc)}</p>` : ''}
+        ${it.tags && it.tags.length ? `<div class="fp-tags">${it.tags.map(t => `<span class="fp-tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+        <div class="fp-actions">${it.actions.map((a, i) => `<button type="button" class="fp-btn${a.primary ? ' primary' : ''}" data-act="${i}"><i class="${a.icon}"></i>${escapeHtml(a.label)}</button>`).join('')}</div>`;
+    pane.querySelectorAll('[data-act]').forEach(btn => {
+        btn.addEventListener('click', () => it.actions[+btn.dataset.act].run());
+    });
+}
+
+// ---------- Launchpad ----------
+let launchpadEntries = [];
+
+function openLaunchpad() {
+    if (!isDesktop()) { openFolderModal(); return; }
+    closeAllMenus();
+    closeSpotlight();
+    closeMissionControl();
+    const lp = document.getElementById('launchpad');
+    const input = document.getElementById('lp-search-input');
+    if (!lp) return;
+    lp.classList.add('is-active');
+    if (input) input.value = '';
+    renderLaunchpad('');
+    setTimeout(() => input && input.focus(), 60);
+}
+
+function closeLaunchpad() {
+    document.getElementById('launchpad')?.classList.remove('is-active');
+}
+
+function toggleLaunchpad() {
+    const lp = document.getElementById('launchpad');
+    if (lp && lp.classList.contains('is-active')) closeLaunchpad();
+    else openLaunchpad();
+}
+
+function renderLaunchpad(query) {
+    const grid = document.getElementById('launchpad-grid');
+    if (!grid) return;
+    const q = String(query || '').trim().toLowerCase();
+    const apps = [
+        ...PORTFOLIO_APPS.map(a => ({ name: a.name, html: appIconHTML(a.icon), run: a.open, section: 'Apps' })),
+        { name: 'Resume.pdf', html: appIconHTML('resume'), run: openResume, section: 'Apps' },
+        { name: 'GitHub', html: appIconHTML('github'), run: () => window.open('https://github.com/Rvjais', '_blank', 'noopener'), section: 'Apps' }
+    ];
+    const projects = PORTFOLIO_PROJECTS.map(p => ({ name: p.name, html: projectIconHTML(p), run: () => openProject(p), section: 'Projects', keywords: p.tags.join(' ') }));
+    launchpadEntries = [...apps, ...projects].filter(e => !q || `${e.name} ${e.keywords || ''}`.toLowerCase().includes(q));
+
+    if (!launchpadEntries.length) {
+        grid.innerHTML = `<div class="lp-empty">No apps or projects match “${escapeHtml(query)}”</div>`;
+        return;
+    }
+    let html = '';
+    let lastSection = '';
+    launchpadEntries.forEach((e, i) => {
+        if (!q && e.section !== lastSection) { html += `<div class="lp-section">${e.section}</div>`; lastSection = e.section; }
+        html += `<div class="lp-item" data-lp="${i}" role="button" tabindex="0">${e.html}<span>${escapeHtml(e.name)}</span></div>`;
+    });
+    grid.innerHTML = html;
+    grid.querySelectorAll('[data-lp]').forEach(el => {
+        const run = () => { closeLaunchpad(); launchpadEntries[+el.dataset.lp].run(); };
+        el.addEventListener('click', run);
+        el.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') run(); });
+    });
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target && e.target.id === 'lp-search-input' && launchpadEntries.length) {
+        e.preventDefault();
+        closeLaunchpad();
+        launchpadEntries[0].run();
+    }
+});
+
+// ---------- Widgets ----------
+function initWidgets() {
+    const face = document.getElementById('widget-clock-face');
+    if (face && !face.querySelector('.tick')) {
+        const ticks = Array.from({ length: 12 }, (_, i) => `<span class="tick${i % 3 === 0 ? ' major' : ''}" style="transform: rotate(${i * 30}deg)"></span>`).join('');
+        face.insertAdjacentHTML('afterbegin', ticks);
+    }
+    const featured = document.getElementById('widget-featured');
+    if (featured) {
+        featured.innerHTML = PORTFOLIO_PROJECTS.filter(p => p.featured).map(p => `
+            <div class="wf-item" onclick="openProject(PORTFOLIO_PROJECTS.find(x => x.id === '${p.id}'))" title="${escapeHtml(p.name)} — open README">
+                ${projectIconHTML(p)}
+                <div class="min-w-0">
+                    <div class="wf-name">${escapeHtml(p.name)}</div>
+                    <div class="wf-desc">${escapeHtml(p.kind)} • ${escapeHtml(p.tags.slice(0, 3).join(', '))}</div>
+                </div>
+            </div>`).join('');
+    }
+    updateWidgetClock(new Date());
+}
+
+function updateWidgetClock(now) {
+    const h = document.getElementById('clk-h');
+    if (!h) return;
+    const sec = now.getSeconds(), min = now.getMinutes(), hr = now.getHours() % 12;
+    h.style.transform = `rotate(${hr * 30 + min * 0.5}deg)`;
+    document.getElementById('clk-m').style.transform = `rotate(${min * 6 + sec * 0.1}deg)`;
+    document.getElementById('clk-s').style.transform = `rotate(${sec * 6}deg)`;
+}
+
+function toggleWidgets() {
+    const hidden = document.body.classList.toggle('widgets-hidden');
+    try { localStorage.setItem('rj_widgets_hidden', hidden ? '1' : '0'); } catch (e) { /* noop */ }
+}
+
+// ---------- Lock screen ----------
+function updateLockScreenClock(now) {
+    const t = document.getElementById('lock-time');
+    if (!t) return;
+    const h = now.getHours() % 12 || 12;
+    t.textContent = `${h}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const d = document.getElementById('lock-date');
+    if (d) d.textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+function lockScreen() {
+    closeAllMenus();
+    closeControlCenter();
+    updateLockScreenClock(new Date());
+    document.getElementById('lock-screen')?.classList.add('is-active');
+}
+
+function unlockScreen() {
+    document.getElementById('lock-screen')?.classList.remove('is-active');
+}
+
+// ---------- Boot, deep links & welcome ----------
+function handleDeepLink() {
+    let h = '';
+    try { h = decodeURIComponent(window.location.hash.replace(/^#\/?/, '')); } catch (e) { h = ''; }
+    if (!h) return false;
+    const [a, b] = h.split('/');
+    if (a === 'readme' && b && projectReadmes[b]) { openReadmeModal(b); return true; }
+    if (a === 'finder') { openFinder(FINDER_LOCATIONS[b] ? b : 'projects'); return true; }
+    if (a === 'launchpad') { openLaunchpad(); return true; }
+    if (document.getElementById(`app-${a}`)) {
+        openApp(a);
+        if (a === 'about' && ['intro', 'exp', 'edu'].includes(b)) switchAboutTab(b, null);
+        if (a === 'projects' && ['terminal', 'cards'].includes(b)) switchProjectsView(b, null);
+        return true;
+    }
+    return false;
+}
+
+function showWelcome() {
+    if (isDesktop()) {
+        notify({
+            title: 'Welcome to Ranveer’s Mac 👋',
+            body: 'Click here for About Me, browse projects in Finder, or press ⌘K to search anything.',
+            icon: 'fas fa-face-smile', iconBg: 'linear-gradient(180deg,#64d2ff,#0a6cff)',
+            action: () => openApp('about'), duration: 9000
+        });
+    } else {
+        notify({
+            title: 'Hi, I’m Ranveer 👋',
+            body: 'Tap an app to explore. Tap the bar at the bottom to come back Home.',
+            icon: 'fas fa-face-smile', iconBg: 'linear-gradient(180deg,#64d2ff,#0a6cff)',
+            action: () => openApp('about'), duration: 7000
+        });
+    }
+}
+
+function runBootSequence() {
+    const boot = document.getElementById('boot-screen');
+    let seen = false;
+    try {
+        seen = sessionStorage.getItem('rj_booted') === '1';
+        sessionStorage.setItem('rj_booted', '1');
+    } catch (e) { /* storage blocked */ }
+    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const minMs = (seen || reduced) ? 250 : 1100;
+    if (boot) boot.style.setProperty('--boot-ms', `${minMs}ms`);
+    const start = performance.now();
+
+    const finish = () => {
+        if (!boot || boot.dataset.done) return;
+        boot.dataset.done = '1';
+        const wait = Math.max(0, minMs - (performance.now() - start));
+        setTimeout(() => {
+            boot.classList.add('boot-done');
+            setTimeout(() => boot.remove(), 520);
+            layoutDesktopIcons();
+            const linked = handleDeepLink();
+            if (!seen && !linked) setTimeout(showWelcome, 450);
+        }, wait);
+    };
+
+    if (document.readyState === 'complete') finish();
+    else {
+        window.addEventListener('load', finish, { once: true });
+        setTimeout(finish, 2600); // don't wait forever on a slow wallpaper download
+    }
+}

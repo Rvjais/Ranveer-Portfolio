@@ -3,7 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>Ranveer Jaiswal — Full Stack & MERN Developer | macOS Tahoe & iOS</title>
+    <title>Ranveer Jaiswal — Full Stack & MERN Developer</title>
+    <meta name="description" content="Ranveer Jaiswal — Full Stack / MERN developer in Gurgaon, India. An interactive macOS & iOS style portfolio with projects, skills, experience and resume.">
+    <meta name="theme-color" content="#0b0f18">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta property="og:title" content="Ranveer Jaiswal — Full Stack & MERN Developer">
+    <meta property="og:description" content="Interactive macOS & iOS style developer portfolio: 12 projects, skills, experience and resume.">
+    <meta property="og:image" content="profile.png">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2364d2ff'/%3E%3Cstop offset='1' stop-color='%230a6cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-family='Arial,Helvetica,sans-serif' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3ERJ%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="profile.png">
     <!-- Resource Preconnects -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,8 +35,58 @@
 </head>
 <body class="text-gray-900 antialiased w-full relative overflow-hidden select-none">
 
-    <!-- Toast Notifications Container -->
-    <div id="toast-container" class="fixed top-14 left-1/2 transform -translate-x-1/2 z-[160] flex flex-col gap-2 pointer-events-none items-center w-full max-w-sm px-4"></div>
+    <!-- Boot screen (fades out once the page is ready; CSS failsafe hides it after 5s) -->
+    <div id="boot-screen" aria-hidden="true">
+        <i class="fab fa-apple boot-logo"></i>
+        <div class="boot-progress"><span></span></div>
+    </div>
+
+    <!-- Shared SVG symbols: macOS-style folder, PDF document, Trash -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <defs>
+            <linearGradient id="g-folder-back" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5cb6f6"/><stop offset="1" stop-color="#2f8fe6"/></linearGradient>
+            <linearGradient id="g-folder-front" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ad9ff"/><stop offset="1" stop-color="#5fb6f4"/></linearGradient>
+            <linearGradient id="g-trash" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f2f5" stop-opacity=".95"/><stop offset="1" stop-color="#c7c7cc" stop-opacity=".9"/></linearGradient>
+            <symbol id="ico-folder" viewBox="0 0 64 54">
+                <path d="M3 7.5A4.5 4.5 0 0 1 7.5 3h15.2c1.3 0 2.5.6 3.4 1.6L29.5 8.5H56.5A4.5 4.5 0 0 1 61 13v33.5a4.5 4.5 0 0 1-4.5 4.5h-49A4.5 4.5 0 0 1 3 46.5z" fill="url(#g-folder-back)"/>
+                <path d="M1.5 18.5A4.5 4.5 0 0 1 6 14h52a4.5 4.5 0 0 1 4.5 4.5v28A4.5 4.5 0 0 1 58 51H6a4.5 4.5 0 0 1-4.5-4.5z" fill="url(#g-folder-front)"/>
+                <path d="M1.5 18.5A4.5 4.5 0 0 1 6 14h52a4.5 4.5 0 0 1 4.5 4.5v1H1.5z" fill="#ffffff" fill-opacity=".28"/>
+            </symbol>
+            <symbol id="ico-pdf" viewBox="0 0 48 60">
+                <path d="M4 3.5A3.5 3.5 0 0 1 7.5 0H32l14 14v42.5a3.5 3.5 0 0 1-3.5 3.5h-35A3.5 3.5 0 0 1 4 56.5z" fill="#fdfdfd"/>
+                <path d="M32 0v10.5A3.5 3.5 0 0 0 35.5 14H46z" fill="#d9d9de"/>
+                <rect x="0" y="32" width="38" height="14" rx="3" fill="#e5332a"/>
+                <text x="19" y="42.5" font-family="Arial,Helvetica,sans-serif" font-size="9.5" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+                <rect x="11" y="14" width="18" height="2.4" rx="1.2" fill="#d1d1d6"/>
+                <rect x="11" y="20" width="26" height="2.4" rx="1.2" fill="#d1d1d6"/>
+                <rect x="11" y="50" width="26" height="2.4" rx="1.2" fill="#d1d1d6"/>
+            </symbol>
+            <symbol id="ico-trash" viewBox="0 0 48 56">
+                <path d="M6 10h36l-3.2 40.5A5 5 0 0 1 33.8 55H14.2a5 5 0 0 1-5-4.5z" fill="url(#g-trash)" stroke="rgba(0,0,0,.18)" stroke-width=".8"/>
+                <rect x="3" y="5" width="42" height="7" rx="3.5" fill="#f5f5f7" stroke="rgba(0,0,0,.2)" stroke-width=".8"/>
+                <path d="M17 18v30M24 18v30M31 18v30" stroke="rgba(60,60,67,.35)" stroke-width="1.6" stroke-linecap="round"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <!-- Lock screen (Apple menu → Lock Screen) -->
+    <div id="lock-screen" onclick="unlockScreen()" role="dialog" aria-label="Lock screen">
+        <div>
+            <div class="lock-date" id="lock-date">Monday, November 16</div>
+            <div class="lock-time" id="lock-time">9:41</div>
+        </div>
+        <div class="lock-user">
+            <img src="profile.png" alt="Ranveer Jaiswal">
+            <b>Ranveer Jaiswal</b>
+            <small>Click or press any key to unlock</small>
+        </div>
+    </div>
+
+    <!-- Display brightness overlay (driven by Control Center) -->
+    <div id="brightness-overlay"></div>
+
+    <!-- Notification banners -->
+    <div id="toast-container" aria-live="polite"></div>
 
     <!-- ====================================================================
          SPOTLIGHT SEARCH MODAL (macOS Tahoe & iOS)
@@ -56,12 +116,13 @@
                 </div>
             </div>
             <!-- Tahoe Footer Bar -->
-            <div class="px-4 py-2 border-t border-white/10 bg-black/30 flex items-center justify-between text-[11px] text-gray-400">
+            <div class="spotlight-footer px-4 py-2 border-t border-white/10 bg-black/30 flex items-center justify-between text-[11px] text-gray-400">
                 <div class="flex items-center space-x-3">
                     <span><kbd class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-gray-300">↑</kbd> <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-gray-300">↓</kbd> Navigate</span>
                     <span><kbd class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-gray-300">↵</kbd> Open</span>
+                    <span><kbd class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-gray-300">esc</kbd> Close</span>
                 </div>
-                <span class="text-gray-400 font-mono text-[10px]">macOS Tahoe 26.1</span>
+                <span class="text-gray-400 text-[10px]">Tip: try “react”, “ai” or “resume”</span>
             </div>
         </div>
     </div>
@@ -70,35 +131,39 @@
          README PREVIEW MODAL (macOS / iOS)
          ==================================================================== -->
     <div id="readme-modal-overlay" onclick="if(event.target === this) closeReadmeModal()">
-        <div class="readme-card">
+        <div class="readme-card" role="dialog" aria-modal="true" aria-labelledby="readme-title">
+            <div class="readme-grabber"></div>
             <!-- Header bar -->
-            <div class="p-4 border-b border-white/10 flex items-center justify-between bg-white/5 select-none">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-sm">
-                        <i class="fab fa-npm"></i>
+            <div class="readme-header select-none">
+                <div class="readme-header-left">
+                    <div class="hidden md:flex items-center traffic-container mr-1">
+                        <div class="traffic-btn tl-close" onclick="closeReadmeModal()" title="Close"><i class="fas fa-times"></i></div>
+                        <div class="traffic-btn tl-min" onclick="closeReadmeModal()" title="Minimize"><i class="fas fa-minus"></i></div>
+                        <div class="traffic-btn tl-max" title="Zoom"><i class="fas fa-expand-alt"></i></div>
                     </div>
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <span id="readme-title" class="text-white font-bold text-sm">fullstack-code-visualiser</span>
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">README.md</span>
+                    <div id="readme-icon" class="readme-icon" style="background: linear-gradient(180deg,#ef4444,#be123c)"><i class="fab fa-npm"></i></div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span id="readme-title" class="text-white font-bold text-sm truncate">fullstack-code-visualiser</span>
+                            <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 shrink-0">README.md</span>
                         </div>
                         <span id="readme-subtitle" class="text-[11px] text-gray-400 font-mono">npm install -g fullstack-code-visualiser</span>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <a id="readme-npm-btn" href="https://www.npmjs.com/package/fullstack-code-visualiser" target="_blank" class="px-3 py-1 rounded-md text-xs font-semibold bg-[#cb3837] hover:bg-red-700 text-white flex items-center transition">
-                        <i class="fab fa-npm mr-1.5"></i> npm
+                <div class="readme-actions">
+                    <a id="readme-npm-btn" href="https://www.npmjs.com/package/fullstack-code-visualiser" target="_blank" rel="noopener" class="readme-btn primary">
+                        <i class="fab fa-npm"></i> <span>npm</span>
                     </a>
-                    <a id="readme-github-btn" href="https://github.com/Rvjais/fullstack-code-visualiser" target="_blank" class="px-3 py-1 rounded-md text-xs font-semibold bg-white/10 hover:bg-white/20 text-white flex items-center transition">
-                        <i class="fab fa-github mr-1.5"></i> Repo
+                    <a id="readme-github-btn" href="https://github.com/Rvjais/fullstack-code-visualiser" target="_blank" rel="noopener" class="readme-btn">
+                        <i class="fab fa-github"></i> <span>Repo</span>
                     </a>
-                    <button onclick="closeReadmeModal()" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition">
-                        <i class="fas fa-times text-xs"></i>
+                    <button onclick="closeReadmeModal()" class="readme-close md:hidden" aria-label="Close">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
             </div>
             <!-- Scrollable content -->
-            <div id="readme-body" class="p-6 overflow-y-auto dark-scroll max-h-[calc(88vh-80px)] readme-markdown"></div>
+            <div id="readme-body" class="p-6 overflow-y-auto dark-scroll readme-markdown"></div>
         </div>
     </div>
 
@@ -106,18 +171,19 @@
          iOS AUTHENTIC FOLDER OVERLAY MODAL (Projects Folder)
          ==================================================================== -->
     <div id="folder-modal-overlay" onclick="if(event.target === this) closeFolderModal()">
-        <div class="ios-folder-card" style="max-height: min(88vh, 640px); overflow-y: auto;">
+        <div class="ios-folder-wrap">
             <!-- Folder Title -->
-            <div class="w-full flex items-center justify-between mb-4 px-1 sticky top-0 bg-[#1c1d22]/90 backdrop-blur-md z-10 py-1 border-b border-white/10">
-                <div class="flex items-center space-x-2">
-                    <span class="text-white font-bold text-lg tracking-tight">Projects</span>
-                    <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-[10px] font-bold border border-blue-500/30">12 Apps</span>
+            <div class="ios-folder-title-row">
+                <div>
+                    <div class="ios-folder-title">Projects</div>
+                    <div class="ios-folder-sub">12 apps &amp; tools • tap to open</div>
                 </div>
-                <button onclick="closeFolderModal()" class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition">
-                    <i class="fas fa-times text-xs"></i>
+                <button onclick="closeFolderModal()" class="ios-folder-close" aria-label="Close folder">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
 
+            <div class="ios-folder-card">
             <!-- Folder 3-Column All Projects Grid -->
             <div class="grid grid-cols-3 gap-y-4 gap-x-2.5 w-full justify-items-center">
                 <!-- Folder Item 1: HR-Buddy -->
@@ -169,7 +235,7 @@
                 </div>
 
                 <!-- Folder Item 7: PioneerOS -->
-                <div class="ios-app-item" onclick="closeFolderModal(); openApp('projects'); switchProjectsView('cards', null);">
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('pioneeros');">
                     <div class="ios-icon bg-gradient-to-b from-sky-500 to-blue-700">
                         <i class="fas fa-desktop text-2xl text-white"></i>
                     </div>
@@ -177,7 +243,7 @@
                 </div>
 
                 <!-- Folder Item 8: Rain CRM -->
-                <div class="ios-app-item" onclick="closeFolderModal(); openApp('projects'); switchProjectsView('cards', null);">
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('rain-crm');">
                     <div class="ios-icon bg-gradient-to-b from-emerald-500 to-teal-700">
                         <i class="fas fa-users-cog text-2xl text-white"></i>
                     </div>
@@ -201,7 +267,7 @@
                 </div>
 
                 <!-- Folder Item 11: Stock Manager (C++ Qt) -->
-                <div class="ios-app-item" onclick="closeFolderModal(); openApp('projects'); switchProjectsView('cards', null);">
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('stock-mgmt');">
                     <div class="ios-icon bg-gradient-to-b from-cyan-600 to-blue-800">
                         <i class="fas fa-boxes text-2xl text-white"></i>
                     </div>
@@ -217,14 +283,14 @@
                 </div>
             </div>
 
-            <!-- Authentic NavLink to Navigate to Full Projects List / Terminal -->
-            <div class="w-full mt-5 pt-3 border-t border-white/10 flex flex-col items-center">
-                <button onclick="closeFolderModal(); openApp('projects'); switchProjectsView('cards', null);" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs flex items-center justify-center space-x-2 shadow-xl transition active:scale-[0.98]">
-                    <i class="fas fa-layer-group text-xs"></i>
-                    <span>List All Projects in Terminal & Cards Showcase &rarr;</span>
-                </button>
-                <p class="text-[11px] text-white/50 mt-2">Tap any app icon or click above to explore all</p>
             </div>
+
+            <!-- Navigate to the full project list -->
+            <button onclick="closeFolderModal(); openApp('projects'); switchProjectsView('cards', null);" class="ios-folder-cta">
+                <i class="fas fa-layer-group"></i>
+                <span>See all project cards</span>
+                <i class="fas fa-chevron-right text-xs opacity-70"></i>
+            </button>
         </div>
     </div>
 
@@ -232,21 +298,19 @@
          iOS AUTHENTIC FOLDER OVERLAY MODAL (Skills Folder)
          ==================================================================== -->
     <div id="skills-folder-modal-overlay" onclick="if(event.target === this) closeSkillsFolderModal()">
-        <div class="ios-folder-card" style="max-width: 380px;">
+        <div class="ios-folder-wrap">
             <!-- Folder Title -->
-            <div class="w-full flex items-center justify-between mb-4 px-1">
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-layer-group text-blue-400 text-lg"></i>
-                    <div>
-                        <span class="text-white font-bold text-lg tracking-tight block leading-tight">Skills & Stack</span>
-                        <span class="text-[10px] text-gray-300 font-medium">All Core Technologies & Tools</span>
-                    </div>
+            <div class="ios-folder-title-row">
+                <div>
+                    <div class="ios-folder-title">Skills</div>
+                    <div class="ios-folder-sub">Core technologies &amp; tools • tap for details</div>
                 </div>
-                <button onclick="closeSkillsFolderModal()" class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition">
-                    <i class="fas fa-times text-xs"></i>
+                <button onclick="closeSkillsFolderModal()" class="ios-folder-close" aria-label="Close folder">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
 
+            <div class="ios-folder-card">
             <!-- Folder 3x4 Skills Grid -->
             <div class="grid grid-cols-3 gap-y-4 gap-x-2.5 w-full justify-items-center">
                 <!-- Skill 1: Docker -->
@@ -346,79 +410,54 @@
                 </div>
             </div>
 
+            </div>
+
             <!-- Deep Dive Button -->
-            <button onclick="closeSkillsFolderModal(); openApp('skills');" class="mt-4 w-full py-2 px-3 rounded-2xl bg-white/20 hover:bg-white/30 border border-white/25 text-white text-xs font-semibold flex items-center justify-center space-x-2 transition shadow-sm">
-                <i class="fas fa-sliders-h text-cyan-300"></i>
-                <span>Open Full Skills Preferences App &rarr;</span>
+            <button onclick="closeSkillsFolderModal(); openApp('skills');" class="ios-folder-cta">
+                <i class="fas fa-gear"></i>
+                <span>Open skill levels in Settings</span>
+                <i class="fas fa-chevron-right text-xs opacity-70"></i>
             </button>
-            
-            <p class="text-[11px] text-white/60 mt-3">Tap outside or &times; to close folder</p>
         </div>
     </div>
 
     <!-- ====================================================================
          DESKTOP ONLY: macOS Tahoe Menu Bar
          ==================================================================== -->
-    <nav class="desktop-only glass-tahoe-dark w-full h-7 absolute top-0 z-40 items-center justify-between px-4 text-white text-xs shadow-sm border-b border-white/15 backdrop-blur-2xl">
-        <div class="flex items-center space-x-3.5 font-medium">
-            <i class="fab fa-apple text-base cursor-pointer hover:opacity-80 transition" onclick="toggleAppleMenu(event)" title="Apple Menu"></i>
-            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition font-semibold" onclick="openAboutThisMac()">Ranveer Jaiswal</span>
-            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="toggleMissionControl()" title="Mission Control (F3)"><i class="fas fa-table-cells-large text-cyan-400 mr-1.5"></i>Mission Control</span>
-            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="openApp('about'); switchAboutTab('exp', null);">Experience</span>
-            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="openApp('projects'); switchProjectsView('cards', null);">Projects</span>
-            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="openSkillsFolderModal()">Skills</span>
-            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="openApp('contact')">Contact</span>
-            <span class="cursor-pointer hover:bg-white/15 px-2 py-0.5 rounded transition hidden lg:inline" onclick="window.open('ranveer_jaiswal.pdf', '_blank')">Resume.pdf</span>
+    <nav id="mac-menubar" class="desktop-only" aria-label="Menu bar">
+        <div class="mb-left">
+            <button class="mb-item mb-apple" data-menu="apple" aria-label="Apple menu"><i class="fab fa-apple"></i></button>
+            <button class="mb-item mb-app" data-menu="app" id="mb-app-name">Finder</button>
+            <button class="mb-item" data-menu="about">About</button>
+            <button class="mb-item" data-menu="projects">Projects</button>
+            <button class="mb-item" data-menu="skills">Skills</button>
+            <button class="mb-item mb-hide-sm" data-menu="contact">Contact</button>
+            <button class="mb-item mb-hide-sm" data-menu="window">Window</button>
+            <button class="mb-item mb-hide-sm" data-menu="help">Help</button>
         </div>
-        <div class="flex items-center space-x-3.5 text-xs font-normal">
-            <span class="text-gray-300 hidden sm:inline"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> Gurgaon, India</span>
-            <i class="fas fa-search cursor-pointer hover:opacity-80 transition" onclick="toggleSpotlight()" title="Spotlight Search (Cmd+Space / Cmd+K)"></i>
-            <div id="mac-control-center-btn" class="menu-pill-btn cursor-pointer" onclick="toggleControlCenter(event)" title="Control Center">
-                <i class="fas fa-sliders-h text-xs"></i>
-            </div>
-            <i class="fas fa-wifi text-emerald-400" title="Wi-Fi: Connected"></i>
-            <div class="flex items-center space-x-1" title="Battery: 98% (Power Adapter Connected)">
-                <span class="text-[10px] text-gray-300">98%</span>
-                <i class="fas fa-battery-three-quarters text-sm text-green-400"></i>
-            </div>
-            <span id="mac-clock" class="font-medium tracking-tight cursor-pointer hover:opacity-80" onclick="openApp('calendar')" title="Open Calendar (Current Date)">Tue 9:41 AM</span>
+        <div class="mb-right">
+            <button class="mb-status mb-avail mb-hide-md" onclick="openApp('contact')" title="Open to full-time &amp; freelance work — say hi!">
+                <span class="dot"></span><span>Open to work</span>
+            </button>
+            <span class="mb-status mb-battery mb-hide-sm" title="Battery: 98% (Power Adapter)">
+                <span>98%</span><span class="mb-battery-shell"><span></span></span>
+            </span>
+            <button class="mb-status" onclick="toggleControlCenter(event)" title="Wi-Fi: Connected">
+                <i class="fas fa-wifi"></i>
+            </button>
+            <button class="mb-status" onclick="toggleSpotlight()" title="Spotlight (⌘K)" aria-label="Spotlight search">
+                <i class="fas fa-magnifying-glass"></i>
+            </button>
+            <button id="mac-control-center-btn" class="mb-status" onclick="toggleControlCenter(event)" title="Control Center" aria-label="Control Center">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="4.6" rx="2.3" stroke="currentColor" stroke-width="1.2"/><circle cx="11.9" cy="4.8" r="1.4" fill="currentColor"/><rect x="1.5" y="8.9" width="13" height="4.6" rx="2.3" stroke="currentColor" stroke-width="1.2"/><circle cx="4.1" cy="11.2" r="1.4" fill="currentColor"/></svg>
+            </button>
+            <button id="mac-clock" class="mb-status" onclick="openApp('calendar')" title="Open Calendar">Mon Nov 16  9:41 AM</button>
         </div>
     </nav>
 
-    <!-- macOS 26 Tahoe Apple Menu Dropdown -->
-    <div id="macos-apple-menu" class="macos-dropdown" onclick="event.stopPropagation()">
-        <div class="macos-dropdown-item" onclick="openAboutThisMac(); closeAppleMenu();">
-            <span><i class="fab fa-apple mr-2 text-gray-300"></i> About This Mac</span>
-            <span class="text-[10px] text-gray-400">Tahoe 26.1</span>
-        </div>
-        <div class="macos-dropdown-divider"></div>
-        <div class="macos-dropdown-item" onclick="openSkillsFolderModal(); closeAppleMenu();">
-            <span><i class="fas fa-cog mr-2 text-gray-400"></i> System Settings...</span>
-        </div>
-        <div class="macos-dropdown-item" onclick="openApp('projects'); switchProjectsView('cards', null); closeAppleMenu();">
-            <span><i class="fas fa-layer-group mr-2 text-cyan-400"></i> App Store (Projects)...</span>
-        </div>
-        <div class="macos-dropdown-divider"></div>
-        <div class="macos-dropdown-item" onclick="toggleMissionControl(); closeAppleMenu();">
-            <span><i class="fas fa-table-cells-large mr-2 text-blue-400"></i> Mission Control</span>
-            <span class="text-[10px] text-gray-400">F3</span>
-        </div>
-        <div class="macos-dropdown-item" onclick="toggleSpotlight(); closeAppleMenu();">
-            <span><i class="fas fa-search mr-2 text-emerald-400"></i> Spotlight Search</span>
-            <span class="text-[10px] text-gray-400">⌘ Space</span>
-        </div>
-        <div class="macos-dropdown-divider"></div>
-        <div class="macos-dropdown-item" onclick="cycleTahoeWallpaper(); closeAppleMenu();">
-            <span><i class="fas fa-image mr-2 text-purple-400"></i> Next Tahoe Wallpaper</span>
-        </div>
-        <div class="macos-dropdown-divider"></div>
-        <div class="macos-dropdown-item" onclick="showToast('Lock Screen • Screen Secured', 'fas fa-lock'); closeAppleMenu();">
-            <span><i class="fas fa-lock mr-2 text-gray-400"></i> Lock Screen</span>
-        </div>
-        <div class="macos-dropdown-item" onclick="location.reload();">
-            <span><i class="fas fa-redo-alt mr-2 text-amber-400"></i> Restart...</span>
-        </div>
-    </div>
+    <!-- Menu bar dropdown + desktop context menu (populated by script.js) -->
+    <div id="mb-dropdown" class="macos-dropdown" role="menu" onclick="event.stopPropagation()"></div>
+    <div id="ctx-menu" class="macos-dropdown" role="menu" onclick="event.stopPropagation()"></div>
 
     <!-- macOS 26 Tahoe Interactive Control Center Panel -->
     <div id="macos-control-center" onclick="event.stopPropagation()">
@@ -478,15 +517,21 @@
         </div>
 
         <!-- Display Brightness Slider -->
-        <div class="cc-slider-wrap">
-            <i class="fas fa-sun text-yellow-400 text-xs"></i>
-            <input type="range" min="30" max="100" value="95" class="cc-slider" oninput="handleBrightnessSlider(this.value)" title="Display Brightness">
+        <div class="cc-block">
+            <div class="cc-section-label">Display</div>
+            <div class="cc-slider-wrap">
+                <i class="fas fa-sun text-gray-300 text-xs"></i>
+                <input type="range" min="30" max="100" value="100" class="cc-slider" oninput="handleBrightnessSlider(this.value)" title="Display Brightness" aria-label="Display brightness">
+            </div>
         </div>
 
         <!-- Sound Volume Slider -->
-        <div class="cc-slider-wrap">
-            <i class="fas fa-volume-up text-blue-400 text-xs"></i>
-            <input type="range" min="0" max="100" value="75" class="cc-slider" oninput="handleVolumeSlider(this.value)" title="Sound Volume">
+        <div class="cc-block">
+            <div class="cc-section-label">Sound</div>
+            <div class="cc-slider-wrap">
+                <i class="fas fa-volume-high text-gray-300 text-xs"></i>
+                <input type="range" min="0" max="100" value="75" class="cc-slider" onchange="handleVolumeSlider(this.value)" title="Sound Volume" aria-label="Sound volume">
+            </div>
         </div>
 
         <!-- Now Playing Card (Veer Music) -->
@@ -505,14 +550,10 @@
             </div>
         </div>
 
-        <!-- Tahoe Wallpaper Selector -->
-        <div class="flex items-center justify-between text-[11px] text-gray-400 pt-1">
-            <span>Tahoe Wallpaper:</span>
-            <div class="flex items-center space-x-1.5">
-                <button onclick="setTahoeWallpaper(0)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white text-[10px]">Alpine</button>
-                <button onclick="setTahoeWallpaper(1)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white text-[10px]">Sunset</button>
-                <button onclick="setTahoeWallpaper(2)" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white text-[10px]">Midnight</button>
-            </div>
+        <!-- Wallpaper Selector -->
+        <div class="cc-block">
+            <div class="cc-section-label">Wallpaper</div>
+            <div class="cc-wallpapers" id="cc-wallpapers"><!-- thumbnails rendered by script.js --></div>
         </div>
     </div>
 
@@ -556,7 +597,7 @@
                             <i class="fas fa-backward-step"></i>
                         </button>
                         <button type="button" id="ios-cc-play-btn" class="ios-cc-music-btn ios-cc-play-main" onclick="togglePlayState()" title="Play / Pause">
-                            <i class="fas fa-play"></i>
+                            <i class="fas fa-pause"></i>
                         </button>
                         <button type="button" class="ios-cc-music-btn" onclick="nextTrack()" title="Next">
                             <i class="fas fa-forward-step"></i>
@@ -662,9 +703,9 @@
             <!-- Window Titlebar with Authentic macOS Traffic Lights -->
             <div class="h-10 bg-white/5 border-b border-white/10 flex items-center justify-between px-4 select-none">
                 <div class="traffic-container flex items-center space-x-2">
-                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e] cursor-pointer flex items-center justify-center" onclick="closeAboutThisMac()" title="Close"><i class="fas fa-times text-[8px] text-black/70"></i></div>
-                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123] cursor-pointer flex items-center justify-center" onclick="closeAboutThisMac()" title="Minimize"><i class="fas fa-minus text-[8px] text-black/70"></i></div>
-                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29] cursor-pointer flex items-center justify-center" title="Zoom"><i class="fas fa-expand-alt text-[7px] text-black/70"></i></div>
+                    <div class="traffic-btn tl-close cursor-pointer flex items-center justify-center" onclick="closeAboutThisMac()" title="Close"><i class="fas fa-times text-[8px] text-black/70"></i></div>
+                    <div class="traffic-btn tl-min cursor-pointer flex items-center justify-center" onclick="closeAboutThisMac()" title="Minimize"><i class="fas fa-minus text-[8px] text-black/70"></i></div>
+                    <div class="traffic-btn tl-max cursor-pointer flex items-center justify-center" title="Zoom"><i class="fas fa-expand-alt text-[7px] text-black/70"></i></div>
                 </div>
                 <span class="text-xs font-semibold text-white/90">About This Mac</span>
                 <div class="w-14"></div>
@@ -696,7 +737,7 @@
                         <button class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition" onclick="closeAboutThisMac(); openSkillsFolderModal();">
                             System Report (Skills)...
                         </button>
-                        <a href="https://github.com/Rvjais" target="_blank" class="px-3 py-1.5 rounded-lg bg-[#007aff] hover:bg-blue-600 text-white text-xs font-semibold transition">
+                        <a href="https://github.com/Rvjais" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-[#007aff] hover:bg-blue-600 text-white text-xs font-semibold transition">
                             GitHub <i class="fas fa-external-link-alt ml-1 text-[10px]"></i>
                         </a>
                     </div>
@@ -767,32 +808,30 @@
          MOBILE ONLY: iOS Home Screen (Widget + Full Real App Grid + Dock)
          ==================================================================== -->
     <div id="ios-home-screen" class="mobile-only">
+      <div class="ios-home-scroll">
         <!-- Top iOS Medium Widget (Developer Profile) -->
-        <div class="ios-widget p-4 w-full cursor-pointer shrink-0" onclick="openApp('about')">
-            <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center space-x-2">
-                    <span class="w-2 h-2 rounded-full bg-green-400 animate-ping"></span>
-                    <span class="text-[11px] font-semibold uppercase tracking-wider text-green-300">Open for Opportunities</span>
-                </div>
-                <span class="text-[11px] text-white/80 font-medium">Gurgaon, India 🇮🇳</span>
+        <div class="ios-widget p-4 w-full cursor-pointer shrink-0" onclick="openApp('about')" role="button" aria-label="Open About Ranveer">
+            <div class="flex items-center justify-between mb-3">
+                <span class="ios-widget-status"><span class="dot"></span>Open to work</span>
+                <span class="text-[11px] text-white/80 font-medium"><i class="fas fa-location-dot mr-1 text-white/60"></i>Gurgaon, India</span>
             </div>
             <div class="flex items-center space-x-3.5">
-                <div class="relative">
-                    <img src="profile.png" alt="Ranveer Jaiswal" decoding="async" class="w-14 h-14 rounded-2xl object-cover object-top border-2 border-white/50 shadow-md">
-                    <div class="absolute -bottom-1 -right-1 bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] border border-white">
-                        <i class="fas fa-check"></i>
-                    </div>
+                <img src="profile.png" alt="Ranveer Jaiswal" decoding="async" class="w-14 h-14 rounded-2xl object-cover object-top border-2 border-white/40 shadow-md shrink-0">
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-[17px] font-bold text-white leading-tight">Ranveer Jaiswal</h3>
+                    <p class="text-xs text-sky-200 font-medium">Full Stack / MERN Developer</p>
+                    <p class="text-[11px] text-white/70 truncate mt-0.5">React • Next.js • Node.js • React Native</p>
                 </div>
-                <div class="flex-1">
-                    <h3 class="text-base font-bold text-white leading-tight">Ranveer Jaiswal</h3>
-                    <p class="text-xs text-blue-200 font-medium">Full Stack / MERN Developer</p>
-                    <p class="text-[11px] text-white/70 line-clamp-1 mt-0.5">React • Next.js • Node.js • React Native • Express</p>
-                </div>
+            </div>
+            <div class="ios-widget-stats">
+                <div class="ios-widget-stat"><b>12</b><span>Projects</span></div>
+                <div class="ios-widget-stat"><b>1</b><span>npm package</span></div>
+                <div class="ios-widget-stat"><b>60%</b><span>less manual work</span></div>
             </div>
         </div>
 
         <!-- iOS 4-Column Real Resume App Grid -->
-        <div class="grid grid-cols-4 gap-y-4 gap-x-2 px-1 my-3">
+        <div class="ios-home-grid">
             <!-- App 1: About Me -->
             <div class="ios-app-item" onclick="openApp('about')">
                 <div class="ios-icon bg-gradient-to-b from-blue-400 to-blue-600">
@@ -829,7 +868,7 @@
             </div>
 
             <!-- App 5: PioneerOS -->
-            <div class="ios-app-item" onclick="openApp('projects'); switchProjectsView('cards', null);">
+            <div class="ios-app-item" onclick="openReadmeModal('pioneeros')">
                 <div class="ios-icon bg-gradient-to-b from-sky-500 to-blue-700">
                     <i class="fas fa-desktop text-2xl text-white"></i>
                 </div>
@@ -837,7 +876,7 @@
             </div>
 
             <!-- App 6: Rain CRM -->
-            <div class="ios-app-item" onclick="openApp('projects'); switchProjectsView('cards', null);">
+            <div class="ios-app-item" onclick="openReadmeModal('rain-crm')">
                 <div class="ios-icon bg-gradient-to-b from-emerald-500 to-teal-700">
                     <i class="fas fa-users-cog text-2xl text-white"></i>
                 </div>
@@ -955,161 +994,152 @@
                 <span class="ios-app-label">Calendar</span>
             </div>
         </div>
+      </div>
 
-        <!-- iOS Pagination Dots & Working Spotlight Search Bar -->
-        <div class="flex items-center justify-center space-x-2 my-1 shrink-0">
-            <div class="ios-page-dot active"></div>
-            <div class="ios-page-dot"></div>
-            <div class="ios-search-pill cursor-pointer flex items-center space-x-1" onclick="toggleSpotlight()" title="Tap for Spotlight Search">
-                <i class="fas fa-search text-[10px] opacity-80"></i>
-                <span>Search</span>
-            </div>
-            <div class="ios-page-dot"></div>
+      <!-- Pinned footer: iOS 18 search pill + dock -->
+      <div class="ios-home-footer">
+        <button type="button" class="ios-search-pill" onclick="toggleSpotlight()" aria-label="Search projects, skills and apps">
+            <i class="fas fa-magnifying-glass text-[11px] opacity-90"></i>
+            <span>Search</span>
+        </button>
+        <div class="ios-dock glass-dock">
+            <button type="button" class="ios-icon bg-gradient-to-tr from-sky-400 to-blue-600" onclick="openApp('about')" aria-label="About Me">
+                <i class="fab fa-safari text-3xl text-white"></i>
+            </button>
+            <button type="button" class="ios-icon bg-black border border-gray-700" onclick="openApp('projects')" aria-label="Projects terminal">
+                <i class="fas fa-terminal text-2xl text-green-400"></i>
+            </button>
+            <button type="button" class="ios-icon bg-gradient-to-b from-gray-200 to-gray-400" onclick="openApp('skills')" aria-label="Skills">
+                <i class="fas fa-gear text-2xl text-gray-800"></i>
+            </button>
+            <button type="button" class="ios-icon bg-gradient-to-tr from-green-400 to-emerald-600" onclick="openApp('contact')" aria-label="Contact">
+                <i class="fas fa-paper-plane text-2xl text-white"></i>
+            </button>
         </div>
-
-        <!-- iOS Bottom Floating Dock -->
-        <div class="w-full mb-1 shrink-0">
-            <div class="glass-dock rounded-[32px] p-3 flex items-center justify-around">
-                <!-- Dock Item 1: About -->
-                <div class="ios-icon w-14 h-14 bg-gradient-to-tr from-sky-400 to-blue-600 cursor-pointer" onclick="openApp('about')">
-                    <i class="fab fa-safari text-3xl text-white"></i>
-                </div>
-                <!-- Dock Item 2: Projects -->
-                <div class="ios-icon w-14 h-14 bg-black border border-gray-700 cursor-pointer" onclick="openApp('projects')">
-                    <i class="fas fa-terminal text-2xl text-green-400"></i>
-                </div>
-                <!-- Dock Item 3: Skills -->
-                <div class="ios-icon w-14 h-14 bg-gradient-to-b from-gray-200 to-gray-400 cursor-pointer" onclick="openApp('skills')">
-                    <i class="fas fa-gear text-2xl text-gray-800"></i>
-                </div>
-                <!-- Dock Item 4: Contact -->
-                <div class="ios-icon w-14 h-14 bg-gradient-to-tr from-green-400 to-emerald-600 cursor-pointer" onclick="openApp('contact')">
-                    <i class="fas fa-paper-plane text-2xl text-white"></i>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
     <!-- ====================================================================
          DESKTOP ONLY: macOS Draggable Desktop Icons
          ==================================================================== -->
-    <div id="desktop-icons-container" class="desktop-only absolute inset-0 pointer-events-none z-10 overflow-hidden">
-        <!-- Icon 1: About Me -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 45px; right: 28px;" onclick="if(!this.dataset.dragged) openApp('about')">
-            <div class="shortcut-icon bg-blue-500 shadow-lg">
-                <i class="fas fa-user-astronaut text-3xl text-white"></i>
-            </div>
+    <div id="desktop-icons-container" class="desktop-only absolute inset-0 pointer-events-none z-10 overflow-hidden" oncontextmenu="openDesktopContextMenu(event)">
+        <!-- Icons are positioned in macOS-style columns from the top-right by layoutDesktopIcons() -->
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) openApp('about')" title="About Me">
+            <div class="shortcut-icon-wrap"><div class="app-icon icon-about"><i class="fas fa-user-astronaut"></i></div></div>
             <span class="shortcut-label">About Me</span>
         </div>
 
-        <!-- Icon 2: Projects Folder -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 155px; right: 28px;" onclick="if(!this.dataset.dragged) openFolderModal()">
-            <div class="shortcut-icon shortcut-folder bg-white/20 backdrop-blur-md border border-white/40 shadow-xl">
-                <div class="grid grid-cols-2 gap-1 p-2 w-full h-full">
-                    <div class="rounded-sm bg-gradient-to-b from-amber-400 to-orange-600 flex items-center justify-center text-[9px] text-white"><i class="fas fa-user-check"></i></div>
-                    <div class="rounded-sm bg-gradient-to-b from-purple-500 to-indigo-700 flex items-center justify-center text-[9px] text-white"><i class="fas fa-chess-knight"></i></div>
-                    <div class="rounded-sm bg-gradient-to-b from-red-500 to-rose-700 flex items-center justify-center text-[9px] text-white"><i class="fab fa-npm"></i></div>
-                    <div class="rounded-sm bg-gradient-to-b from-sky-500 to-blue-700 flex items-center justify-center text-[9px] text-white"><i class="fas fa-desktop"></i></div>
-                </div>
-            </div>
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) openFinder('projects')" title="Projects folder">
+            <div class="shortcut-icon-wrap"><div class="mac-folder"><svg viewBox="0 0 64 54"><use href="#ico-folder"/></svg><i class="fas fa-code mac-folder-emblem"></i></div></div>
             <span class="shortcut-label">Projects</span>
         </div>
 
-        <!-- Icon 3: Terminal (devOS) -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 265px; right: 28px;" onclick="if(!this.dataset.dragged) { openApp('projects'); switchProjectsView('terminal', null); }">
-            <div class="shortcut-icon bg-black border border-gray-700 shadow-lg">
-                <i class="fas fa-terminal text-2xl text-emerald-400"></i>
-            </div>
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) { openApp('projects'); switchProjectsView('terminal', null); }" title="Terminal">
+            <div class="shortcut-icon-wrap"><div class="app-icon icon-terminal"><span class="term-glyph"><b>&gt;</b>_</span></div></div>
             <span class="shortcut-label">Terminal</span>
         </div>
 
-        <!-- Icon 4: Skills Folder -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 375px; right: 28px;" onclick="if(!this.dataset.dragged) openSkillsFolderModal()">
-            <div class="shortcut-icon shortcut-folder bg-white/20 backdrop-blur-md border border-white/40 shadow-xl">
-                <div class="grid grid-cols-2 gap-1 p-2 w-full h-full">
-                    <div class="rounded-sm bg-[#0b1d3a] flex items-center justify-center text-[10px]" title="Docker"><i class="devicon-docker-plain colored"></i></div>
-                    <div class="rounded-sm bg-[#161e2e] flex items-center justify-center text-[10px]" title="AWS"><i class="devicon-amazonwebservices-plain-wordmark colored"></i></div>
-                    <div class="rounded-sm bg-[#101e33] flex items-center justify-center text-[10px]" title="React"><i class="devicon-react-original colored"></i></div>
-                    <div class="rounded-sm bg-[#13241b] flex items-center justify-center text-[10px]" title="Node.js"><i class="devicon-nodejs-plain colored"></i></div>
-                </div>
-            </div>
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) openFinder('skills')" title="Skills folder">
+            <div class="shortcut-icon-wrap"><div class="mac-folder"><svg viewBox="0 0 64 54"><use href="#ico-folder"/></svg><i class="fas fa-layer-group mac-folder-emblem"></i></div></div>
             <span class="shortcut-label">Skills</span>
         </div>
 
-        <!-- Icon 5: GitHub (Rvjais) -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 45px; right: 130px;" onclick="if(!this.dataset.dragged) window.open('https://github.com/Rvjais', '_blank')">
-            <div class="shortcut-icon bg-[#181a1f] border border-white/20 shadow-xl">
-                <i class="fab fa-github text-3xl text-white"></i>
-            </div>
-            <span class="shortcut-label">GitHub</span>
-        </div>
-
-        <!-- Icon 6: LinkedIn -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 155px; right: 130px;" onclick="if(!this.dataset.dragged) window.open('https://linkedin.com', '_blank')">
-            <div class="shortcut-icon bg-[#0077b5] border border-white/20 shadow-xl">
-                <i class="fab fa-linkedin text-3xl text-white"></i>
-            </div>
-            <span class="shortcut-label">LinkedIn</span>
-        </div>
-
-        <!-- Icon 7: Resume (PDF) -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 265px; right: 130px;" onclick="if(!this.dataset.dragged) window.open('ranveer_jaiswal.pdf', '_blank')">
-            <div class="shortcut-icon bg-gradient-to-b from-red-600 to-rose-700 border border-white/20 shadow-xl">
-                <i class="fas fa-file-pdf text-3xl text-white"></i>
-            </div>
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) openResume()" title="Resume (PDF)">
+            <div class="shortcut-icon-wrap"><div class="mac-doc"><svg viewBox="0 0 48 60"><use href="#ico-pdf"/></svg></div></div>
             <span class="shortcut-label">Resume.pdf</span>
         </div>
 
-        <!-- Icon 8: Mail (Contact) -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 375px; right: 130px;" onclick="if(!this.dataset.dragged) openApp('contact')">
-            <div class="shortcut-icon bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg">
-                <i class="fas fa-envelope text-3xl text-white"></i>
-            </div>
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) openApp('contact')" title="Contact">
+            <div class="shortcut-icon-wrap"><div class="app-icon icon-mail"><i class="fas fa-envelope"></i></div></div>
             <span class="shortcut-label">Contact</span>
         </div>
 
-        <!-- Icon 9: Gallery (Photos & Videos) -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 485px; right: 28px;" onclick="if(!this.dataset.dragged) openApp('gallery')">
-            <div class="shortcut-icon bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-500 shadow-xl border border-white/20">
-                <i class="fas fa-images text-3xl text-white"></i>
-            </div>
-            <span class="shortcut-label">Gallery</span>
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) window.open('https://github.com/Rvjais', '_blank', 'noopener')" title="GitHub — Rvjais">
+            <div class="shortcut-icon-wrap"><div class="app-icon icon-github"><i class="fab fa-github"></i></div></div>
+            <span class="shortcut-label">GitHub</span>
         </div>
 
-        <!-- Icon 10: Notes -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 485px; right: 130px;" onclick="if(!this.dataset.dragged) openApp('notes')">
-            <div class="shortcut-icon bg-gradient-to-b from-amber-400 to-yellow-600 shadow-xl border border-white/20">
-                <i class="fas fa-note-sticky text-3xl text-white"></i>
-            </div>
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) window.open('https://linkedin.com', '_blank', 'noopener')" title="LinkedIn">
+            <div class="shortcut-icon-wrap"><div class="app-icon icon-linkedin"><i class="fab fa-linkedin-in"></i></div></div>
+            <span class="shortcut-label">LinkedIn</span>
+        </div>
+
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) openApp('gallery')" title="Photos">
+            <div class="shortcut-icon-wrap"><div class="app-icon icon-photos"><span class="ic-petals"></span></div></div>
+            <span class="shortcut-label">Photos</span>
+        </div>
+
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) openApp('notes')" title="Notes">
+            <div class="shortcut-icon-wrap"><div class="app-icon icon-notes"></div></div>
             <span class="shortcut-label">Notes</span>
         </div>
 
-        <!-- Icon 11: Calculator -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 595px; right: 28px;" onclick="if(!this.dataset.dragged) openApp('calculator')">
-            <div class="shortcut-icon bg-gradient-to-b from-amber-500 to-orange-600 shadow-xl border border-white/20">
-                <i class="fas fa-calculator text-3xl text-white"></i>
-            </div>
-            <span class="shortcut-label">Calculator</span>
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) openApp('calendar')" title="Calendar">
+            <div class="shortcut-icon-wrap"><div class="app-icon icon-calendar"><span class="ic-cal-day" id="desk-cal-day">MON</span><span class="ic-cal-date" id="desk-cal-date">16</span></div></div>
+            <span class="shortcut-label">Calendar</span>
         </div>
 
-        <!-- Icon 12: Calendar -->
-        <div class="desktop-shortcut pointer-events-auto" style="top: 595px; right: 130px;" onclick="if(!this.dataset.dragged) openApp('calendar')">
-            <div class="shortcut-icon bg-white text-gray-900 border border-gray-300 shadow-xl flex flex-col items-center justify-center">
-                <span id="desk-cal-day" class="text-[9px] font-black uppercase tracking-wider text-[#ff3b30] leading-none mt-1">FRI</span>
-                <span id="desk-cal-date" class="text-2xl font-black text-gray-900 leading-tight">16</span>
-            </div>
-            <span class="shortcut-label">Calendar</span>
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) openApp('calculator')" title="Calculator">
+            <div class="shortcut-icon-wrap"><div class="app-icon icon-calculator"><i class="fas fa-calculator"></i></div></div>
+            <span class="shortcut-label">Calculator</span>
         </div>
     </div>
 
     <!-- ====================================================================
-         DESKTOP ONLY: macOS 26 Tahoe Interactive Physics Dock
+         DESKTOP ONLY: Widgets (left column, hidden on smaller screens)
          ==================================================================== -->
-    <div id="macos-dock-wrapper" class="desktop-only fixed bottom-3 left-1/2 transform -translate-x-1/2 z-30 select-none">
-        <div id="macos-dock" class="relative backdrop-blur-md">
+    <aside id="desktop-widgets" class="desktop-only" aria-label="Desktop widgets">
+        <div class="widget is-clickable" onclick="openApp('about')">
+            <div class="wp-top">
+                <img src="profile.png" alt="Ranveer Jaiswal" decoding="async">
+                <div class="min-w-0">
+                    <div class="wp-name">Ranveer Jaiswal</div>
+                    <div class="wp-role">Full Stack / MERN Developer</div>
+                    <div class="wp-loc"><i class="fas fa-location-dot mr-1"></i>Gurgaon, India • Branding Pioneers</div>
+                </div>
+            </div>
+            <div class="wp-status"><span class="dot"></span>Open to full-time &amp; freelance roles</div>
+            <div class="wp-actions">
+                <button type="button" class="primary" onclick="event.stopPropagation(); openResume()"><i class="fas fa-file-arrow-down"></i> Resume</button>
+                <button type="button" onclick="event.stopPropagation(); openApp('contact')"><i class="fas fa-paper-plane"></i> Contact</button>
+            </div>
+        </div>
+
+        <div class="widget-row">
+            <div class="widget widget-small widget-clock" title="Local time — Gurgaon">
+                <div class="clock-face" id="widget-clock-face">
+                    <span class="clock-hand h" id="clk-h"></span>
+                    <span class="clock-hand m" id="clk-m"></span>
+                    <span class="clock-hand s" id="clk-s"></span>
+                    <span class="clock-pin"></span>
+                </div>
+                <span class="clock-caption">Gurgaon</span>
+            </div>
+            <div class="widget widget-small widget-cal is-clickable" onclick="openApp('calendar')">
+                <span class="wc-day" id="wcal-day">Monday</span>
+                <span class="wc-date" id="wcal-date">16</span>
+                <div class="wc-event"><b>Daily Engineering Sync</b><span>9:30 AM</span></div>
+            </div>
+        </div>
+
+        <div class="widget">
+            <div class="wf-head">
+                <span class="widget-label">Featured Projects</span>
+                <button type="button" onclick="openFinder('projects')">Show all</button>
+            </div>
+            <div id="widget-featured"><!-- rendered by script.js --></div>
+        </div>
+    </aside>
+
+    <!-- ====================================================================
+         DESKTOP ONLY: macOS Dock (magnification, tooltips, running indicators)
+         ==================================================================== -->
+    <div id="macos-dock-wrapper" class="desktop-only fixed bottom-2 left-1/2 transform -translate-x-1/2 z-30 select-none">
+        <div id="macos-dock" class="relative">
             <div id="macos-dock-inner" class="relative"></div>
         </div>
     </div>
+    <div id="dock-tooltip" class="dock-tooltip" aria-hidden="true"></div>
 
     <!-- ====================================================================
          WINDOW MANAGEMENT SYSTEM (DESKTOP & MOBILE)
@@ -1119,14 +1149,14 @@
         <!-- ----------------------------------------------------------------
              APP 1: ABOUT ME (Safari / Profile)
              ---------------------------------------------------------------- -->
-        <div id="app-about" class="app-window bg-[#f2f2f7] md:bg-white text-gray-900 shadow-2xl glass-tahoe">
+        <div id="app-about" class="app-window bg-[#f2f2f7] md:bg-white text-gray-900 shadow-2xl glass-tahoe" data-theme="light">
             <!-- App Header: iOS Navigation Bar (Mobile) / macOS Traffic Lights (Desktop) -->
             <div class="app-header bg-white/90 md:bg-gray-100/90 border-b border-gray-200 md:border-gray-300 h-14 md:h-11 flex items-center px-4 justify-between backdrop-blur-xl select-none cursor-move">
                 <!-- Desktop Window Controls -->
                 <div class="hidden md:flex items-center space-x-2 traffic-container w-24">
-                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e]" onclick="closeApp('about')" title="Close"><i class="fas fa-times"></i></div>
-                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123]" onclick="minimizeApp('about')" title="Minimize"><i class="fas fa-minus"></i></div>
-                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29]" onclick="maximizeApp('about')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                    <div class="traffic-btn tl-close" onclick="closeApp('about')" title="Close"><i class="fas fa-times"></i></div>
+                    <div class="traffic-btn tl-min" onclick="minimizeApp('about')" title="Minimize"><i class="fas fa-minus"></i></div>
+                    <div class="traffic-btn tl-max" onclick="maximizeApp('about')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
                 </div>
 
                 <!-- iOS Mobile Nav Back Button -->
@@ -1135,15 +1165,16 @@
                     <span>Back</span>
                 </button>
 
-                <!-- Center Title -->
-                <div class="text-sm md:text-xs font-semibold text-gray-800 flex items-center space-x-2">
-                    <i class="fas fa-user-astronaut text-blue-500 hidden md:inline"></i>
-                    <span>About Ranveer Jaiswal</span>
+                <!-- Center Title: Safari address bar on desktop, plain title on iOS -->
+                <div class="flex items-center justify-center min-w-0">
+                    <span class="md:hidden">About Me</span>
+                    <div class="safari-url hidden md:flex"><i class="fas fa-lock"></i><span>ranveer.dev/about</span></div>
                 </div>
 
-                <!-- Right Spacer / iOS Done Button -->
-                <div class="w-24 flex justify-end">
-                    <button class="md:hidden text-[#007aff] font-semibold text-sm" onclick="closeApp('about')">Done</button>
+                <!-- Right: Safari tools (desktop) -->
+                <div class="flex items-center justify-end gap-1">
+                    <button class="win-tool hidden md:inline-flex" onclick="copyPortfolioLink('about')" title="Copy link to this page" aria-label="Copy link"><i class="fas fa-link"></i></button>
+                    <button class="win-tool hidden md:inline-flex" onclick="openResume()" title="Open resume (PDF)" aria-label="Open resume"><i class="fas fa-arrow-up-from-bracket"></i></button>
                 </div>
             </div>
 
@@ -1159,7 +1190,7 @@
             <!-- Main App Content -->
             <div class="flex-1 flex overflow-hidden">
                 <!-- Desktop Sidebar (macOS Finder Style) -->
-                <div class="w-52 bg-gray-50 border-r border-gray-200 p-4 hidden md:flex flex-col justify-between select-none">
+                <div class="about-sidebar w-52 bg-gray-50 border-r border-gray-200 p-4 hidden md:flex flex-col justify-between select-none">
                     <div>
                         <h4 class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Sections</h4>
                         <ul class="space-y-1 text-sm text-gray-700" id="about-sidebar">
@@ -1177,9 +1208,14 @@
                     <div class="bg-blue-50 rounded-xl p-3 border border-blue-100">
                         <span class="text-xs font-semibold text-blue-800 block">Open for Hire</span>
                         <p class="text-[11px] text-blue-600 mt-0.5">Looking for Full Stack / MERN Developer roles.</p>
-                        <a href="ranveer_jaiswal.pdf" target="_blank" class="mt-2 inline-flex items-center text-[11px] font-bold text-blue-700 hover:underline">
-                            <i class="fas fa-file-pdf mr-1"></i> View Resume
-                        </a>
+                        <div class="mt-2 flex items-center gap-3">
+                            <a href="ranveer_jaiswal.pdf" target="_blank" rel="noopener" class="inline-flex items-center text-[11px] font-bold text-blue-700 hover:underline">
+                                <i class="fas fa-file-pdf mr-1"></i> Resume
+                            </a>
+                            <button onclick="openApp('contact')" class="inline-flex items-center text-[11px] font-bold text-blue-700 hover:underline">
+                                <i class="fas fa-paper-plane mr-1"></i> Contact
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1308,23 +1344,19 @@
             <!-- Window Resize Grabber Corner (Desktop) -->
             <div class="window-resize-handle hidden md:flex" title="Drag to resize window"></div>
 
-            <!-- iOS Mobile Bottom Home Indicator Bar (Tap to dismiss) -->
-            <div class="md:hidden py-3 bg-white/90 border-t border-gray-200 flex items-center justify-center cursor-pointer" onclick="closeApp('about')" title="Swipe or tap up to go home">
-                <div class="ios-home-bar dark"></div>
-            </div>
         </div>
 
         <!-- ----------------------------------------------------------------
              APP 2: PROJECTS (devOS Terminal & Cards Showcase)
              ---------------------------------------------------------------- -->
-        <div id="app-projects" class="app-window bg-[#0d0d0f] text-gray-200 shadow-2xl glass-tahoe-dark">
+        <div id="app-projects" class="app-window bg-[#0d0d0f] text-gray-200 shadow-2xl glass-tahoe-dark" data-theme="dark">
             <!-- App Header -->
             <div class="app-header bg-[#1c1c1e] border-b border-gray-800 h-14 md:h-11 flex items-center px-4 justify-between select-none cursor-move">
                 <!-- Desktop Window Controls -->
                 <div class="hidden md:flex items-center space-x-2 traffic-container w-24">
-                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e]" onclick="closeApp('projects')" title="Close"><i class="fas fa-times"></i></div>
-                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123]" onclick="minimizeApp('projects')" title="Minimize"><i class="fas fa-minus"></i></div>
-                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29]" onclick="maximizeApp('projects')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                    <div class="traffic-btn tl-close" onclick="closeApp('projects')" title="Close"><i class="fas fa-times"></i></div>
+                    <div class="traffic-btn tl-min" onclick="minimizeApp('projects')" title="Minimize"><i class="fas fa-minus"></i></div>
+                    <div class="traffic-btn tl-max" onclick="maximizeApp('projects')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
                 </div>
 
                 <!-- iOS Mobile Back Button -->
@@ -1408,7 +1440,7 @@
                 <div class="max-w-4xl mx-auto space-y-4">
 
                     <!-- Project 1: HR-Buddy -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-start space-x-4">
                             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
                                 <i class="fas fa-user-check"></i>
@@ -1427,17 +1459,17 @@
                             </div>
                         </div>
                         <div class="flex items-center space-x-2 shrink-0">
-                            <a href="https://hr-buddy-beta.vercel.app/" target="_blank" class="px-4 py-1.5 bg-[#007aff] hover:bg-blue-600 text-white rounded-full text-xs font-semibold flex items-center">
+                            <a href="https://hr-buddy-beta.vercel.app/" target="_blank" rel="noopener" class="px-4 py-1.5 bg-[#007aff] hover:bg-blue-600 text-white rounded-full text-xs font-semibold flex items-center">
                                 Live Demo <i class="fas fa-external-link-alt ml-1.5 text-[10px]"></i>
                             </a>
-                            <a href="https://github.com/Rvjais" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Code on GitHub">
+                            <a href="https://github.com/Rvjais" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Code on GitHub">
                                 <i class="fab fa-github"></i>
                             </a>
                         </div>
                     </div>
 
                     <!-- Project 2: SRChess -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-start space-x-4">
                             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
                                 <i class="fas fa-chess-knight"></i>
@@ -1456,17 +1488,17 @@
                             </div>
                         </div>
                         <div class="flex items-center space-x-2 shrink-0">
-                            <a href="https://srchess.vercel.app/" target="_blank" class="px-4 py-1.5 bg-[#007aff] hover:bg-blue-600 text-white rounded-full text-xs font-semibold flex items-center">
+                            <a href="https://srchess.vercel.app/" target="_blank" rel="noopener" class="px-4 py-1.5 bg-[#007aff] hover:bg-blue-600 text-white rounded-full text-xs font-semibold flex items-center">
                                 Live Demo <i class="fas fa-external-link-alt ml-1.5 text-[10px]"></i>
                             </a>
-                            <a href="https://github.com/Rvjais" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Code on GitHub">
+                            <a href="https://github.com/Rvjais" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Code on GitHub">
                                 <i class="fab fa-github"></i>
                             </a>
                         </div>
                     </div>
 
                     <!-- Project 3: PioneerOS -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-start space-x-4">
                             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
                                 <i class="fas fa-desktop"></i>
@@ -1487,15 +1519,15 @@
                             </div>
                         </div>
                         <div class="flex items-center space-x-2 shrink-0">
-                            <button class="px-4 py-1.5 bg-[#007aff] hover:bg-blue-600 text-white rounded-full text-xs font-semibold" onclick="showToast('PioneerOS: React + Next.js + Prisma + PostgreSQL', 'fas fa-info-circle')">Overview</button>
-                            <a href="https://github.com/Rvjais" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold" title="View Code on GitHub">
+                            <button class="px-4 py-1.5 bg-[#007aff] hover:bg-blue-600 text-white rounded-full text-xs font-semibold flex items-center" onclick="openReadmeModal('pioneeros')"><i class="fas fa-book-open mr-1.5"></i> Overview</button>
+                            <a href="https://github.com/Rvjais" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold" title="View Code on GitHub">
                                 <i class="fab fa-github"></i>
                             </a>
                         </div>
                     </div>
 
                     <!-- Project 4: Rain CRM -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-start space-x-4">
                             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
                                 <i class="fas fa-users-cog"></i>
@@ -1515,15 +1547,15 @@
                             </div>
                         </div>
                         <div class="flex items-center space-x-2 shrink-0">
-                            <button class="px-4 py-1.5 bg-[#007aff] hover:bg-blue-600 text-white rounded-full text-xs font-semibold" onclick="showToast('Rain CRM: Full MERN Stack + WhatsApp Bots', 'fab fa-whatsapp')">Overview</button>
-                            <a href="https://github.com/Rvjais" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold" title="View Code on GitHub">
+                            <button class="px-4 py-1.5 bg-[#007aff] hover:bg-blue-600 text-white rounded-full text-xs font-semibold flex items-center" onclick="openReadmeModal('rain-crm')"><i class="fas fa-book-open mr-1.5"></i> Overview</button>
+                            <a href="https://github.com/Rvjais" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold" title="View Code on GitHub">
                                 <i class="fab fa-github"></i>
                             </a>
                         </div>
                     </div>
 
                     <!-- Project 5: fullstack-code-visualiser (MERN Stack Visualizer) -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-start space-x-4">
                             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-red-500 via-rose-600 to-amber-600 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
                                 <i class="fab fa-npm"></i>
@@ -1548,16 +1580,17 @@
                             <button class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('fullstack-code-visualiser')">
                                 <i class="fas fa-book-open mr-1.5"></i> Readme
                             </button>
-                            <a href="https://www.npmjs.com/package/fullstack-code-visualiser" target="_blank" class="px-3 py-1.5 bg-[#cb3837] hover:bg-red-700 text-white rounded-full text-xs font-semibold flex items-center">
+                            <a href="https://www.npmjs.com/package/fullstack-code-visualiser" target="_blank" rel="noopener" class="px-3 py-1.5 bg-[#cb3837] hover:bg-red-700 text-white rounded-full text-xs font-semibold flex items-center">
                                 <i class="fab fa-npm mr-1.5"></i> npm
                             </a>
-                            <a href="https://github.com/Rvjais/fullstack-code-visualiser" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
+                            <a href="https://github.com/Rvjais/fullstack-code-visualiser" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub" aria-label="GitHub repository">
+                                <i class="fab fa-github"></i>
                             </a>
                         </div>
                     </div>
 
                     <!-- Project 6: Stock Management System -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-start space-x-4">
                             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-800 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
                                 <i class="fas fa-boxes"></i>
@@ -1576,15 +1609,15 @@
                             </div>
                         </div>
                         <div class="flex items-center space-x-2 shrink-0">
-                            <button class="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full text-xs font-semibold" onclick="showToast('Stock Management System: C++ & Qt GUI', 'fas fa-info-circle')">Overview</button>
-                            <a href="https://github.com/Rvjais" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold" title="View Code on GitHub">
+                            <button class="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full text-xs font-semibold flex items-center" onclick="openReadmeModal('stock-mgmt')"><i class="fas fa-book-open mr-1.5"></i> Overview</button>
+                            <a href="https://github.com/Rvjais" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold" title="View Code on GitHub">
                                 <i class="fab fa-github"></i>
                             </a>
                         </div>
                     </div>
 
                     <!-- Project 7: Veer Music — Nothing OS Music App -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col gap-3">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col gap-3">
                         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div class="flex items-start space-x-4">
                                 <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-zinc-900 to-red-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0 border border-red-500/30">
@@ -1610,7 +1643,7 @@
                                 <button class="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('nothing-veer')">
                                     <i class="fas fa-images mr-1.5"></i> Screenshots & Specs
                                 </button>
-                                <a href="https://github.com/Rvjais/Nothing-Veer" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
+                                <a href="https://github.com/Rvjais/Nothing-Veer" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
                                     <i class="fab fa-github"></i>
                                 </a>
                             </div>
@@ -1649,7 +1682,7 @@
                     </div>
 
                     <!-- Project 8: RANVEER H.U.D. — Desktop AI Assistant -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-start space-x-4">
                             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
                                 <i class="fas fa-robot"></i>
@@ -1672,14 +1705,14 @@
                             <button class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('ranveer-echo')">
                                 <i class="fas fa-book-open mr-1.5"></i> Readme
                             </button>
-                            <a href="https://github.com/Rvjais/Ranveer_Echo" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
+                            <a href="https://github.com/Rvjais/Ranveer_Echo" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
                                 <i class="fab fa-github"></i>
                             </a>
                         </div>
                     </div>
 
                     <!-- Project 9: WebRip — Full Website Scraper -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col gap-3">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col gap-3">
                         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div class="flex items-start space-x-4">
                                 <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0 border border-teal-500/30">
@@ -1705,7 +1738,7 @@
                                 <button class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('web-ripper')">
                                     <i class="fas fa-images mr-1.5"></i> Screenshots & Specs
                                 </button>
-                                <a href="https://github.com/Rvjais/Web-Scrapper" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
+                                <a href="https://github.com/Rvjais/Web-Scrapper" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
                                     <i class="fab fa-github"></i>
                                 </a>
                             </div>
@@ -1728,7 +1761,7 @@
                     </div>
 
                     <!-- Project 10: SR Chess Academy Rebuild -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-start space-x-4">
                             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-yellow-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
                                 <i class="fas fa-chess-knight"></i>
@@ -1750,14 +1783,14 @@
                             <button class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('srchess')">
                                 <i class="fas fa-book-open mr-1.5"></i> Readme
                             </button>
-                            <a href="https://github.com/Rvjais/Srchess" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
+                            <a href="https://github.com/Rvjais/Srchess" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
                                 <i class="fab fa-github"></i>
                             </a>
                         </div>
                     </div>
 
                     <!-- Project 11: TextLens — OCR Sheet -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-start space-x-4">
                             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
                                 <i class="fas fa-file-alt"></i>
@@ -1779,14 +1812,14 @@
                             <button class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('textlens')">
                                 <i class="fas fa-book-open mr-1.5"></i> Readme
                             </button>
-                            <a href="https://github.com/Rvjais/OCR-SHEET" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
+                            <a href="https://github.com/Rvjais/OCR-SHEET" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
                                 <i class="fab fa-github"></i>
                             </a>
                         </div>
                     </div>
 
                     <!-- Project 12: AICRMZ — WhatsApp AI CRM -->
-                    <div class="bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-start space-x-4">
                             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-green-500 to-teal-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
                                 <i class="fab fa-whatsapp"></i>
@@ -1809,7 +1842,7 @@
                             <button class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('aicrmz')">
                                 <i class="fas fa-book-open mr-1.5"></i> Readme
                             </button>
-                            <a href="https://github.com/Rvjais/AI-CRM" target="_blank" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
+                            <a href="https://github.com/Rvjais/AI-CRM" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub">
                                 <i class="fab fa-github"></i>
                             </a>
                         </div>
@@ -1821,23 +1854,19 @@
             <!-- Window Resize Grabber Corner (Desktop) -->
             <div class="window-resize-handle hidden md:flex" title="Drag to resize window"></div>
 
-            <!-- iOS Home Bar -->
-            <div class="md:hidden py-3 bg-[#1c1c1e] border-t border-gray-800 flex items-center justify-center cursor-pointer" onclick="closeApp('projects')">
-                <div class="ios-home-bar"></div>
-            </div>
         </div>
 
         <!-- ----------------------------------------------------------------
              APP 3: SKILLS (iOS Settings & System Preferences)
              ---------------------------------------------------------------- -->
-        <div id="app-skills" class="app-window bg-[#f2f2f7] text-gray-900 shadow-2xl glass-tahoe">
+        <div id="app-skills" class="app-window bg-[#f2f2f7] text-gray-900 shadow-2xl glass-tahoe" data-theme="light">
             <!-- App Header -->
             <div class="app-header bg-white/90 md:bg-gray-100/90 border-b border-gray-200 md:border-gray-300 h-14 md:h-11 flex items-center px-4 justify-between backdrop-blur-xl select-none cursor-move">
                 <!-- Desktop Window Controls -->
                 <div class="hidden md:flex items-center space-x-2 traffic-container w-24">
-                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e]" onclick="closeApp('skills')" title="Close"><i class="fas fa-times"></i></div>
-                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123]" onclick="minimizeApp('skills')" title="Minimize"><i class="fas fa-minus"></i></div>
-                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29]" onclick="maximizeApp('skills')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                    <div class="traffic-btn tl-close" onclick="closeApp('skills')" title="Close"><i class="fas fa-times"></i></div>
+                    <div class="traffic-btn tl-min" onclick="minimizeApp('skills')" title="Minimize"><i class="fas fa-minus"></i></div>
+                    <div class="traffic-btn tl-max" onclick="maximizeApp('skills')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
                 </div>
 
                 <!-- iOS Mobile Back Button -->
@@ -1854,7 +1883,7 @@
 
                 <!-- Done Button -->
                 <div class="w-24 flex justify-end">
-                    <button class="md:hidden text-[#007aff] font-semibold text-sm" onclick="closeApp('skills')">Done</button>
+                    
                 </div>
             </div>
 
@@ -2149,23 +2178,19 @@
             <!-- Window Resize Grabber Corner (Desktop) -->
             <div class="window-resize-handle hidden md:flex" title="Drag to resize window"></div>
 
-            <!-- iOS Home Bar -->
-            <div class="md:hidden py-3 bg-white/90 border-t border-gray-200 flex items-center justify-center cursor-pointer" onclick="closeApp('skills')">
-                <div class="ios-home-bar dark"></div>
-            </div>
         </div>
 
         <!-- ----------------------------------------------------------------
              APP 4: CONTACT (iOS Mail Composer & macOS Mail)
              ---------------------------------------------------------------- -->
-        <div id="app-contact" class="app-window bg-white text-gray-900 shadow-2xl glass-tahoe">
+        <div id="app-contact" class="app-window bg-white text-gray-900 shadow-2xl glass-tahoe" data-theme="light">
             <!-- App Header: iOS Mail Style -->
             <div class="app-header bg-gray-50 md:bg-gray-100 border-b border-gray-200 h-14 md:h-11 flex items-center px-4 justify-between select-none cursor-move">
                 <!-- Desktop Window Controls -->
                 <div class="hidden md:flex items-center space-x-2 traffic-container w-24">
-                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e]" onclick="closeApp('contact')" title="Close"><i class="fas fa-times"></i></div>
-                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123]" onclick="minimizeApp('contact')" title="Minimize"><i class="fas fa-minus"></i></div>
-                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29]" onclick="maximizeApp('contact')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                    <div class="traffic-btn tl-close" onclick="closeApp('contact')" title="Close"><i class="fas fa-times"></i></div>
+                    <div class="traffic-btn tl-min" onclick="minimizeApp('contact')" title="Minimize"><i class="fas fa-minus"></i></div>
+                    <div class="traffic-btn tl-max" onclick="maximizeApp('contact')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
                 </div>
 
                 <!-- iOS Back Button -->
@@ -2207,7 +2232,7 @@
                 <!-- Subject Row -->
                 <div class="px-5 py-3 border-b border-gray-200 flex items-center">
                     <span class="text-gray-400 text-xs w-14 font-medium">Subject:</span>
-                    <input type="text" id="contact-subj" placeholder="Job Opportunity / Project Collaboration" class="flex-1 text-xs md:text-sm text-gray-900 bg-transparent focus:outline-none font-medium placeholder-gray-400">
+                    <input type="text" id="contact-subj" placeholder="Job opportunity or project" class="flex-1 text-xs md:text-sm text-gray-900 bg-transparent focus:outline-none font-medium placeholder-gray-400">
                 </div>
 
                 <!-- Message Body -->
@@ -2231,23 +2256,19 @@
             <!-- Window Resize Grabber Corner (Desktop) -->
             <div class="window-resize-handle hidden md:flex" title="Drag to resize window"></div>
 
-            <!-- iOS Home Bar -->
-            <div class="md:hidden py-3 bg-white border-t border-gray-200 flex items-center justify-center cursor-pointer" onclick="closeApp('contact')">
-                <div class="ios-home-bar dark"></div>
-            </div>
         </div>
 
         <!-- ----------------------------------------------------------------
              APP 5: GALLERY (macOS / iOS Photos & Videos Hub)
              ---------------------------------------------------------------- -->
-        <div id="app-gallery" class="app-window bg-[#0d0e12] text-white shadow-2xl glass-tahoe-dark">
+        <div id="app-gallery" class="app-window bg-[#0d0e12] text-white shadow-2xl glass-tahoe-dark" data-theme="dark">
             <!-- App Header -->
             <div class="app-header bg-[#181920] border-b border-white/10 h-14 md:h-11 flex items-center px-4 justify-between select-none cursor-move">
                 <!-- Desktop Window Controls -->
                 <div class="hidden md:flex items-center space-x-2 traffic-container w-24">
-                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e]" onclick="closeApp('gallery')" title="Close"><i class="fas fa-times"></i></div>
-                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123]" onclick="minimizeApp('gallery')" title="Minimize"><i class="fas fa-minus"></i></div>
-                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29]" onclick="maximizeApp('gallery')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                    <div class="traffic-btn tl-close" onclick="closeApp('gallery')" title="Close"><i class="fas fa-times"></i></div>
+                    <div class="traffic-btn tl-min" onclick="minimizeApp('gallery')" title="Minimize"><i class="fas fa-minus"></i></div>
+                    <div class="traffic-btn tl-max" onclick="maximizeApp('gallery')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
                 </div>
 
                 <!-- iOS Mobile Back Button -->
@@ -2272,7 +2293,7 @@
             </div>
 
             <!-- Toolbar & Filter Tabs -->
-            <div class="px-4 py-2.5 bg-[#121318] border-b border-white/10 flex items-center justify-between flex-wrap gap-2">
+            <div class="gallery-toolbar px-4 py-2.5 bg-[#121318] border-b border-white/10 flex items-center justify-between flex-wrap gap-2">
                 <div class="flex items-center space-x-2">
                     <button class="gallery-tab-btn active" data-filter="all" onclick="filterGallery('all', this)">All Items</button>
                     <button class="gallery-tab-btn" data-filter="photos" onclick="filterGallery('photos', this)">Photos</button>
@@ -2285,7 +2306,7 @@
             </div>
 
             <!-- Main Gallery Body -->
-            <div class="flex-1 p-4 md:p-6 overflow-y-auto dark-scroll bg-[#0a0b0e]">
+            <div class="gallery-body flex-1 p-4 md:p-6 overflow-y-auto dark-scroll bg-[#0a0b0e]">
                 <!-- Drag & Drop Upload Zone -->
                 <div id="gallery-dropzone" class="gallery-upload-dropzone mb-6" onclick="document.getElementById('gallery-file-input').click()">
                     <input type="file" id="gallery-file-input" class="hidden" multiple accept="image/*,video/*" onchange="handleGalleryUpload(this.files)">
@@ -2305,23 +2326,19 @@
             <!-- Window Resize Grabber Corner (Desktop) -->
             <div class="window-resize-handle hidden md:flex" title="Drag to resize window"></div>
 
-            <!-- iOS Home Bar -->
-            <div class="md:hidden py-3 bg-[#181920] border-t border-white/10 flex items-center justify-center cursor-pointer" onclick="closeApp('gallery')">
-                <div class="ios-home-bar dark"></div>
-            </div>
         </div>
 
         <!-- ----------------------------------------------------------------
              APP 6: CALCULATOR (macOS Tahoe & iOS)
              ---------------------------------------------------------------- -->
-        <div id="app-calculator" class="app-window bg-[#1c1c1e] text-white shadow-2xl glass-tahoe" style="width: 320px; height: 490px;">
+        <div id="app-calculator" class="app-window bg-[#1c1c1e] text-white shadow-2xl glass-tahoe" data-theme="dark">
             <!-- Header -->
             <div class="app-header bg-[#2c2c2e]/90 border-b border-white/10 h-14 md:h-11 flex items-center px-4 justify-between backdrop-blur-xl select-none cursor-move">
                 <!-- Desktop Traffic Lights -->
                 <div class="hidden md:flex items-center space-x-2 traffic-container w-20">
-                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e]" onclick="closeApp('calculator')" title="Close"><i class="fas fa-times"></i></div>
-                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123]" onclick="minimizeApp('calculator')" title="Minimize"><i class="fas fa-minus"></i></div>
-                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29]" onclick="maximizeApp('calculator')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                    <div class="traffic-btn tl-close" onclick="closeApp('calculator')" title="Close"><i class="fas fa-times"></i></div>
+                    <div class="traffic-btn tl-min" onclick="minimizeApp('calculator')" title="Minimize"><i class="fas fa-minus"></i></div>
+                    <div class="traffic-btn tl-max" onclick="maximizeApp('calculator')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
                 </div>
 
                 <!-- iOS Back Button -->
@@ -2338,12 +2355,12 @@
 
                 <!-- Done / Spacer -->
                 <div class="w-20 flex justify-end">
-                    <button class="md:hidden text-amber-400 font-semibold text-sm focus:outline-none" onclick="closeApp('calculator')">Done</button>
+                    
                 </div>
             </div>
 
             <!-- Calculator Body -->
-            <div class="flex-1 flex flex-col justify-between p-4 bg-black/40">
+            <div class="calc-body flex-1 flex flex-col justify-between p-4">
                 <!-- Screen Display -->
                 <div class="p-3.5 text-right flex flex-col justify-end select-text mb-3 bg-white/5 rounded-2xl border border-white/5">
                     <div id="calc-history" class="text-xs text-gray-400 font-mono h-5 overflow-hidden whitespace-nowrap"></div>
@@ -2372,41 +2389,37 @@
                     <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('3')">3</button>
                     <button type="button" class="calc-btn calc-btn-op" onclick="handleCalcOp('+')">+</button>
 
-                    <button type="button" class="calc-btn calc-btn-num col-span-2 text-left pl-6" onclick="handleCalcDigit('0')">0</button>
+                    <button type="button" class="calc-btn calc-btn-num calc-btn-zero col-span-2" onclick="handleCalcDigit('0')">0</button>
                     <button type="button" class="calc-btn calc-btn-num" onclick="handleCalcDigit('.')">.</button>
                     <button type="button" class="calc-btn calc-btn-op bg-amber-500 hover:bg-amber-400" onclick="handleCalcEqual()">=</button>
                 </div>
             </div>
 
-            <!-- iOS Home Bar -->
-            <div class="md:hidden py-3 bg-[#181920] border-t border-white/10 flex items-center justify-center cursor-pointer" onclick="closeApp('calculator')">
-                <div class="ios-home-bar dark"></div>
-            </div>
         </div>
 
         <!-- ----------------------------------------------------------------
              APP 7: NOTES (macOS Tahoe & iOS)
              ---------------------------------------------------------------- -->
-        <div id="app-notes" class="app-window bg-[#1e1e24] text-white shadow-2xl glass-tahoe" style="width: 840px; height: 570px;">
+        <div id="app-notes" class="app-window bg-[#1e1e24] text-white shadow-2xl glass-tahoe" data-theme="dark">
             <!-- Header -->
             <div class="app-header bg-[#2a2a32]/90 border-b border-white/10 h-14 md:h-11 flex items-center px-4 justify-between backdrop-blur-xl select-none cursor-move">
                 <!-- Desktop Traffic Lights -->
                 <div class="hidden md:flex items-center space-x-2 traffic-container w-24">
-                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e]" onclick="closeApp('notes')" title="Close"><i class="fas fa-times"></i></div>
-                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123]" onclick="minimizeApp('notes')" title="Minimize"><i class="fas fa-minus"></i></div>
-                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29]" onclick="maximizeApp('notes')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                    <div class="traffic-btn tl-close" onclick="closeApp('notes')" title="Close"><i class="fas fa-times"></i></div>
+                    <div class="traffic-btn tl-min" onclick="minimizeApp('notes')" title="Minimize"><i class="fas fa-minus"></i></div>
+                    <div class="traffic-btn tl-max" onclick="maximizeApp('notes')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
                 </div>
 
                 <!-- iOS Back Button -->
-                <button class="md:hidden ios-nav-back-btn text-yellow-400 focus:outline-none" onclick="closeApp('notes')" title="Back to Home">
+                <button class="md:hidden ios-nav-back-btn text-yellow-400 focus:outline-none" onclick="notesBack()" title="Back">
                     <i class="fas fa-chevron-left text-lg font-bold"></i>
-                    <span>Back</span>
+                    <span id="notes-back-label">Back</span>
                 </button>
 
                 <!-- Center Title -->
                 <div class="text-sm md:text-xs font-semibold text-gray-200 flex items-center space-x-1.5">
                     <i class="fas fa-note-sticky text-yellow-400"></i>
-                    <span>Notes — Ranveer's DevPad</span>
+                    <span class="hidden md:inline">Notes — Ranveer's DevPad</span><span class="md:hidden">DevPad</span>
                 </div>
 
                 <!-- Action Button -->
@@ -2419,9 +2432,9 @@
             </div>
 
             <!-- Notes Split View Body -->
-            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+            <div class="notes-split flex-1 flex flex-col md:flex-row overflow-hidden">
                 <!-- Notes Sidebar (Left) -->
-                <div class="w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10 bg-[#16161c] flex flex-col shrink-0">
+                <div class="notes-sidebar w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10 bg-[#16161c] flex flex-col shrink-0 min-h-0">
                     <div class="p-2.5 border-b border-white/10">
                         <div class="relative">
                             <i class="fas fa-search absolute left-2.5 top-2.5 text-xs text-gray-400"></i>
@@ -2432,28 +2445,24 @@
                 </div>
 
                 <!-- Note Content Pane (Right) -->
-                <div class="flex-1 flex flex-col bg-[#1c1d24] overflow-hidden">
+                <div class="notes-pane flex-1 flex flex-col bg-[#1c1d24] overflow-hidden">
                     <div id="note-view-pane" class="flex-1 p-5 md:p-6 overflow-y-auto dark-scroll text-left"></div>
                 </div>
             </div>
 
-            <!-- iOS Home Bar -->
-            <div class="md:hidden py-3 bg-[#181920] border-t border-white/10 flex items-center justify-center cursor-pointer" onclick="closeApp('notes')">
-                <div class="ios-home-bar dark"></div>
-            </div>
         </div>
 
         <!-- ----------------------------------------------------------------
              APP 8: CALENDAR (macOS 26 Tahoe & iOS 18)
              ---------------------------------------------------------------- -->
-        <div id="app-calendar" class="app-window bg-[#1c1d24] text-white shadow-2xl glass-tahoe" style="width: 860px; height: 580px;">
+        <div id="app-calendar" class="app-window bg-[#1c1d24] text-white shadow-2xl glass-tahoe" data-theme="dark">
             <!-- Header / Titlebar -->
             <div class="app-header bg-[#252630]/95 border-b border-white/10 h-14 md:h-11 flex items-center px-4 justify-between backdrop-blur-xl select-none cursor-move">
                 <!-- Desktop Traffic Lights -->
                 <div class="hidden md:flex items-center space-x-2 traffic-container w-28">
-                    <div class="traffic-btn bg-[#ff5f56] border border-[#e0443e]" onclick="closeApp('calendar')" title="Close"><i class="fas fa-times"></i></div>
-                    <div class="traffic-btn bg-[#ffbd2e] border border-[#dea123]" onclick="minimizeApp('calendar')" title="Minimize"><i class="fas fa-minus"></i></div>
-                    <div class="traffic-btn bg-[#27c93f] border border-[#1aab29]" onclick="maximizeApp('calendar')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                    <div class="traffic-btn tl-close" onclick="closeApp('calendar')" title="Close"><i class="fas fa-times"></i></div>
+                    <div class="traffic-btn tl-min" onclick="minimizeApp('calendar')" title="Minimize"><i class="fas fa-minus"></i></div>
+                    <div class="traffic-btn tl-max" onclick="maximizeApp('calendar')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
                 </div>
 
                 <!-- iOS Back Button -->
@@ -2486,18 +2495,18 @@
             </div>
 
             <!-- Calendar Split View Body -->
-            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+            <div class="cal-split flex-1 flex flex-col md:flex-row overflow-hidden">
                 <!-- Left Sidebar: Today Card & Upcoming Agenda -->
-                <div class="w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10 bg-[#15161e] flex flex-col p-4 shrink-0 overflow-y-auto dark-scroll text-left">
+                <div class="cal-sidebar w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10 bg-[#15161e] flex flex-col p-4 shrink-0 overflow-y-auto dark-scroll text-left">
                     <!-- Tahoe Big Date Card -->
-                    <div class="p-3.5 rounded-2xl bg-gradient-to-br from-red-500/20 via-white/5 to-transparent border border-red-500/30 mb-4 shadow-lg">
+                    <div class="cal-today-card p-3.5 rounded-2xl bg-gradient-to-br from-red-500/20 via-white/5 to-transparent border border-red-500/30 mb-4 shadow-lg">
                         <span id="cal-today-dayname" class="text-xs uppercase tracking-wider font-extrabold text-[#ff3b30] block">Friday</span>
                         <span id="cal-today-datenumber" class="text-4xl font-black text-white tracking-tight my-0.5 block">16</span>
                         <span id="cal-today-monthyear" class="text-xs text-gray-300 font-medium block">October 2026</span>
                     </div>
 
                     <!-- Category Pills -->
-                    <div class="space-y-1 mb-4">
+                    <div class="cal-calendars space-y-1 mb-4">
                         <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1.5">My Calendars</span>
                         <div class="flex items-center space-x-2 text-xs py-1 px-2 rounded-lg bg-white/5 text-gray-200">
                             <span class="w-2.5 h-2.5 rounded-full bg-[#ff3b30]"></span>
@@ -2523,11 +2532,11 @@
                 </div>
 
                 <!-- Right Stage: Full Monthly Calendar Grid -->
-                <div class="flex-1 flex flex-col bg-[#191a22] p-4 md:p-5 overflow-y-auto dark-scroll">
+                <div class="cal-main flex-1 flex flex-col bg-[#191a22] p-4 md:p-5 overflow-y-auto dark-scroll">
                     <!-- Current Month & Year Display -->
                     <div class="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
                         <h3 id="cal-month-title" class="text-lg md:text-xl font-bold text-white tracking-tight">October 2026</h3>
-                        <span class="text-xs text-gray-400 font-mono">macOS Tahoe 26.1</span>
+                        <span class="cal-main-meta text-xs text-gray-400">Tap a day to see its agenda</span>
                     </div>
 
                     <!-- Days of Week Header -->
@@ -2548,19 +2557,83 @@
                 </div>
             </div>
 
-            <!-- iOS Home Bar -->
-            <div class="md:hidden py-3 bg-[#181920] border-t border-white/10 flex items-center justify-center cursor-pointer" onclick="closeApp('calendar')">
-                <div class="ios-home-bar dark"></div>
+        </div>
+
+
+        <!-- ----------------------------------------------------------------
+             APP 9: FINDER (Projects, Skills, Applications & Documents)
+             ---------------------------------------------------------------- -->
+        <div id="app-finder" class="app-window shadow-2xl" data-theme="light">
+            <div class="app-header select-none cursor-move">
+                <!-- Desktop: traffic lights + back/forward -->
+                <div class="hidden md:flex items-center">
+                    <div class="flex items-center traffic-container">
+                        <div class="traffic-btn tl-close" onclick="closeApp('finder')" title="Close"><i class="fas fa-times"></i></div>
+                        <div class="traffic-btn tl-min" onclick="minimizeApp('finder')" title="Minimize"><i class="fas fa-minus"></i></div>
+                        <div class="traffic-btn tl-max" onclick="maximizeApp('finder')" title="Zoom"><i class="fas fa-expand-alt"></i></div>
+                    </div>
+                    <div class="finder-left-tools">
+                        <button class="win-tool" id="finder-back-btn" onclick="finderGoBack()" title="Back" aria-label="Back"><i class="fas fa-chevron-left"></i></button>
+                        <button class="win-tool" id="finder-fwd-btn" onclick="finderGoForward()" title="Forward" aria-label="Forward"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- iOS back -->
+                <button class="md:hidden ios-nav-back-btn text-[#007aff] focus:outline-none" onclick="closeApp('finder')" title="Back to Home">
+                    <i class="fas fa-chevron-left text-lg font-bold"></i>
+                    <span>Back</span>
+                </button>
+
+                <!-- Title -->
+                <div class="flex items-center gap-2 min-w-0">
+                    <i id="finder-title-icon" class="fas fa-folder text-[#0a84ff] hidden md:inline"></i>
+                    <span id="finder-title">Projects</span>
+                </div>
+
+                <!-- Tools -->
+                <div class="finder-tools">
+                    <div class="finder-view-toggle" role="group" aria-label="View">
+                        <button id="finder-view-icons" class="active" onclick="setFinderView('icons')" title="Icons" aria-label="Icon view"><i class="fas fa-table-cells-large"></i></button>
+                        <button id="finder-view-list" onclick="setFinderView('list')" title="List" aria-label="List view"><i class="fas fa-list"></i></button>
+                    </div>
+                    <label class="finder-search">
+                        <i class="fas fa-magnifying-glass"></i>
+                        <input id="finder-search" type="search" placeholder="Search" oninput="renderFinder()" autocomplete="off" spellcheck="false">
+                    </label>
+                </div>
             </div>
+
+            <div class="finder-body">
+                <aside class="finder-sidebar" id="finder-sidebar" aria-label="Finder sidebar">
+                    <div class="finder-side-title">Favorites</div>
+                    <div class="finder-side-item" data-loc="recents" onclick="openFinder('recents')"><i class="fas fa-clock-rotate-left"></i>Recents</div>
+                    <div class="finder-side-item" data-loc="projects" onclick="openFinder('projects')"><i class="fas fa-folder"></i>Projects</div>
+                    <div class="finder-side-item" data-loc="skills" onclick="openFinder('skills')"><i class="fas fa-layer-group"></i>Skills</div>
+                    <div class="finder-side-item" data-loc="applications" onclick="openFinder('applications')"><i class="fas fa-rocket"></i>Applications</div>
+                    <div class="finder-side-item" data-loc="documents" onclick="openFinder('documents')"><i class="fas fa-file-lines"></i>Documents</div>
+                    <div class="finder-side-title">Tags</div>
+                    <div id="finder-tags"><!-- rendered by script.js --></div>
+                </aside>
+                <main class="finder-main" onclick="if(event.target === this || event.target.id === 'finder-grid') finderSelect(null)">
+                    <div id="finder-grid" class="finder-grid" role="listbox" aria-label="Items"></div>
+                </main>
+                <aside class="finder-preview" id="finder-preview" aria-live="polite"></aside>
+            </div>
+            <div class="finder-statusbar" id="finder-status">12 items</div>
+
+            <div class="window-resize-handle hidden md:flex" title="Drag to resize window"></div>
         </div>
 
     </div>
 
     <!-- Gallery Lightbox Modal -->
-    <div id="gallery-lightbox" onclick="if(event.target === this) closeGalleryLightbox()">
-        <button onclick="closeGalleryLightbox()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition text-lg z-10">
+    <div id="gallery-lightbox" onclick="if(event.target === this) closeGalleryLightbox()" role="dialog" aria-modal="true" aria-label="Photo viewer">
+        <button onclick="closeGalleryLightbox()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition text-lg z-10" aria-label="Close viewer">
             <i class="fas fa-times"></i>
         </button>
+        <span id="lightbox-counter" class="lightbox-counter"></span>
+        <button class="lightbox-nav prev" onclick="event.stopPropagation(); stepLightbox(-1)" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+        <button class="lightbox-nav next" onclick="event.stopPropagation(); stepLightbox(1)" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
         <div id="lightbox-container" class="max-w-4xl max-h-[85vh] flex flex-col items-center justify-center overflow-hidden rounded-2xl shadow-2xl border border-white/15"></div>
     </div>
 
@@ -2583,7 +2656,7 @@
 
         <!-- Bottom Home Indicator Bar (Slide up or tap to go Home) -->
         <div class="flex flex-col items-center justify-center pb-2 pointer-events-auto">
-            <div class="ios-home-bar cursor-pointer" onclick="event.stopPropagation(); closeIosAppSwitcher()" title="Tap or slide up to return Home"></div>
+            <!-- The global home indicator (always on top) handles tap/swipe-to-Home here -->
         </div>
     </div>
 
@@ -2609,6 +2682,17 @@
             <span class="opacity-40">•</span>
             <span class="opacity-80"><kbd class="px-1.5 py-0.5 bg-white/10 rounded border border-white/20 text-white font-mono text-[10px]">F3</kbd></span>
         </div>
+    </div>
+
+    <!-- ====================================================================
+         DESKTOP ONLY: Launchpad (all apps + projects, searchable)
+         ==================================================================== -->
+    <div id="launchpad" onclick="if(event.target === this || event.target.id === 'launchpad-grid') closeLaunchpad()" role="dialog" aria-label="Launchpad">
+        <label class="lp-search">
+            <i class="fas fa-magnifying-glass"></i>
+            <input id="lp-search-input" type="search" placeholder="Search" oninput="renderLaunchpad(this.value)" autocomplete="off" spellcheck="false">
+        </label>
+        <div id="launchpad-grid"></div>
     </div>
 
 

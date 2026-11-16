@@ -11,14 +11,18 @@ Live: `https://github.com/Rvjais/Ranveer-Portfolio` (static `index.html` — dep
 
 ## ✨ What It Does
 
-- 🖥️ macOS Tahoe: menu bar, draggable icons, dock, Mission Control, windows with traffic lights
-- 📱 iOS 18: Dynamic Island, home grid, folders, dock, Spotlight (`Cmd+K`)
-- 💬 devOS Terminal: `ls / cd / cat / open / whoami / help` + quick chips, `projects/` file system
-- 📦 Project Cards (12): Live Demo + GitHub + Readme modal per project
-- 📖 README Modals: in-site preview with npm + repo buttons (no tab switch)
-- 🔍 Spotlight: fuzzy search apps / projects / skills / resume
-- 🖼️ Gallery: photos/videos + drag-drop upload (localStorage) + lightbox
-- 📧 Contact: simulated send + toast system
+- 🖥️ macOS Tahoe: real menu bar menus (About, Projects, Skills, Contact, Window, Help) that follow the focused app, desktop icons that auto-arrange like Finder, right-click desktop menu, lock screen
+- 🧭 Dock: magnification, tooltips, running-app dots, bounce on launch, minimize-to-Dock genie, Resume + Trash — all icons are self-contained CSS (no external icon CDN to break)
+- 🗂️ Finder: Projects, Skills, Applications, Documents & Recents with colour tags, icon/list views, search and a preview pane (single-click preview, double-click open)
+- 🚀 Launchpad (`F4`), Mission Control (`F3`), Spotlight (`⌘K` / `Ctrl+Space`)
+- 🧩 Desktop widgets: profile card with Resume/Contact, analog clock, calendar, featured projects (auto-hidden on smaller screens)
+- 🔔 Notifications: macOS banners top-right, iOS banners under the Dynamic Island
+- 📱 iOS 18: Dynamic Island, pinned dock + search pill, folders, Control Center, app switcher, theme-aware status bar, iOS sheets for READMEs, master→detail Notes
+- 💬 devOS Terminal: `ls / cd / cat / open / neofetch / whoami / history / help`, ↑/↓ history, Tab completion
+- 📦 Project Cards (12) + README for every project (live demo / npm / repo buttons)
+- 🖼️ Photos: drag-drop upload (localStorage) + lightbox with ←/→ navigation
+- 📧 Contact: opens the visitor's mail app with subject + message prefilled
+- 🔗 Deep links: `#about`, `#projects`, `#contact`, `#finder/skills`, `#readme/nothing-veer`, …
 
 ## 🎯 All Projects — What they do & How they help
 
@@ -44,9 +48,9 @@ Spotlight + Cards + `openReadmeModal('nothing-veer'|'ranveer-echo'|'web-ripper'|
 
 ```
 portfolio/
-├── index.html — 12 cards, folders, dock, terminal view, readme modal
-├── script.js — fileSystem (12 txt), searchIndex (18), projectReadmes (7), terminal, gallery, island
-├── style.css — Tahoe + iOS styles
+├── index.html — windows (About, Terminal/Cards, Settings, Mail, Photos, Calculator, Notes, Calendar, Finder), menu bar, widgets, Launchpad
+├── script.js — window manager, PORTFOLIO_PROJECTS / SKILLS_LIST data, Finder, Dock, menus, terminal, READMEs, gallery, iOS gestures
+├── style.css — Tahoe + iOS styles (design tokens at the top, v2 component layer at the bottom)
 ├── profile.png, ranveer_jaiswal.pdf
 └── README.md
 ```
