@@ -3967,3 +3967,8 @@ body.widgets-hidden #desktop-widgets { display: none !important; }
 @media (max-width: 767px) {
     #mac-menubar, #mb-dropdown, #ctx-menu, #desktop-widgets, #dock-tooltip { display: none !important; }
 }
+
+/* Portrait (phone) screenshot strips: taller thumbs so labels fit */
+.project-card-previews.portrait .project-thumb-item { width: 64px; }
+.project-card-previews.portrait .project-thumb-item img { width: 100%; height: 116px; max-width: none; object-fit: cover; object-position: top; }
+.project-card-previews.portrait .thumb-label { left: 0; right: 0; padding: 10px 3px 3px; }

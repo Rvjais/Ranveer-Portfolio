@@ -682,7 +682,7 @@ const searchIndex = [
     { title: "About Ranveer Jaiswal", category: "Application", desc: "Full Stack & MERN Developer profile, bio, experience and education", action: () => openApp('about'), icon: "fas fa-user-astronaut text-blue-400", badge: "APP", tech: ["Profile", "Bio", "Gurgaon", "Experience", "Education"] },
     { title: "Resume (PDF)", category: "Document", desc: "Official resume of Ranveer Jaiswal (ranveer_jaiswal.pdf)", action: () => openResume(), icon: "fas fa-file-pdf text-red-500", badge: "PDF", tech: ["Full Stack", "MERN", "Resume", "CV"] },
     { title: "Contact — New Message", category: "Application", desc: "Email Ranveer directly — opens your mail app with the message ready", action: () => openApp('contact'), icon: "fas fa-envelope text-blue-400", badge: "MAIL", tech: ["Email", "Hire", "Message", "Phone"] },
-    { title: "Finder — All Projects", category: "Folder", desc: "Browse all 12 projects with previews, tags and links", action: () => openFinder('projects'), icon: "fas fa-folder text-sky-400", badge: "FINDER", tech: ["12 Projects", "Tags", "Preview"] },
+    { title: "Finder — All Projects", category: "Folder", desc: "Browse all 14 projects with previews, tags and links", action: () => openFinder('projects'), icon: "fas fa-folder text-sky-400", badge: "FINDER", tech: ["14 Projects", "Tags", "Preview"] },
     { title: "Projects Showcase (Cards)", category: "Application", desc: "Project cards with live demos, READMEs and repositories", action: () => { openApp('projects'); switchProjectsView('cards', null); }, icon: "fas fa-table-cells-large text-blue-400", badge: "APP", tech: ["Cards", "Live Demo", "GitHub"] },
     { title: "devOS Terminal", category: "Application", desc: "Explore the portfolio with ls, cd, cat, open and neofetch", action: () => { openApp('projects'); switchProjectsView('terminal', null); }, icon: "fas fa-terminal text-green-400", badge: "APP", tech: ["Terminal", "zsh", "CLI"] },
     { title: "fullstack-code-visualiser (npm)", category: "Package", desc: "MERN stack visualiser & AST architecture tracer published on npm", action: () => openReadmeModal('fullstack-code-visualiser'), icon: "fab fa-npm text-red-500", badge: "NPM", tech: ["React", "Node.js", "Babel AST", "MongoDB"] },
@@ -695,6 +695,8 @@ const searchIndex = [
     { title: "PioneerOS", category: "Project", desc: "Multi-module internal platform with project management & queue system", action: () => openReadmeModal('pioneeros'), icon: "fas fa-desktop text-blue-400", badge: "PLATFORM", tech: ["Next.js", "Prisma", "PostgreSQL"] },
     { title: "Rain CRM", category: "Project", desc: "CRM with AI WhatsApp bots, Twilio calling & AI email client", action: () => openReadmeModal('rain-crm'), icon: "fas fa-users-gear text-emerald-400", badge: "CRM", tech: ["React", "Twilio", "WhatsApp", "MongoDB"] },
     { title: "TextLens OCR Sheet", category: "Project", desc: "Image/PDF to text, PaddleOCR handwriting + invoice table parser", action: () => openReadmeModal('textlens'), icon: "fas fa-file-lines text-indigo-400", badge: "AI TOOL", tech: ["PaddleOCR", "Python", "FastAPI", "AI"] },
+    { title: "Chatbot Studio", category: "Project", desc: "AI bot manager — create AI chatbots for websites and embed them as a chat widget", action: () => openReadmeModal('chatbot-studio'), icon: "fas fa-comments text-violet-400", badge: "SAAS", tech: ["AI", "Chatbots", "Widget", "SaaS"] },
+    { title: "LibReady — PDF & EPUB Reader", category: "Project", desc: "Offline Flutter book library & reader for Android and iOS with page-curl turns", action: () => openReadmeModal('libready'), icon: "fas fa-book-open text-amber-500", badge: "MOBILE", tech: ["Flutter", "Dart", "SQLite", "Mobile", "EPUB"] },
     { title: "AICRMZ WhatsApp CRM", category: "Project", desc: "Baileys QR CRM, AI auto-replies, campaigns & voice follow-ups", action: () => openReadmeModal('aicrmz'), icon: "fab fa-whatsapp text-green-400", badge: "WHATSAPP", tech: ["Baileys", "Node.js", "AI", "Campaigns"] },
     { title: "Stock Management System", category: "Project", desc: "Qt / C++ GUI app focused on OOP, file handling and data structures", action: () => openReadmeModal('stock-mgmt'), icon: "fas fa-boxes-stacked text-cyan-400", badge: "C++", tech: ["C++", "Qt", "OOP"] },
     { title: "Skills — Finder", category: "Folder", desc: "Languages, frameworks, databases, DevOps & tools with levels", action: () => openFinder('skills'), icon: "fas fa-layer-group text-blue-400", badge: "SKILLS", tech: ["Docker", "AWS", "React", "Node", "TypeScript", "MongoDB"] },
@@ -1442,7 +1444,7 @@ function renderCalendarAgenda(date) {
 // --- Terminal System Simulation ---
 const fileSystem = {
     "about_developer.txt": "Ranveer Jaiswal\nFULL STACK / MERN DEVELOPER\nLocation: Gurgaon, India\nPhone: +91 9648165493\nEmail: ranveerjais9984@gmail.com\nCurrent Role: Full Stack App/Web Developer at Branding Pioneers",
-    "skills.txt": "[Databases]            MongoDB, PostgreSQL, Prisma\n[Frameworks/Libs]      React.js, Next.js, Tailwind CSS, Bootstrap, Astro, Express\n[Languages]            JavaScript, C++, Java, Python, PHP\n[DevOps & Cloud]       Docker, AWS (EC2, S3, Lambda, CloudFront)\n[Tools & Platforms]    React Native, Ionic Framework, GitHub, Postman, Twilio\n[Soft Skills]          Critical Thinking, Collaboration, Problem Solving, Teamwork, Adaptability",
+    "skills.txt": "[Databases]            MongoDB, PostgreSQL, Prisma\n[Frameworks/Libs]      React.js, Next.js, Tailwind CSS, Bootstrap, Astro, Express\n[Languages]            JavaScript, C++, Java, Python, PHP, Dart\n[DevOps & Cloud]       Docker, AWS (EC2, S3, Lambda, CloudFront)\n[Tools & Platforms]    React Native, Flutter, Ionic Framework, GitHub, Postman, Twilio\n[Soft Skills]          Critical Thinking, Collaboration, Problem Solving, Teamwork, Adaptability",
 
     "experience.txt": "1. Full Stack App/Web Developer (Full-time) | Branding Pioneers (Mar 2026 - Present, Hybrid Gurgaon)\n   - Developed multiple client websites to enhance online presence.\n   - Created internal tools and automation solutions streamlining workflows.\n   - Implemented an Employee Task Tracker, increasing efficiency by 50%.\n   - Stack: React, Next.js, Astro, PHP, Express, React Native\n\n2. Full Stack / MERN Developer Intern | Branding Pioneers (Sep 2025 - Mar 2026, On-site Gurgaon)\n   - Developed multi-module internal platforms and client projects with Node.js, Express, React.\n   - Engineered custom App Scripts, WhatsApp automation, and internal APIs.\n   - Achieved 60% reduction in manual work across departments.",
     "education.txt": "Krishnarpit Institute of Technology | Prayagraj\nDegree: Bachelor of Pharmacy (B. Pharm) (2021 - 2025)\nCGPA: 7.0 / 10",
@@ -1458,9 +1460,11 @@ const fileSystem = {
         "web_ripper.txt": "> WebRip — Full Website Scraper\n  Repo: https://github.com/Rvjais/Web-Scrapper\n  Stack: Python 3.11, Flask, Playwright Chromium, Gunicorn Gevent\n  Desc: BFS crawl to offline ZIP. 3 modes full/single/discover, SPA DOM snapshot, anti-bot CDP + cookies, utm strip + relink, live SSE, Render deploy.",
         "srchess_rebuild.txt": "> SR Chess Academy — 3D Rebuild\n  Repo: https://github.com/Rvjais/Srchess\n  Live: https://srchess.vercel.app/\n  Stack: Vanilla JS, Vite 8, Three.js 0.185\n  Desc: 25 pages + 17 blogs + GLB hero scroll phases, GM coach slider, shop cart Rs localStorage, 10-Q stress test, OTP mock. For WIM Shivika Rohilla academy.",
         "textlens.txt": "> TextLens — Privacy OCR Sheet\n  Repo: https://github.com/Rvjais/OCR-SHEET\n  Live: https://ocr-sheet-topaz.vercel.app\n  Stack: Vanilla JS, FastAPI, PaddleOCRv5, Docker\n  Desc: Batch image/PDF to text. Browser Tesseract printed + backend handwriting, hybrid PDF merge, confidence <85 flagged, DeepSeek invoice to JSON/CSV, no-logging privacy.",
+        "chatbot_studio.txt": "> Chatbot Studio — AI Chatbot Builder for Websites\n  App:  https://app.chatbotstudio.tech/login\n  Desc: AI bot manager. Create multiple AI chatbots for different websites and embed each one on any site as a chat widget.",
+        "libready.txt": "> LibReady — Offline PDF & EPUB Library (Book-Library)\n  Repo: https://github.com/Rvjais/Book-Library\n  Site: https://libready.vercel.app\n  Stack: Flutter, Dart, SQLite (sqflite), custom EPUB parser\n  Desc: Private, offline library and reader for Android & iOS. Wooden shelves with covers from page 1, page-curl / flip / slide page turns, bookmarks, contents, in-book search, Paper / Sepia / Night / Black themes. No account, no server, no network.",
         "aicrmz.txt": "> AICRMZ — WhatsApp AI CRM\n  Repo: https://github.com/Rvjais/AI-CRM\n  Live: https://in.aicrmz.com API https://api.aicrmz.com\n  Stack: React 19, Express 4, MongoDB Atlas, Baileys 6.7, Socket.io\n  Desc: Multi-tenant WhatsApp via QR. AI auto-reply + sentiment, campaigns queue, follow-ups, CSV import, Gmail/Sheets, Twilio + Bolna voice, Cloudinary, Ionic mobile."
     },
-    "contact.txt": "Email:    ranveerjais9984@gmail.com\nPhone:    +91 9648165493\nLocation: Gurgaon, India\nResume:   ranveer_jaiswal.pdf\nGitHub:   github.com/Rvjais\nLinkedIn: linkedin.com"
+    "contact.txt": "Email:    ranveerjais9984@gmail.com\nPhone:    +91 9648165493\nLocation: Gurgaon, India\nResume:   ranveer_jaiswal.pdf\nGitHub:   github.com/Rvjais\nLinkedIn: linkedin.com/in/ranveer-jaiswal-966289238"
 };
 
 let currentDir = fileSystem;
@@ -1559,8 +1563,9 @@ function processCommand(cmdStr) {
         case 'cat':
             if (!arg) {
                 termPrint('cat: specify a filename — try <span class="text-white">ls</span> first', 'text-red-400 ml-3 my-1');
-            } else if (currentDir[arg] && typeof currentDir[arg] === 'string') {
-                const formatted = escapeHtml(currentDir[arg])
+            } else if (typeof (currentDir[arg] ?? (currentDir === fileSystem ? fileSystem.projects[arg] : undefined)) === 'string') {
+                // Files in projects/ are readable from ~ too, so the quick chips work anywhere
+                const formatted = escapeHtml(currentDir[arg] ?? fileSystem.projects[arg])
                     .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" class="underline decoration-dotted hover:text-white">$1</a>')
                     .replace(/\n/g, '<br>');
                 termPrint(formatted, 'text-green-300 ml-3 my-1 border-l-2 border-emerald-500/60 pl-3 py-1 bg-white/5 rounded-r');
@@ -1596,7 +1601,7 @@ function processCommand(cmdStr) {
                     <div><span class="text-blue-400">Company</span>: Branding Pioneers (Gurgaon)</div>
                     <div><span class="text-blue-400">Stack</span>: React, Next.js, Node.js, Express, MongoDB, PostgreSQL</div>
                     <div><span class="text-blue-400">Also</span>: React Native, Docker, AWS, Python, C++</div>
-                    <div><span class="text-blue-400">Projects</span>: 12 (1 published npm package)</div>
+                    <div><span class="text-blue-400">Projects</span>: 14 (1 published npm package)</div>
                     <div><span class="text-blue-400">Contact</span>: ranveerjais9984@gmail.com</div>
                     <div class="pt-1 flex gap-1">${['#ff5f57', '#febc2e', '#28c840', '#0a84ff', '#bf5af2', '#64d2ff'].map(c => `<span style="background:${c}" class="inline-block w-4 h-3 rounded-sm"></span>`).join('')}</div>
                 </div>
@@ -2185,6 +2190,180 @@ python app.py
             <p><code>C++</code> <code>Qt</code> <code>OOP</code> <code>File I/O</code></p>
         `
     },
+    "chatbot-studio": {
+        title: "Chatbot Studio — AI Chatbot Builder",
+        subtitle: "AI bot manager • embeddable website widget",
+        npmUrl: "",
+        liveUrl: "https://app.chatbotstudio.tech/login",
+        liveLabel: "Open App",
+        githubUrl: "",
+        content: `
+            <h1>Chatbot Studio</h1>
+            <p><strong>An AI bot manager for websites: create different AI chatbots and add any of them to a website as a chat widget.</strong></p>
+
+            <div class="mb-3">
+                <span class="readme-hero-badge bg-violet-500/20 text-violet-300 border border-violet-500/30"><i class="fas fa-robot mr-1"></i> AI chatbots</span>
+                <span class="readme-hero-badge bg-sky-500/20 text-sky-300 border border-sky-500/30"><i class="fas fa-layer-group mr-1"></i> Multiple bots</span>
+                <span class="readme-hero-badge bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"><i class="fas fa-code mr-1"></i> Embeddable widget</span>
+            </div>
+
+            <blockquote>
+                Build a separate AI bot for each website, then drop it onto that site as a chat widget, so every site gets its own assistant without building a chatbot from scratch.
+            </blockquote>
+
+            <h2>✨ What it does</h2>
+            <div class="readme-feature-grid">
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-violet-500/20 text-violet-400"><i class="fas fa-robot"></i></div>
+                        <h4>Create multiple AI bots</h4>
+                    </div>
+                    <p>Set up different AI chatbots, each one for a different website.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-emerald-500/20 text-emerald-400"><i class="fas fa-window-maximize"></i></div>
+                        <h4>Use it as a website widget</h4>
+                    </div>
+                    <p>Embed any bot on a website as a chat widget so visitors can talk to it right on the page.</p>
+                </div>
+            </div>
+
+            <h2>🔗 Links</h2>
+            <p>• <strong>App:</strong> <a href="https://app.chatbotstudio.tech/login" target="_blank" rel="noopener" class="text-blue-400 hover:underline">app.chatbotstudio.tech</a></p>
+        `
+    },
+    "libready": {
+        title: "LibReady — PDF & EPUB Library",
+        subtitle: "Flutter • Android & iOS • offline",
+        npmUrl: "",
+        liveUrl: "https://libready.vercel.app",
+        liveLabel: "Website",
+        githubUrl: "https://github.com/Rvjais/Book-Library",
+        content: `
+            <h1>LibReady — Offline PDF &amp; EPUB Library</h1>
+            <p><strong>A private, offline library and reader for PDF and EPUB books, built with Flutter for Android and iOS.</strong></p>
+
+            <div class="mb-3">
+                <span class="readme-hero-badge bg-sky-500/20 text-sky-300 border border-sky-500/30"><i class="fas fa-mobile-screen mr-1"></i> Flutter • Android &amp; iOS</span>
+                <span class="readme-hero-badge bg-amber-500/20 text-amber-300 border border-amber-500/30"><i class="fas fa-book mr-1"></i> PDF + EPUB 2/3</span>
+                <span class="readme-hero-badge bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"><i class="fas fa-lock mr-1"></i> 100% offline &amp; private</span>
+                <span class="readme-hero-badge bg-purple-500/20 text-purple-300 border border-purple-500/30"><i class="fas fa-database mr-1"></i> SQLite storage</span>
+            </div>
+
+            <blockquote>
+                Books live on a wooden shelf, spines out, with the date you last read them written above each cover. Open a book and the page peels over with a real page-curl animation. Nothing leaves your device — there is no account, no server and no network access.
+            </blockquote>
+
+            <h2>📸 Screenshots</h2>
+            <p class="text-xs text-gray-400">Click any screenshot to zoom in. Use ← / → to flip through them.</p>
+
+            <div class="readme-screenshot-grid">
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-libready-1')">
+                        <img src="assets/LibReady/library.webp" alt="LibReady wooden library shelf" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-book text-amber-400 mr-1.5"></i> Wooden Library Shelf</span> <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">LIBRARY</span></h4>
+                        <p>Covers generated from the first page of each book, with the last-read date above every cover and All / Reading / Finished / Favourites filters.</p>
+                    </div>
+                </div>
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-libready-2')">
+                        <img src="assets/LibReady/spines.webp" alt="LibReady spine shelf view" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-grip-lines-vertical text-orange-400 mr-1.5"></i> Spines-Out Shelf</span> <span class="text-[10px] px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 font-mono">SHELVES</span></h4>
+                        <p>An alternate shelf layout with books standing spines-out; the shelf layout adapts to phone and tablet widths.</p>
+                    </div>
+                </div>
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-libready-3')">
+                        <img src="assets/LibReady/reader.webp" alt="LibReady reader" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-book-open text-sky-400 mr-1.5"></i> Full-Screen Reader</span> <span class="text-[10px] px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">READER</span></h4>
+                        <p>Tap the centre for the toolbar, swipe or tap the edges to turn pages. Progress is saved automatically when you leave.</p>
+                    </div>
+                </div>
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-libready-4')">
+                        <img src="assets/LibReady/settings.webp" alt="LibReady reading settings" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-sliders text-purple-400 mr-1.5"></i> Themes &amp; Page Turns</span> <span class="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">SETTINGS</span></h4>
+                        <p>Paper, Sepia, Night and Black themes; font size, line height and margins; page curl, book flip, slide, fade or instant page turns.</p>
+                    </div>
+                </div>
+                <div class="readme-screenshot-card">
+                    <div class="readme-screenshot-img-wrap" onclick="openGalleryLightbox('proj-libready-5')">
+                        <img src="assets/LibReady/contents.webp" alt="LibReady table of contents" loading="lazy">
+                    </div>
+                    <div class="readme-screenshot-caption">
+                        <h4><span><i class="fas fa-list text-emerald-400 mr-1.5"></i> Contents &amp; Search</span> <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">EPUB</span></h4>
+                        <p>Table of contents, bookmarks with notes, in-book search with result snippets and jump-to-page.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2>✨ Features</h2>
+            <div class="readme-feature-grid">
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-amber-500/20 text-amber-400"><i class="fas fa-file-import"></i></div>
+                        <h4>Smart Import</h4>
+                    </div>
+                    <p>Import several files at once with progress, and duplicate detection by file fingerprint so the same book is never added twice.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-sky-500/20 text-sky-400"><i class="fas fa-code"></i></div>
+                        <h4>Custom EPUB Engine</h4>
+                    </div>
+                    <p>Hand-written container / OPF / spine / nav / NCX parser; reflowable text is paginated on-device and keeps your place after typography changes.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-rose-500/20 text-rose-400"><i class="fas fa-file-pdf"></i></div>
+                        <h4>Native PDF Rendering</h4>
+                    </div>
+                    <p>Zoom controls with neighbour-page prefetching and an LRU page cache for smooth reading.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-purple-500/20 text-purple-400"><i class="fas fa-scroll"></i></div>
+                        <h4>Real Page-Curl Animation</h4>
+                    </div>
+                    <p>The current page is snapshotted and animated over the incoming page, so the next page is already rendered underneath.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-emerald-500/20 text-emerald-400"><i class="fas fa-gauge"></i></div>
+                        <h4>Reading Dashboard</h4>
+                    </div>
+                    <p>Continue-reading card with one-tap resume, reading and finished shelves, plus reading and storage statistics.</p>
+                </div>
+                <div class="readme-feature-item">
+                    <div class="readme-feature-item-header">
+                        <div class="feat-icon bg-zinc-500/20 text-gray-300"><i class="fas fa-user-shield"></i></div>
+                        <h4>Private by Design</h4>
+                    </div>
+                    <p>Books, covers, bookmarks and progress stay in the app's local storage. No analytics, accounts, ads, cloud sync or network requests.</p>
+                </div>
+            </div>
+
+            <h2>🚀 Run it</h2>
+            <pre>flutter pub get
+flutter run
+flutter build apk --release   # installable Android APK</pre>
+
+            <h2>🔗 Links</h2>
+            <p>
+                • <strong>Website:</strong> <a href="https://libready.vercel.app" target="_blank" rel="noopener" class="text-blue-400 hover:underline">libready.vercel.app</a><br>
+                • <strong>GitHub:</strong> <a href="https://github.com/Rvjais/Book-Library" target="_blank" rel="noopener" class="text-blue-400 hover:underline">Rvjais/Book-Library</a>
+            </p>
+        `
+    },
     "shortcuts": {
         title: "Keyboard Shortcuts",
         subtitle: "Help • Ranveer's Mac",
@@ -2255,7 +2434,7 @@ function openReadmeModal(projectId = 'fullstack-code-visualiser') {
         if (href) {
             npmBtn.style.display = 'inline-flex';
             npmBtn.href = href;
-            npmBtn.innerHTML = isNpm ? '<i class="fab fa-npm"></i> <span>npm</span>' : '<i class="fas fa-arrow-up-right-from-square"></i> <span>Live Demo</span>';
+            npmBtn.innerHTML = isNpm ? '<i class="fab fa-npm"></i> <span>npm</span>' : `<i class="fas fa-arrow-up-right-from-square"></i> <span>${escapeHtml(data.liveLabel || 'Live Demo')}</span>`;
         } else {
             npmBtn.style.display = 'none';
         }
@@ -2374,6 +2553,21 @@ const initialGalleryItems = [
         desc: "High-contrast light mode view with 1-click ZIP export, Playwright Chromium SPA rendering toggle, and anti-bot Cloudflare solver",
         src: "assets/Web-Scrapper/lightmode.png",
         date: "Oct 2026"
+    },
+    {
+        id: "proj-libready-1", type: "photo", title: "LibReady — Wooden Library Shelf", desc: "Books stand on dark wood shelves with covers generated from page 1 and the last-read date above each one", src: "assets/LibReady/library.webp", date: "Nov 2026"
+    },
+    {
+        id: "proj-libready-2", type: "photo", title: "LibReady — Spine Shelf View", desc: "Alternate shelf layout showing books spines-out, with Reading / Finished / Favourites filters", src: "assets/LibReady/spines.webp", date: "Nov 2026"
+    },
+    {
+        id: "proj-libready-3", type: "photo", title: "LibReady — Reader", desc: "Full-screen reader with text selection actions, bookmarks and a toolbar for contents, search and appearance", src: "assets/LibReady/reader.webp", date: "Nov 2026"
+    },
+    {
+        id: "proj-libready-4", type: "photo", title: "LibReady — Reading Settings", desc: "Paper, Sepia, Night and Black themes, page textures, typography controls and page-turn styles (curl, flip, slide, fade, instant)", src: "assets/LibReady/settings.webp", date: "Nov 2026"
+    },
+    {
+        id: "proj-libready-5", type: "photo", title: "LibReady — Table of Contents", desc: "EPUB contents sheet with chapter search and page numbers", src: "assets/LibReady/contents.webp", date: "Nov 2026"
     },
     {
         id: "img-1",
@@ -4204,10 +4398,12 @@ function initDesktopMissionControlGestures() {
 
 // ---------- Portfolio data (single source for Finder, Launchpad, menus, widgets) ----------
 const PORTFOLIO_PROJECTS = [
+    { id: 'chatbot-studio', name: 'Chatbot Studio', kind: 'SaaS • AI chatbots', icon: 'fas fa-comments', bg: 'linear-gradient(180deg,#38bdf8,#7c3aed)', tags: ['AI', 'Chatbots', 'Widget'], desc: 'AI bot manager for creating multiple AI chatbots for different websites and embedding each one on any site as a chat widget.', readme: 'chatbot-studio', live: 'https://app.chatbotstudio.tech/login', featured: true },
     { id: 'fullstack-code-visualiser', name: 'Code Visualiser', kind: 'npm package • CLI', icon: 'fab fa-npm', bg: 'linear-gradient(180deg,#f87171,#be123c)', tags: ['npm', 'React', 'Node.js', 'Express', 'MongoDB'], desc: 'Published npm CLI that parses ASTs and live traffic to map UI → API → database as an interactive graph.', readme: 'fullstack-code-visualiser', npm: 'https://www.npmjs.com/package/fullstack-code-visualiser', repo: 'https://github.com/Rvjais/fullstack-code-visualiser', featured: true },
+    { id: 'libready', name: 'LibReady', kind: 'Mobile app • Flutter', icon: 'fas fa-book-open', bg: 'linear-gradient(180deg,#c2410c,#713f12)', tags: ['Flutter', 'Dart', 'Mobile', 'SQLite'], desc: 'Private, offline PDF & EPUB library and reader for Android & iOS with wooden shelves, page-curl page turns, bookmarks and in-book search.', readme: 'libready', live: 'https://libready.vercel.app', repo: 'https://github.com/Rvjais/Book-Library', featured: true },
     { id: 'hr-buddy', name: 'HR-Buddy', kind: 'Web app • Live', icon: 'fas fa-user-check', bg: 'linear-gradient(180deg,#fbbf24,#ea580c)', tags: ['React', 'Node.js', 'AI'], desc: 'AI-driven onboarding quiz with an anti-cheat mechanism for structured candidate pre-assessment.', readme: 'hr-buddy', live: 'https://hr-buddy-beta.vercel.app/', repo: 'https://github.com/Rvjais' },
-    { id: 'nothing-veer', name: 'Veer Music', kind: 'Mobile app • Expo', icon: 'fas fa-record-vinyl', bg: 'linear-gradient(180deg,#3f3f46,#991b1b)', tags: ['React Native', 'Mobile', 'Node.js'], desc: 'Nothing OS-style YouTube Music client with a vinyl player, synced LRC lyrics and a smart offline cache.', readme: 'nothing-veer', repo: 'https://github.com/Rvjais/Nothing-Veer', featured: true },
-    { id: 'aicrmz', name: 'AICRMZ', kind: 'SaaS • WhatsApp CRM', icon: 'fab fa-whatsapp', bg: 'linear-gradient(180deg,#4ade80,#047857)', tags: ['React', 'Node.js', 'Express', 'MongoDB', 'AI', 'Mobile'], desc: 'Multi-tenant WhatsApp CRM via QR with AI auto-replies, sentiment, campaigns and voice follow-ups.', readme: 'aicrmz', live: 'https://in.aicrmz.com', repo: 'https://github.com/Rvjais/AI-CRM', featured: true },
+    { id: 'nothing-veer', name: 'Veer Music', kind: 'Mobile app • Expo', icon: 'fas fa-record-vinyl', bg: 'linear-gradient(180deg,#3f3f46,#991b1b)', tags: ['React Native', 'Mobile', 'Node.js'], desc: 'Nothing OS-style YouTube Music client with a vinyl player, synced LRC lyrics and a smart offline cache.', readme: 'nothing-veer', repo: 'https://github.com/Rvjais/Nothing-Veer' },
+    { id: 'aicrmz', name: 'AICRMZ', kind: 'SaaS • WhatsApp CRM', icon: 'fab fa-whatsapp', bg: 'linear-gradient(180deg,#4ade80,#047857)', tags: ['React', 'Node.js', 'Express', 'MongoDB', 'AI', 'Mobile'], desc: 'Multi-tenant WhatsApp CRM via QR with AI auto-replies, sentiment, campaigns and voice follow-ups.', readme: 'aicrmz', live: 'https://in.aicrmz.com', repo: 'https://github.com/Rvjais/AI-CRM' },
     { id: 'ranveer-echo', name: 'Ranveer H.U.D.', kind: 'Desktop app • Tauri', icon: 'fas fa-robot', bg: 'linear-gradient(180deg,#22d3ee,#1e40af)', tags: ['Tauri', 'Rust', 'Python', 'AI'], desc: 'Jarvis-style desktop assistant: voice wake-word, face & hand gestures, SQLite memory and PC control.', readme: 'ranveer-echo', repo: 'https://github.com/Rvjais/Ranveer_Echo' },
     { id: 'web-ripper', name: 'WebRip', kind: 'Web tool • Python', icon: 'fas fa-spider', bg: 'linear-gradient(180deg,#2dd4bf,#047857)', tags: ['Python', 'Playwright', 'Flask'], desc: 'BFS crawler that clones websites — including SPAs — into offline ZIP archives with live SSE progress.', readme: 'web-ripper', repo: 'https://github.com/Rvjais/Web-Scrapper' },
     { id: 'textlens', name: 'TextLens', kind: 'Web app • OCR', icon: 'fas fa-file-lines', bg: 'linear-gradient(180deg,#818cf8,#6d28d9)', tags: ['Python', 'FastAPI', 'Docker', 'AI'], desc: 'Privacy-first batch OCR for images and PDFs with handwriting support and invoice-to-table extraction.', readme: 'textlens', live: 'https://ocr-sheet-topaz.vercel.app', repo: 'https://github.com/Rvjais/OCR-SHEET' },
@@ -4229,7 +4425,8 @@ const SKILLS_LIST = [
     { name: 'Next.js', icon: 'devicon-nextjs-plain', group: 'Framework', level: 'Advanced', desc: 'SSR, SSG, the App Router and full-stack apps.', match: ['Next.js'] },
     { name: 'Node.js', icon: 'devicon-nodejs-plain colored', group: 'Runtime', level: 'Advanced', desc: 'REST APIs, microservices and authentication.', match: ['Node.js'] },
     { name: 'Express', icon: 'devicon-express-original', group: 'Framework', level: 'Advanced', desc: 'REST APIs and middleware.', match: ['Express'] },
-    { name: 'React Native', icon: 'devicon-react-original colored', group: 'Mobile', level: 'Proficient', desc: 'Cross-platform iOS & Android apps — plus Ionic.', match: ['React Native', 'Mobile'] },
+    { name: 'React Native', icon: 'devicon-react-original colored', group: 'Mobile', level: 'Proficient', desc: 'Cross-platform iOS & Android apps — plus Ionic.', match: ['React Native'] },
+    { name: 'Flutter & Dart', icon: 'devicon-flutter-plain colored', group: 'Mobile', level: '', desc: 'Cross-platform Android & iOS apps with Flutter and Dart.', match: ['Flutter'] },
     { name: 'Tailwind CSS', icon: 'devicon-tailwindcss-original colored', group: 'Styling', level: 'Advanced', desc: 'Responsive UI systems (and Bootstrap).', match: ['Tailwind'] },
     { name: 'Astro', icon: 'devicon-astro-plain', group: 'Framework', level: 'Proficient', desc: 'Content-driven client websites.' },
     { name: 'MongoDB', icon: 'devicon-mongodb-plain colored', group: 'Database', level: 'Advanced', desc: 'NoSQL documents, aggregations and Mongoose schemas.', match: ['MongoDB'] },
@@ -4608,7 +4805,7 @@ const MENUS = {
         { label: 'Copy Email Address', icon: 'fas fa-at', action: () => copyText('ranveerjais9984@gmail.com', 'ranveerjais9984@gmail.com') },
         { label: 'Call +91 96481 65493', icon: 'fas fa-phone', action: () => { window.location.href = 'tel:+919648165493'; } },
         { label: 'GitHub', icon: 'fab fa-github', action: () => window.open('https://github.com/Rvjais', '_blank', 'noopener') },
-        { label: 'LinkedIn', icon: 'fab fa-linkedin', action: () => window.open('https://linkedin.com', '_blank', 'noopener') }
+        { label: 'LinkedIn', icon: 'fab fa-linkedin', action: () => window.open('https://www.linkedin.com/in/ranveer-jaiswal-966289238', '_blank', 'noopener') }
     ],
     window: () => {
         const items = [

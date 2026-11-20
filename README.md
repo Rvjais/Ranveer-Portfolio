@@ -7,7 +7,7 @@ Live: `https://github.com/Rvjais/Ranveer-Portfolio` (static `index.html` — dep
 ![HTML](https://img.shields.io/badge/HTML-Tailwind-blue)
 ![JS](https://img.shields.io/badge/JS-Vanilla-yellow)
 ![OS](https://img.shields.io/badge/OS-macOS_Tahoe_+_iOS18-black)
-![Projects](https://img.shields.io/badge/Projects-12-green)
+![Projects](https://img.shields.io/badge/Projects-14-green)
 
 ## ✨ What It Does
 
@@ -19,7 +19,7 @@ Live: `https://github.com/Rvjais/Ranveer-Portfolio` (static `index.html` — dep
 - 🔔 Notifications: macOS banners top-right, iOS banners under the Dynamic Island
 - 📱 iOS 18: Dynamic Island, pinned dock + search pill, folders, Control Center, app switcher, theme-aware status bar, iOS sheets for READMEs, master→detail Notes
 - 💬 devOS Terminal: `ls / cd / cat / open / neofetch / whoami / history / help`, ↑/↓ history, Tab completion
-- 📦 Project Cards (12) + README for every project (live demo / npm / repo buttons)
+- 📦 Project Cards (14) + README for every project (live demo / npm / repo buttons)
 - 🖼️ Photos: drag-drop upload (localStorage) + lightbox with ←/→ navigation
 - 📧 Contact: opens the visitor's mail app with subject + message prefilled
 - 🔗 Deep links: `#about`, `#projects`, `#contact`, `#finder/skills`, `#readme/nothing-veer`, …
@@ -40,9 +40,11 @@ Live: `https://github.com/Rvjais/Ranveer-Portfolio` (static `index.html` — dep
 | 10 | **SR Chess Academy 3D** | [Srchess](https://github.com/Rvjais/Srchess) | Vite Three.js, 25 pages + 17 blogs, shop ₹, quiz | More trials, parent trust, extra merch revenue |
 | 11 | **TextLens OCR-SHEET** | [OCR-SHEET](https://github.com/Rvjais/OCR-SHEET) | Batch image/PDF to text, Tesseract + PaddleOCR handwriting, invoice table | Digitize ledgers, 15 min/invoice saved, privacy no-log |
 | 12 | **AICRMZ WhatsApp CRM** | [AI-CRM](https://github.com/Rvjais/AI-CRM) | Baileys QR, AI reply + sentiment, campaigns, follow-ups, Bolna voice | 24/7 reply, 10x reach, +20% closures, cut RTO |
+| 13 | **Chatbot Studio** | live [app.chatbotstudio.tech](https://app.chatbotstudio.tech/login) | AI bot manager: create different AI chatbots per website and embed them as a chat widget | Every site gets its own AI assistant without building one from scratch |
+| 14 | **LibReady (Book-Library)** | [Book-Library](https://github.com/Rvjais/Book-Library) / site [libready.vercel.app](https://libready.vercel.app) | Flutter offline PDF + EPUB library & reader for Android/iOS: wooden shelves, page-curl, bookmarks, search | Private reading with no account, server or network |
 
-Terminal: `cat nothing_veer.txt / ranveer_echo.txt / web_ripper.txt / srchess_rebuild.txt / textlens.txt / aicrmz.txt`
-Spotlight + Cards + `openReadmeModal('nothing-veer'|'ranveer-echo'|'web-ripper'|'srchess'|'textlens'|'aicrmz')` all wired.
+Terminal: `cat nothing_veer.txt / ranveer_echo.txt / web_ripper.txt / srchess_rebuild.txt / textlens.txt / aicrmz.txt / chatbot_studio.txt / libready.txt`
+Spotlight + Cards + `openReadmeModal('nothing-veer'|'ranveer-echo'|'web-ripper'|'srchess'|'textlens'|'aicrmz'|'chatbot-studio'|'libready')` all wired.
 
 ## 📁 Structure
 
@@ -51,6 +53,8 @@ portfolio/
 ├── index.html — windows (About, Terminal/Cards, Settings, Mail, Photos, Calculator, Notes, Calendar, Finder), menu bar, widgets, Launchpad
 ├── script.js — window manager, PORTFOLIO_PROJECTS / SKILLS_LIST data, Finder, Dock, menus, terminal, READMEs, gallery, iOS gestures
 ├── style.css — Tahoe + iOS styles (design tokens at the top, v2 component layer at the bottom)
+├── resume/resume.html — editable source of ranveer_jaiswal.pdf (open in Chrome → Print → Save as PDF, Margins: None)
+├── assets/ — project screenshots (VEER-MUSIC, Web-Scrapper, LibReady)
 ├── profile.png, ranveer_jaiswal.pdf
 └── README.md
 ```

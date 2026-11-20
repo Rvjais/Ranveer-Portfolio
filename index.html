@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta property="og:title" content="Ranveer Jaiswal — Full Stack & MERN Developer">
-    <meta property="og:description" content="Interactive macOS & iOS style developer portfolio: 12 projects, skills, experience and resume.">
+    <meta property="og:description" content="Interactive macOS & iOS style developer portfolio: 14 projects, skills, experience and resume.">
     <meta property="og:image" content="profile.png">
     <meta property="og:type" content="website">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2364d2ff'/%3E%3Cstop offset='1' stop-color='%230a6cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-family='Arial,Helvetica,sans-serif' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3ERJ%3C/text%3E%3C/svg%3E">
@@ -176,7 +176,7 @@
             <div class="ios-folder-title-row">
                 <div>
                     <div class="ios-folder-title">Projects</div>
-                    <div class="ios-folder-sub">12 apps &amp; tools • tap to open</div>
+                    <div class="ios-folder-sub">14 apps &amp; tools • tap to open</div>
                 </div>
                 <button onclick="closeFolderModal()" class="ios-folder-close" aria-label="Close folder">
                     <i class="fas fa-times"></i>
@@ -186,6 +186,22 @@
             <div class="ios-folder-card">
             <!-- Folder 3-Column All Projects Grid -->
             <div class="grid grid-cols-3 gap-y-4 gap-x-2.5 w-full justify-items-center">
+                <!-- Folder Item: Chatbot Studio -->
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('chatbot-studio');">
+                    <div class="ios-icon bg-gradient-to-b from-sky-400 to-violet-700">
+                        <i class="fas fa-comments text-2xl text-white"></i>
+                    </div>
+                    <span class="ios-app-label">Chatbot Studio</span>
+                </div>
+
+                <!-- Folder Item: LibReady -->
+                <div class="ios-app-item" onclick="closeFolderModal(); openReadmeModal('libready');">
+                    <div class="ios-icon bg-gradient-to-b from-orange-600 to-amber-900">
+                        <i class="fas fa-book-open text-2xl text-amber-100"></i>
+                    </div>
+                    <span class="ios-app-label">LibReady</span>
+                </div>
+
                 <!-- Folder Item 1: HR-Buddy -->
                 <div class="ios-app-item" onclick="closeFolderModal(); window.open('https://hr-buddy-beta.vercel.app/', '_blank');">
                     <div class="ios-icon bg-gradient-to-b from-amber-400 to-orange-600">
@@ -824,7 +840,7 @@
                 </div>
             </div>
             <div class="ios-widget-stats">
-                <div class="ios-widget-stat"><b>12</b><span>Projects</span></div>
+                <div class="ios-widget-stat"><b>14</b><span>Projects</span></div>
                 <div class="ios-widget-stat"><b>1</b><span>npm package</span></div>
                 <div class="ios-widget-stat"><b>60%</b><span>less manual work</span></div>
             </div>
@@ -946,7 +962,7 @@
             </a>
 
             <!-- App 14: LinkedIn -->
-            <a href="https://linkedin.com" target="_blank" class="ios-app-item">
+            <a href="https://www.linkedin.com/in/ranveer-jaiswal-966289238" target="_blank" rel="noopener" class="ios-app-item">
                 <div class="ios-icon bg-[#0077b5]">
                     <i class="fab fa-linkedin text-3xl text-white"></i>
                 </div>
@@ -1059,7 +1075,7 @@
             <span class="shortcut-label">GitHub</span>
         </div>
 
-        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) window.open('https://linkedin.com', '_blank', 'noopener')" title="LinkedIn">
+        <div class="desktop-shortcut pointer-events-auto" onclick="if(!this.dataset.dragged) window.open('https://www.linkedin.com/in/ranveer-jaiswal-966289238', '_blank', 'noopener')" title="LinkedIn">
             <div class="shortcut-icon-wrap"><div class="app-icon icon-linkedin"><i class="fab fa-linkedin-in"></i></div></div>
             <span class="shortcut-label">LinkedIn</span>
         </div>
@@ -1399,6 +1415,8 @@
                     <span class="text-[10px] text-gray-500 uppercase font-semibold pl-1 whitespace-nowrap">Quick:</span>
                     <button class="quick-chip" onclick="runQuickCommand('ls')">ls</button>
                     <button class="quick-chip" onclick="runQuickCommand('cd projects')">cd projects</button>
+                    <button class="quick-chip" onclick="runQuickCommand('cat chatbot_studio.txt')">cat chatbot_studio.txt</button>
+                    <button class="quick-chip" onclick="runQuickCommand('cat libready.txt')">cat libready.txt</button>
                     <button class="quick-chip" onclick="runQuickCommand('cat hr_buddy.txt')">cat hr_buddy.txt</button>
                     <button class="quick-chip" onclick="runQuickCommand('cat srchess.txt')">cat srchess.txt</button>
                     <button class="quick-chip" onclick="runQuickCommand('cat fullstack_visualiser.txt')">cat visualizer.txt</button>
@@ -1438,6 +1456,98 @@
             <!-- VIEW 2: Visual Project Showcase Cards -->
             <div id="projects-view-cards" class="hidden flex-1 p-5 md:p-8 overflow-y-auto bg-[#0a0a0c] dark-scroll">
                 <div class="max-w-4xl mx-auto space-y-4">
+
+                    <!-- Project: Chatbot Studio — AI Chatbot Builder -->
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-violet-700 flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <h3 class="text-base font-bold text-white">Chatbot Studio — AI Chatbot Builder</h3>
+                                    <span class="text-[10px] px-2 py-0.5 rounded bg-violet-500/20 text-violet-300 font-bold border border-violet-500/30">LIVE APP</span>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">AI bot manager for websites: create different AI chatbots, each for a different website, and embed any of them on a site as a chat widget.</p>
+                                <div class="flex flex-wrap gap-1.5 mt-2.5">
+                                    <span class="px-2 py-0.5 rounded bg-violet-500/20 text-violet-300 text-[10px] font-semibold flex items-center"><i class="fas fa-robot mr-1"></i> AI Chatbots</span>
+                                    <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-semibold flex items-center"><i class="fas fa-layer-group mr-1"></i> Multiple Bots</span>
+                                    <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-semibold flex items-center"><i class="fas fa-code mr-1"></i> Embeddable Widget</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 shrink-0">
+                            <a href="https://app.chatbotstudio.tech/login" target="_blank" rel="noopener" class="px-4 py-1.5 bg-[#007aff] hover:bg-blue-600 text-white rounded-full text-xs font-semibold flex items-center">
+                                Open App <i class="fas fa-external-link-alt ml-1.5 text-[10px]"></i>
+                            </a>
+                            <button class="px-3.5 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('chatbot-studio')">
+                                <i class="fas fa-book-open mr-1.5"></i> Readme
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Project: LibReady — Offline PDF & EPUB Library (github.com/Rvjais/Book-Library) -->
+                    <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col gap-3">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-orange-700 to-amber-900 flex items-center justify-center text-white text-2xl shadow-lg shrink-0 border border-amber-500/30">
+                                    <i class="fas fa-book-open text-amber-200"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                                        <h3 class="text-base font-bold text-white">LibReady — Offline PDF &amp; EPUB Library</h3>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">FLUTTER • ANDROID &amp; iOS</span>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-1">Private, offline book library and reader. Wooden shelves with covers generated from page 1, real page-curl page turns, bookmarks, contents and in-book search, and four reader themes — no account, no server, no network.</p>
+                                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                                        <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-semibold"><i class="fas fa-mobile-screen mr-1"></i> Flutter</span>
+                                        <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-semibold">Dart</span>
+                                        <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-semibold"><i class="fas fa-database mr-1"></i> SQLite</span>
+                                        <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-semibold"><i class="fas fa-code mr-1"></i> Custom EPUB Parser</span>
+                                        <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-semibold"><i class="fas fa-lock mr-1"></i> 100% Offline</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 shrink-0">
+                                <a href="https://libready.vercel.app" target="_blank" rel="noopener" class="px-4 py-1.5 bg-[#007aff] hover:bg-blue-600 text-white rounded-full text-xs font-semibold flex items-center">
+                                    Website <i class="fas fa-external-link-alt ml-1.5 text-[10px]"></i>
+                                </a>
+                                <button class="px-3.5 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-full text-xs font-semibold flex items-center shadow-sm" onclick="openReadmeModal('libready')">
+                                    <i class="fas fa-images mr-1.5"></i> Screenshots &amp; Specs
+                                </button>
+                                <a href="https://github.com/Rvjais/Book-Library" target="_blank" rel="noopener" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold flex items-center" title="View Repository on GitHub" aria-label="GitHub repository">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Screenshot preview strip -->
+                        <div class="pt-2 border-t border-gray-800/80">
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 block">App Screens (Click to zoom):</span>
+                            <div class="project-card-previews portrait">
+                                <div class="project-thumb-item" onclick="openGalleryLightbox('proj-libready-1')" title="Wooden library shelf">
+                                    <img src="assets/LibReady/library.webp" alt="Library shelf" loading="lazy">
+                                    <div class="thumb-label">Library</div>
+                                </div>
+                                <div class="project-thumb-item" onclick="openGalleryLightbox('proj-libready-2')" title="Spines-out shelf">
+                                    <img src="assets/LibReady/spines.webp" alt="Spine shelf" loading="lazy">
+                                    <div class="thumb-label">Spines</div>
+                                </div>
+                                <div class="project-thumb-item" onclick="openGalleryLightbox('proj-libready-3')" title="Full-screen reader">
+                                    <img src="assets/LibReady/reader.webp" alt="Reader" loading="lazy">
+                                    <div class="thumb-label">Reader</div>
+                                </div>
+                                <div class="project-thumb-item" onclick="openGalleryLightbox('proj-libready-4')" title="Themes and page-turn styles">
+                                    <img src="assets/LibReady/settings.webp" alt="Reading settings" loading="lazy">
+                                    <div class="thumb-label">Themes</div>
+                                </div>
+                                <div class="project-thumb-item" onclick="openGalleryLightbox('proj-libready-5')" title="Table of contents">
+                                    <img src="assets/LibReady/contents.webp" alt="Contents" loading="lazy">
+                                    <div class="thumb-label">Contents</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Project 1: HR-Buddy -->
                     <div class="project-card bg-[#18181b] border border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -1652,7 +1762,7 @@
                         <!-- Screenshot Preview Strip (6 UI views from assets) -->
                         <div class="pt-2 border-t border-gray-800/80">
                             <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5 block">UI Previews (Click to inspect):</span>
-                            <div class="project-card-previews">
+                            <div class="project-card-previews portrait">
                                 <div class="project-thumb-item" onclick="openReadmeModal('nothing-veer')" title="Vinyl Turntable Player">
                                     <img src="assets/VEER-MUSIC/Screenshot_20261016-113318.png" alt="Vinyl Player" loading="lazy">
                                     <div class="thumb-label">Vinyl Player</div>
@@ -2105,6 +2215,22 @@
                                 </div>
                             </div>
 
+                            <div class="ios-list-row cursor-pointer" onclick="openReadmeModal('libready')">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 rounded-lg bg-[#0f2a4a] flex items-center justify-center text-base">
+                                        <i class="devicon-flutter-plain colored"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-semibold text-gray-900 block leading-tight">Flutter & Dart</span>
+                                        <span class="text-[11px] text-gray-500">Android & iOS apps</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs font-medium text-gray-500">Built LibReady</span>
+                                    <i class="fas fa-chevron-right text-gray-400 text-[10px]"></i>
+                                </div>
+                            </div>
+
                             <div class="ios-list-row cursor-pointer" onclick="showToast('Twilio, WhatsApp Bot APIs & Google App Scripts')">
                                 <div class="flex items-center space-x-3">
                                     <div class="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white text-base">
@@ -2245,7 +2371,7 @@
                     <div class="flex items-center space-x-4 text-gray-600 pl-2">
                         <span class="text-xs font-medium text-gray-400 hidden sm:inline">Connect:</span>
                         <a href="https://github.com/Rvjais" target="_blank" onclick="window.open('https://github.com/Rvjais', '_blank'); return false;" class="hover:text-blue-600 transition" title="GitHub"><i class="fab fa-github text-lg"></i></a>
-                        <a href="https://linkedin.com" target="_blank" onclick="showToast('Opening LinkedIn Profile...', 'fab fa-linkedin'); return false;" class="hover:text-blue-600 transition" title="LinkedIn"><i class="fab fa-linkedin text-lg"></i></a>
+                        <a href="https://www.linkedin.com/in/ranveer-jaiswal-966289238" target="_blank" rel="noopener" class="hover:text-blue-600 transition" title="LinkedIn"><i class="fab fa-linkedin text-lg"></i></a>
                         <a href="tel:+919648165493" class="hover:text-emerald-600 transition sm:hidden" title="Call"><i class="fas fa-phone text-base"></i></a>
                         <a href="ranveer_jaiswal.pdf" target="_blank" class="hover:text-red-500 transition" title="Download Resume"><i class="fas fa-file-pdf text-lg"></i></a>
                     </div>
